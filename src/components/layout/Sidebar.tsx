@@ -13,7 +13,12 @@ import {
   TrendingUp,
   LogOut,
   Menu,
-  X
+  X,
+  Bell,
+  MessageSquare,
+  Calendar,
+  Target,
+  Award
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -31,30 +36,37 @@ const Sidebar = () => {
     switch (profile.role) {
       case 'admin':
         return [
-          { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
-          { icon: Users, label: 'Coaches', path: '/admin/coaches' },
-          { icon: UserCheck, label: 'Clients', path: '/admin/clients' },
-          { icon: TrendingUp, label: 'Analytics', path: '/admin/analytics' },
-          { icon: CreditCard, label: 'Subscriptions', path: '/admin/subscriptions' },
-          { icon: Settings, label: 'Settings', path: '/admin/settings' },
+          { icon: LayoutDashboard, label: 'Dashboard', path: '/admin', section: 'main' },
+          { icon: Users, label: 'Coaches', path: '/admin/coaches', section: 'management' },
+          { icon: UserCheck, label: 'Clients', path: '/admin/clients', section: 'management' },
+          { icon: TrendingUp, label: 'Analytics', path: '/admin/analytics', section: 'insights' },
+          { icon: CreditCard, label: 'Subscriptions', path: '/admin/subscriptions', section: 'business' },
+          { icon: Settings, label: 'Settings', path: '/admin/settings', section: 'system' },
         ];
       case 'coach':
         return [
-          { icon: LayoutDashboard, label: 'Dashboard', path: '/coach' },
-          { icon: BookOpen, label: 'My Content', path: '/coach/content' },
-          { icon: Users, label: 'My Clients', path: '/coach/clients' },
-          { icon: TrendingUp, label: 'Analytics', path: '/coach/analytics' },
-          { icon: User, label: 'Profile', path: '/coach/profile' },
-          { icon: CreditCard, label: 'Subscription', path: '/coach/subscription' },
+          { icon: LayoutDashboard, label: 'Dashboard', path: '/coach', section: 'main' },
+          { icon: BookOpen, label: 'My Content', path: '/coach/content', section: 'content', badge: 'New' },
+          { icon: Users, label: 'My Clients', path: '/coach/clients', section: 'clients' },
+          { icon: Calendar, label: 'Schedule', path: '/coach/schedule', section: 'planning' },
+          { icon: MessageSquare, label: 'Messages', path: '/coach/messages', section: 'communication' },
+          { icon: TrendingUp, label: 'Analytics', path: '/coach/analytics', section: 'insights' },
+          { icon: Award, label: 'Achievements', path: '/coach/achievements', section: 'progress' },
+          { icon: User, label: 'Profile', path: '/coach/profile', section: 'account' },
+          { icon: CreditCard, label: 'Subscription', path: '/coach/subscription', section: 'account' },
         ];
       case 'client':
         return [
-          { icon: LayoutDashboard, label: 'Dashboard', path: '/client' },
-          { icon: BookOpen, label: 'Browse Content', path: '/client/content' },
-          { icon: Users, label: 'My Coaches', path: '/client/coaches' },
-          { icon: FileText, label: 'My Progress', path: '/client/progress' },
-          { icon: User, label: 'Profile', path: '/client/profile' },
-          { icon: CreditCard, label: 'Subscription', path: '/client/subscription' },
+          { icon: LayoutDashboard, label: 'Dashboard', path: '/client', section: 'main' },
+          { icon: BookOpen, label: 'Browse Content', path: '/client/content', section: 'learning' },
+          { icon: Target, label: 'My Goals', path: '/client/goals', section: 'progress' },
+          { icon: FileText, label: 'My Progress', path: '/client/progress', section: 'progress' },
+          { icon: Users, label: 'My Coaches', path: '/client/coaches', section: 'support' },
+          { icon: Calendar, label: 'Sessions', path: '/client/sessions', section: 'scheduling' },
+          { icon: MessageSquare, label: 'Messages', path: '/client/messages', section: 'communication' },
+          { icon: Award, label: 'Achievements', path: '/client/achievements', section: 'progress', badge: 'New' },
+          { icon: User, label: 'Profile', path: '/client/profile', section: 'account' },
+          { icon: CreditCard, label: 'Subscription', path: '/client/subscription', section: 'account' },
         ];
       default:
         return [];
@@ -72,6 +84,35 @@ const Sidebar = () => {
       return location.pathname === itemPath;
     }
     return location.pathname === itemPath;
+  };
+
+  // Group menu items by section
+  const groupedItems = menuItems.reduce((acc, item) => {
+    if (!acc[item.section]) {
+      acc[item.section] = [];
+    }
+    acc[item.section].push(item);
+    return acc;
+  }, {} as Record<string, typeof menuItems>);
+
+  const getSectionTitle = (section: string) => {
+    const titles = {
+      main: 'Overview',
+      content: 'Content Management',
+      learning: 'Learning',
+      clients: 'Client Management',
+      support: 'Support',
+      planning: 'Planning',
+      scheduling: 'Scheduling',
+      communication: 'Communication',
+      progress: 'Progress & Goals',
+      insights: 'Analytics',
+      account: 'Account',
+      management: 'User Management',
+      business: 'Business',
+      system: 'System'
+    };
+    return titles[section] || section;
   };
 
   // For desktop and tablet, return a properly positioned fixed sidebar
@@ -96,31 +137,52 @@ const Sidebar = () => {
               <Badge variant="secondary" className="text-xs capitalize">
                 {profile.role}
               </Badge>
+              {profile.role !== 'admin' && (
+                <Bell className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Navigation - scrollable area */}
-      <nav className="flex-1 p-3 lg:p-4 space-y-1 lg:space-y-2 overflow-y-auto">
-        {menuItems.map((item) => {
-          const isActive = isActiveMenuItem(item.path);
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                isActive
-                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-              style={{ textDecoration: 'none' }}
-            >
-              <item.icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
-              <span className="font-medium text-sm lg:text-base">{item.label}</span>
-            </Link>
-          );
-        })}
+      <nav className="flex-1 p-3 lg:p-4 overflow-y-auto">
+        {Object.entries(groupedItems).map(([section, items]) => (
+          <div key={section} className="mb-6">
+            {section !== 'main' && (
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3">
+                {getSectionTitle(section)}
+              </h3>
+            )}
+            <div className="space-y-1">
+              {items.map((item) => {
+                const isActive = isActiveMenuItem(item.path);
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <item.icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
+                      <span className="font-medium text-sm lg:text-base">{item.label}</span>
+                    </div>
+                    {item.badge && (
+                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* Sign Out - always visible at bottom */}
