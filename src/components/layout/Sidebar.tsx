@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -135,7 +136,7 @@ const Sidebar = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="fixed top-4 left-4 z-50 bg-white shadow-md border border-gray-200 hover:bg-gray-50 md:hidden"
+          className="fixed top-4 right-4 z-50 bg-white shadow-md border border-gray-200 hover:bg-gray-50 md:hidden"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -148,7 +149,7 @@ const Sidebar = () => {
               className="absolute inset-0 bg-black bg-opacity-50"
               onClick={() => setIsOpen(false)}
             />
-            <div className="absolute left-0 top-0 h-full w-80 bg-white border-r border-gray-200 flex flex-col shadow-xl">
+            <div className="absolute right-0 top-0 h-full w-80 bg-white border-l border-gray-200 flex flex-col shadow-xl">
               <SidebarContent />
             </div>
           </div>
