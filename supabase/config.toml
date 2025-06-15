@@ -1,1 +1,8 @@
+
 project_id = "awmszxrtommgxjnivddq"
+
+[functions.create-subscription]
+verify_jwt = true
+
+[functions.paychangu-callback]
+verify_jwt = false

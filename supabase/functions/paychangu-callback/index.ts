@@ -8,81 +8,133 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('PayChangu callback received');
+
+    // Create Supabase client with service role key for admin operations
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { tx_ref, status } = await req.json();
+    // Get the transaction reference from URL parameters
+    const url = new URL(req.url);
+    const txRef = url.searchParams.get('tx_ref');
+    
+    if (!txRef) {
+      console.error('Missing tx_ref parameter');
+      throw new Error('Missing transaction reference');
+    }
 
-    console.log(`PayChangu callback received: tx_ref=${tx_ref}, status=${status}`);
+    console.log('Processing callback for tx_ref:', txRef);
 
-    if (status === 'successful') {
-      // Verify payment with PayChangu
-      const verifyResponse = await fetch(`https://api.paychangu.com/verify-payment/${tx_ref}`, {
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('PAYCHANGU_SECRET_KEY')}`,
-        },
-      });
+    // Verify the payment status with PayChangu
+    const payChanguResponse = await fetch(`https://api.paychangu.com/verify-payment/${txRef}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('PAYCHANGU_SECRET_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-      const verifyData = await verifyResponse.json();
+    const payChanguData = await payChanguResponse.json();
+    console.log('PayChangu verification response:', payChanguData);
 
-      if (verifyData.status === 'success' && verifyData.data.status === 'successful') {
-        // Update subscription status to active
-        const { data: subscription, error: updateError } = await supabaseClient
-          .from('coach_subscriptions')
-          .update({
-            status: 'active',
-            expires_at: new Date(Date.now() + (365 * 24 * 60 * 60 * 1000)).toISOString(), // 1 year from now
-          })
-          .eq('paychangu_subscription_id', tx_ref)
-          .select()
-          .single();
+    if (!payChanguResponse.ok) {
+      console.error('PayChangu verification failed:', payChanguData);
+      throw new Error(`Payment verification failed: ${payChanguData.message || 'Unknown error'}`);
+    }
 
-        if (updateError) {
-          console.error('Failed to update subscription:', updateError);
-          throw updateError;
+    // Check if payment was successful
+    const paymentStatus = payChanguData.data?.status;
+    
+    if (paymentStatus === 'success' || paymentStatus === 'completed') {
+      console.log('Payment confirmed, updating subscription status');
+
+      // Find the subscription by PayChangu transaction reference
+      const { data: subscription, error: findError } = await supabaseClient
+        .from('coach_subscriptions')
+        .select('*')
+        .eq('paychangu_subscription_id', txRef)
+        .single();
+
+      if (findError) {
+        console.error('Error finding subscription:', findError);
+        throw findError;
+      }
+
+      if (!subscription) {
+        console.error('Subscription not found for tx_ref:', txRef);
+        throw new Error('Subscription not found');
+      }
+
+      // Calculate expiry date based on billing cycle
+      const now = new Date();
+      const expiryDate = new Date(now);
+      
+      if (subscription.billing_cycle === 'yearly') {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      } else {
+        expiryDate.setMonth(expiryDate.getMonth() + 1);
+      }
+
+      // Update subscription status to active
+      const { error: updateError } = await supabaseClient
+        .from('coach_subscriptions')
+        .update({
+          status: 'active',
+          expires_at: expiryDate.toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', subscription.id);
+
+      if (updateError) {
+        console.error('Error updating subscription:', updateError);
+        throw updateError;
+      }
+
+      console.log('Subscription activated successfully:', subscription.id);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: 'Subscription activated successfully',
+          subscription_id: subscription.id
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
         }
+      );
 
-        console.log('Subscription activated:', subscription);
-
-        return new Response(
-          JSON.stringify({ message: 'Subscription activated successfully' }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-          }
-        );
-      }
+    } else {
+      console.log('Payment not successful, status:', paymentStatus);
+      
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: 'Payment not confirmed',
+          status: paymentStatus
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
     }
-
-    // If payment failed or was not successful
-    const { error: updateError } = await supabaseClient
-      .from('coach_subscriptions')
-      .update({ status: 'inactive' })
-      .eq('paychangu_subscription_id', tx_ref);
-
-    if (updateError) {
-      console.error('Failed to update subscription status:', updateError);
-    }
-
-    return new Response(
-      JSON.stringify({ message: 'Payment not successful' }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      }
-    );
 
   } catch (error) {
     console.error('Error in paychangu-callback function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message 
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
