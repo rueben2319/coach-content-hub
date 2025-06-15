@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const Index = () => {
-  const { user, loading, profile, signIn } = useAuth();
+  const { user, loading, profile } = useAuth();
 
   console.log('Index page render - User:', !!user, 'Profile role:', profile?.role, 'Loading:', loading);
 
@@ -62,14 +62,6 @@ const Index = () => {
 
   console.log('Index: Showing landing page for non-authenticated users');
 
-  const handleTestLogin = async () => {
-    try {
-      await signIn('client@example.com', 'password');
-    } catch (error) {
-      console.error('Test login failed:', error);
-    }
-  };
-
   // Show landing page for non-authenticated users
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -87,9 +79,6 @@ const Index = () => {
             </Button>
             <Button size="lg" variant="outline" asChild>
               <Link to="/auth">Sign In</Link>
-            </Button>
-            <Button size="lg" variant="secondary" onClick={handleTestLogin}>
-              Test Client Login
             </Button>
           </div>
         </div>

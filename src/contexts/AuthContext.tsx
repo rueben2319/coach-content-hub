@@ -46,33 +46,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     let mounted = true;
 
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        console.log('Auth state changed:', event, 'Session exists:', !!newSession, 'User:', newSession?.user?.id);
-        
-        if (!mounted) return;
-        
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (newSession?.user && event !== 'TOKEN_REFRESHED') {
-          console.log('New session with user, fetching profile...');
-          await fetchUserProfile(newSession.user.id);
-        } else if (!newSession) {
-          console.log('Session cleared, clearing profile');
-          setProfile(null);
-        }
-        
-        // Set loading to false after handling the auth state change
-        setLoading(false);
-      }
-    );
-
-    // Get initial session
-    const getInitialSession = async () => {
+    // Initialize auth state
+    const initializeAuth = async () => {
       try {
-        console.log('Getting initial session...');
+        console.log('Getting current session...');
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -83,15 +60,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
         
-        console.log('Initial session:', !!currentSession, 'User ID:', currentSession?.user?.id);
+        console.log('Current session:', !!currentSession, 'User ID:', currentSession?.user?.id);
         
         if (mounted) {
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
           
           if (currentSession?.user) {
-            console.log('User found in initial session, fetching profile...');
+            console.log('User found, fetching profile...');
             await fetchUserProfile(currentSession.user.id);
+          } else {
+            console.log('No user found');
           }
           
           setLoading(false);
@@ -104,8 +83,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
+    // Set up auth state listener
+    console.log('Setting up auth state listener...');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        console.log('Auth state changed:', event, 'Session exists:', !!newSession, 'User:', newSession?.user?.id);
+        
+        if (!mounted) return;
+        
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        
+        if (newSession?.user) {
+          console.log('New session with user, fetching profile...');
+          // Use setTimeout to prevent potential deadlocks
+          setTimeout(async () => {
+            if (mounted) {
+              await fetchUserProfile(newSession.user.id);
+            }
+          }, 0);
+        } else {
+          console.log('Session cleared, clearing profile');
+          setProfile(null);
+        }
+        
+        // Only set loading to false after handling the auth state change
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          setLoading(false);
+        }
+      }
+    );
+
     // Initialize auth
-    getInitialSession();
+    initializeAuth();
 
     return () => {
       console.log('AuthProvider: Cleaning up');
@@ -132,6 +142,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variant: "destructive",
       });
       throw error;
+    } finally {
+      // Don't set loading to false here - let the auth state change handle it
     }
   };
 
