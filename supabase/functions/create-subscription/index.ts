@@ -127,7 +127,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         subscription,
-        payment_url: payChanguData.data.authorization_url,
+        payment_url: payChanguData.data.checkout_url, // Fixed: use checkout_url from PayChangu response
         tx_ref: payChanguData.data.tx_ref
       }),
       {
