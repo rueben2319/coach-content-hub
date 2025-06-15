@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Target, Plus, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
+import { EnhancedCard } from '@/components/ui/enhanced-card';
+import { InteractiveButton } from '@/components/ui/interactive-button';
 
 const Goals = () => {
   // Mock data for now - will be replaced with real data later
@@ -75,19 +75,24 @@ const Goals = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">My Goals</h1>
           <p className="text-lg text-muted-foreground">Track your learning objectives and celebrate your progress</p>
         </div>
-        <Button className="touch-target bg-primary hover:bg-primary-600 transition-colors w-fit">
-          <Plus className="w-4 h-4 mr-2" />
+        <InteractiveButton icon={Plus} className="w-fit">
           Add New Goal
-        </Button>
+        </InteractiveButton>
       </div>
 
       <div className="three-column-grid">
-        {goals.map((goal) => (
-          <Card key={goal.id} className="card-interactive card-soft h-full flex flex-col group">
+        {goals.map((goal, index) => (
+          <EnhancedCard 
+            key={goal.id} 
+            interactive 
+            highlight={goal.status === 'completed'}
+            className="h-full flex flex-col"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start space-x-3 flex-1 min-w-0">
-                  <div className="flex-shrink-0 p-2 bg-primary-50 rounded-lg group-hover:bg-primary-100 transition-colors">
+                  <div className="flex-shrink-0 p-2 bg-primary-50 rounded-lg group-hover:bg-primary-100 transition-all duration-300 hover:scale-110">
                     {getStatusIcon(goal.status)}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -99,7 +104,7 @@ const Goals = () => {
                     </p>
                   </div>
                 </div>
-                <Badge className={`text-xs font-medium flex-shrink-0 ${getPriorityColor(goal.priority)}`}>
+                <Badge className={`text-xs font-medium flex-shrink-0 transition-all duration-300 hover:scale-105 ${getPriorityColor(goal.priority)}`}>
                   {goal.priority}
                 </Badge>
               </div>
@@ -114,10 +119,7 @@ const Goals = () => {
                   </div>
                   <Progress 
                     value={goal.progress} 
-                    className="h-2"
-                    style={{
-                      background: `linear-gradient(to right, ${getProgressColor(goal.progress)} ${goal.progress}%, hsl(var(--muted)) ${goal.progress}%)`
-                    }}
+                    className="h-2 transition-all duration-500"
                   />
                 </div>
 
@@ -134,7 +136,7 @@ const Goals = () => {
                   </div>
                   <Badge 
                     variant={goal.status === 'completed' ? 'default' : 'secondary'}
-                    className={`text-xs font-medium ${
+                    className={`text-xs font-medium transition-all duration-300 hover:scale-105 ${
                       goal.status === 'completed' 
                         ? "status-success" 
                         : "bg-secondary-100 text-secondary-700 border border-secondary-200"
@@ -145,23 +147,22 @@ const Goals = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </EnhancedCard>
         ))}
       </div>
 
       {goals.length === 0 && (
         <div className="text-center py-16">
-          <div className="mx-auto w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
+          <div className="mx-auto w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6 transition-transform duration-300 hover:scale-105">
             <Target className="h-10 w-10 text-muted-foreground" />
           </div>
           <h3 className="text-xl font-semibold text-foreground mb-3">No goals set yet</h3>
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
             Start setting learning goals to track your progress and stay motivated on your journey.
           </p>
-          <Button className="touch-target bg-primary hover:bg-primary-600 transition-colors">
-            <Plus className="w-4 h-4 mr-2" />
+          <InteractiveButton icon={Plus}>
             Create Your First Goal
-          </Button>
+          </InteractiveButton>
         </div>
       )}
     </div>

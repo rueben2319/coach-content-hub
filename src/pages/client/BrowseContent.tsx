@@ -1,11 +1,14 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Play, Clock, Star, User } from 'lucide-react';
 import { usePublishedCourses } from '@/hooks/useClientCourses';
 import { Link } from 'react-router-dom';
+import { EnhancedLoading } from '@/components/ui/enhanced-loading';
+import { CourseCardSkeleton } from '@/components/ui/course-card-skeleton';
+import { EnhancedCard } from '@/components/ui/enhanced-card';
+import { InteractiveButton } from '@/components/ui/interactive-button';
 
 const BrowseContent = () => {
   const { data: courses = [], isLoading } = usePublishedCourses();
@@ -23,10 +26,15 @@ const BrowseContent = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading courses...</p>
+      <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in">
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">Browse Content</h1>
+          <p className="text-lg text-muted-foreground">Discover new courses and expand your skills with expert-led content</p>
+        </div>
+        <div className="cards-grid">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <CourseCardSkeleton key={i} />
+          ))}
         </div>
       </div>
     );
@@ -42,7 +50,7 @@ const BrowseContent = () => {
       {courses.length > 0 ? (
         <div className="cards-grid">
           {courses.map((course) => (
-            <Card key={course.id} className="card-interactive card-soft h-full flex flex-col group">
+            <EnhancedCard key={course.id} interactive className="h-full flex flex-col">
               <CardHeader className="p-4 pb-3">
                 <div className="aspect-video bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg mb-4 flex items-center justify-center overflow-hidden group-hover:from-primary-600 group-hover:to-primary-700 transition-all duration-300">
                   {course.thumbnail_url ? (
@@ -52,7 +60,7 @@ const BrowseContent = () => {
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <BookOpen className="w-12 h-12 text-white" />
+                    <BookOpen className="w-12 h-12 text-white transition-transform duration-300 group-hover:scale-110" />
                   )}
                 </div>
                 <CardTitle className="text-lg font-semibold line-clamp-2 leading-tight group-hover:text-primary transition-colors">
@@ -71,12 +79,12 @@ const BrowseContent = () => {
                 
                 <div className="flex flex-wrap items-center gap-2 mb-4">
                   {course.difficulty_level && (
-                    <Badge variant="outline" className="text-xs font-medium border-warning-200 text-warning-700">
+                    <Badge variant="outline" className="text-xs font-medium border-warning-200 text-warning-700 transition-colors hover:bg-warning-50">
                       {course.difficulty_level}
                     </Badge>
                   )}
                   {course.category && (
-                    <Badge variant="secondary" className="text-xs font-medium bg-secondary-100 text-secondary-700 border border-secondary-200">
+                    <Badge variant="secondary" className="text-xs font-medium bg-secondary-100 text-secondary-700 border border-secondary-200 transition-colors hover:bg-secondary-200">
                       {course.category}
                     </Badge>
                   )}
@@ -97,20 +105,19 @@ const BrowseContent = () => {
                   <div className="text-xl font-bold text-foreground">
                     {course.currency} {course.price}
                   </div>
-                  <Button size="sm" asChild className="touch-target bg-primary hover:bg-primary-600 transition-colors">
+                  <InteractiveButton size="sm" icon={Play} asChild>
                     <Link to={`/client/courses/${course.id}`}>
-                      <Play className="w-4 h-4 mr-2" />
                       View Course
                     </Link>
-                  </Button>
+                  </InteractiveButton>
                 </div>
               </CardContent>
-            </Card>
+            </EnhancedCard>
           ))}
         </div>
       ) : (
         <div className="text-center py-16">
-          <div className="mx-auto w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
+          <div className="mx-auto w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6 transition-transform duration-300 hover:scale-105">
             <BookOpen className="h-10 w-10 text-muted-foreground" />
           </div>
           <h3 className="text-xl font-semibold text-foreground mb-3">No courses available</h3>
