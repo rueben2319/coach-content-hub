@@ -35,26 +35,26 @@ const Index = () => {
   }
 
   // If user is authenticated with a complete profile, redirect to appropriate dashboard
-  if (user && profile) {
+  if (user && profile && !loading) {
     console.log('Index: User authenticated with profile, redirecting based on role:', profile.role);
     
-    switch (profile.role) {
-      case 'admin':
-        console.log('Redirecting to admin dashboard');
-        return <Navigate to="/admin" replace />;
-      case 'coach':
-        console.log('Redirecting to coach dashboard');
-        return <Navigate to="/coach" replace />;
-      case 'client':
-        console.log('Redirecting to client browse page');
-        return <Navigate to="/client/browse" replace />;
-      default:
-        console.warn('Unknown role:', profile.role, 'redirecting to auth');
-        return <Navigate to="/auth" replace />;
+    const redirectMap = {
+      admin: '/admin',
+      coach: '/coach',
+      client: '/client/browse'
+    };
+    
+    const redirectTo = redirectMap[profile.role];
+    if (redirectTo) {
+      console.log('Redirecting to:', redirectTo);
+      return <Navigate to={redirectTo} replace />;
+    } else {
+      console.warn('Unknown role:', profile.role, 'redirecting to auth');
+      return <Navigate to="/auth" replace />;
     }
   }
 
-  // If user exists but no profile, there's an issue - redirect to auth
+  // If user exists but no profile found (shouldn't happen with new trigger)
   if (user && !profile && !loading) {
     console.warn('User exists but no profile found, redirecting to auth');
     return <Navigate to="/auth" replace />;

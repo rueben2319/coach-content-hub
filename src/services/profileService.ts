@@ -19,6 +19,8 @@ export const profileService = {
 
       if (!data) {
         console.log('No profile found for user:', userId);
+        // With the new trigger, this shouldn't happen for new users
+        // But we'll still try to create one for existing users without profiles
         return await this.createProfile(userId);
       }
 
