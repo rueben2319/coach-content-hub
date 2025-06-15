@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -8,26 +7,22 @@ import { Link } from 'react-router-dom';
 const Index = () => {
   const { user, loading, profile } = useAuth();
 
-  console.log('Index page - User:', user?.id, 'Profile:', profile?.role, 'Loading:', loading);
+  console.log('Index page - User:', user?.id, 'Profile role:', profile?.role, 'Loading:', loading);
 
-  // If user is authenticated, redirect to appropriate dashboard
-  if (!loading && user && profile) {
-    console.log('Redirecting authenticated user to dashboard based on role:', profile.role);
-    
-    switch (profile.role) {
-      case 'admin':
-        return <Navigate to="/admin" replace />;
-      case 'coach':
-        return <Navigate to="/coach" replace />;
-      case 'client':
-        return <Navigate to="/client/browse" replace />;
-      default:
-        return <Navigate to="/auth" replace />;
-    }
-  }
+  useEffect(() => {
+    console.log('Index page mounted');
+    console.log('Current auth state:', { 
+      hasUser: !!user, 
+      userId: user?.id, 
+      hasProfile: !!profile, 
+      profileRole: profile?.role, 
+      isLoading: loading 
+    });
+  }, [user, profile, loading]);
 
   // Show loading while checking authentication
   if (loading) {
+    console.log('Index: Showing loading state');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
         <div className="text-center">
@@ -37,6 +32,31 @@ const Index = () => {
       </div>
     );
   }
+
+  // If user is authenticated, redirect to appropriate dashboard
+  if (user && profile) {
+    console.log('Index: Redirecting authenticated user to dashboard based on role:', profile.role);
+    
+    switch (profile.role) {
+      case 'admin':
+        return <Navigate to="/admin" replace />;
+      case 'coach':
+        return <Navigate to="/coach" replace />;
+      case 'client':
+        return <Navigate to="/client/browse" replace />;
+      default:
+        console.warn('Unknown role:', profile.role);
+        return <Navigate to="/auth" replace />;
+    }
+  }
+
+  // If user exists but no profile, there's an issue - redirect to auth
+  if (user && !profile) {
+    console.warn('User exists but no profile found, redirecting to auth');
+    return <Navigate to="/auth" replace />;
+  }
+
+  console.log('Index: Showing landing page for non-authenticated users');
 
   // Show landing page for non-authenticated users
   return (
@@ -83,6 +103,14 @@ const Index = () => {
             <h3 className="text-xl font-semibold mb-2">Track Progress</h3>
             <p className="text-gray-600">Monitor your learning journey and achievements</p>
           </div>
+        </div>
+
+        {/* Debug info for troubleshooting */}
+        <div className="mt-8 p-4 bg-yellow-50 rounded text-sm text-yellow-800 max-w-md mx-auto">
+          <strong>Debug Info:</strong><br/>
+          User: {user ? user.id : 'Not authenticated'}<br/>
+          Profile: {profile ? profile.role : 'No profile'}<br/>
+          Loading: {loading ? 'Yes' : 'No'}
         </div>
       </div>
     </div>
