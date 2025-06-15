@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ const CoachDashboard = () => {
 
   if (showCourseForm) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto py-4 md:py-6 px-4">
         <CourseForm
           onSuccess={() => setShowCourseForm(false)}
           onCancel={() => setShowCourseForm(false)}
@@ -22,29 +23,29 @@ const CoachDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto py-4 md:py-6 px-4 space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl md:text-3xl font-bold">
             Welcome back, {profile?.first_name}!
           </h1>
-          <p className="text-gray-600">Manage your courses and track your success</p>
+          <p className="text-gray-600 text-sm md:text-base">Manage your courses and track your success</p>
         </div>
-        <Button onClick={() => setShowCourseForm(true)}>
+        <Button onClick={() => setShowCourseForm(true)} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Create Course
         </Button>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-xl md:text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
               +0 from last month
             </p>
@@ -57,7 +58,7 @@ const CoachDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-xl md:text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
               +0 from last month
             </p>
@@ -70,7 +71,7 @@ const CoachDashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$0</div>
+            <div className="text-xl md:text-2xl font-bold">$0</div>
             <p className="text-xs text-muted-foreground">
               +$0 from last month
             </p>
@@ -83,7 +84,7 @@ const CoachDashboard = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0%</div>
+            <div className="text-xl md:text-2xl font-bold">0%</div>
             <p className="text-xs text-muted-foreground">
               +0% from last month
             </p>
