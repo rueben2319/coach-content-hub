@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -121,7 +120,7 @@ const Sidebar = () => {
       {/* Logo */}
       <div className="p-4 lg:p-6 border-b border-gray-200 flex-shrink-0">
         <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-          CoachHub
+          Experts Coach Hub
         </h1>
       </div>
 

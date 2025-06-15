@@ -72,7 +72,7 @@ const Index = () => {
       <header className="container mx-auto px-4 py-6">
         <nav className="flex items-center justify-between">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-            CoachHub
+            Experts Coach Hub
           </h1>
           <div className="space-x-4">
             <Link to="/auth">
@@ -137,10 +137,10 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h3 className="text-3xl font-bold text-gray-900 mb-6">
-                Why Choose CoachHub?
+                Why Choose Experts Coach Hub?
               </h3>
               <p className="text-lg text-gray-600 mb-8">
-                Join thousands of successful coaches who trust CoachHub to grow their business and impact more lives.
+                Join thousands of successful coaches who trust Experts Coach Hub to grow their business and impact more lives.
               </p>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
@@ -172,7 +172,7 @@ const Index = () => {
       <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent mb-4">
-            CoachHub
+            Experts Coach Hub
           </h1>
           <p className="text-gray-400 mb-6">
             Empowering coaches to transform lives through exceptional learning experiences.
@@ -183,7 +183,7 @@ const Index = () => {
             <a href="#" className="hover:text-white transition-colors">Contact</a>
           </div>
           <p className="text-gray-500 text-sm mt-8">
-            © 2024 CoachHub. All rights reserved.
+            © 2024 Experts Coach Hub. All rights reserved.
           </p>
         </div>
       </footer>

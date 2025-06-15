@@ -22,7 +22,7 @@ const ResponsiveDashboardLayout: React.FC<ResponsiveDashboardLayoutProps> = ({ c
             <header className="sticky top-0 z-40 bg-white border-b border-gray-200 p-4">
               <div className="flex items-center justify-between">
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                  CoachHub
+                  Experts Coach Hub
                 </h1>
                 <SidebarTrigger />
               </div>
