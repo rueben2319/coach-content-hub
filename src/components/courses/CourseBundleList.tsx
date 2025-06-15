@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Eye, Package, DollarSign } from 'lucide-react';
+import { Edit, Trash2, Package, DollarSign } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -14,7 +14,7 @@ interface CourseBundle {
   description: string;
   price: number;
   subscription_price?: number;
-  pricing_model: 'one_time' | 'subscription' | 'both';
+  pricing_model: 'one_time' | 'subscription';
   currency: string;
   is_published: boolean;
   thumbnail_url?: string;
@@ -86,8 +86,6 @@ const CourseBundleList: React.FC<CourseBundleListProps> = ({
         return `${currency} ${price}`;
       case 'subscription':
         return `${currency} ${subscription_price}/month`;
-      case 'both':
-        return `${currency} ${price} or ${currency} ${subscription_price}/month`;
       default:
         return `${currency} ${price}`;
     }

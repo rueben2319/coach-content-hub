@@ -14,7 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import CourseBundleSelector from './CourseBundleSelector';
 
 const bundleSchema = z.object({
@@ -22,7 +22,7 @@ const bundleSchema = z.object({
   description: z.string().optional(),
   price: z.number().min(0, 'Price must be positive'),
   subscription_price: z.number().min(0, 'Subscription price must be positive').optional(),
-  pricing_model: z.enum(['one_time', 'subscription', 'both']),
+  pricing_model: z.enum(['one_time', 'subscription']),
   currency: z.string().default('USD'),
   is_published: z.boolean().default(false),
 });
@@ -100,7 +100,7 @@ const CourseBundleForm: React.FC<CourseBundleFormProps> = ({
         description: bundleData.description || '',
         price: bundleData.price,
         subscription_price: bundleData.subscription_price || 0,
-        pricing_model: bundleData.pricing_model,
+        pricing_model: bundleData.pricing_model === 'both' ? 'one_time' : bundleData.pricing_model,
         currency: bundleData.currency,
         is_published: bundleData.is_published,
       });
@@ -121,7 +121,13 @@ const CourseBundleForm: React.FC<CourseBundleFormProps> = ({
       const { data: bundle, error: bundleError } = await supabase
         .from('course_bundles')
         .insert({
-          ...data,
+          title: data.title,
+          description: data.description,
+          price: data.price,
+          subscription_price: data.subscription_price,
+          pricing_model: data.pricing_model,
+          currency: data.currency,
+          is_published: data.is_published,
           coach_id: user.id,
         })
         .select()
@@ -169,7 +175,15 @@ const CourseBundleForm: React.FC<CourseBundleFormProps> = ({
       // Update bundle
       const { error: bundleError } = await supabase
         .from('course_bundles')
-        .update(data)
+        .update({
+          title: data.title,
+          description: data.description,
+          price: data.price,
+          subscription_price: data.subscription_price,
+          pricing_model: data.pricing_model,
+          currency: data.currency,
+          is_published: data.is_published,
+        })
         .eq('id', bundleId);
 
       if (bundleError) throw bundleError;
@@ -298,19 +312,18 @@ const CourseBundleForm: React.FC<CourseBundleFormProps> = ({
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="pricing_model">Pricing Model</Label>
-                <Select onValueChange={(value) => setValue('pricing_model', value as any)}>
+                <Select onValueChange={(value) => setValue('pricing_model', value as 'one_time' | 'subscription')}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select pricing model" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="one_time">One-time Purchase</SelectItem>
                     <SelectItem value="subscription">Subscription Only</SelectItem>
-                    <SelectItem value="both">Both Options</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {(pricingModel === 'one_time' || pricingModel === 'both') && (
+              {pricingModel === 'one_time' && (
                 <div>
                   <Label htmlFor="price">One-time Price *</Label>
                   <Input
@@ -326,7 +339,7 @@ const CourseBundleForm: React.FC<CourseBundleFormProps> = ({
                 </div>
               )}
 
-              {(pricingModel === 'subscription' || pricingModel === 'both') && (
+              {pricingModel === 'subscription' && (
                 <div>
                   <Label htmlFor="subscription_price">Monthly Subscription Price *</Label>
                   <Input
