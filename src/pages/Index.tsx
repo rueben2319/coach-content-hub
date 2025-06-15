@@ -8,11 +8,8 @@ import { Link } from 'react-router-dom';
 const Index = () => {
   const { user, loading, profile } = useAuth();
 
-  console.log('Index page render - User:', !!user, 'Profile role:', profile?.role, 'Loading:', loading);
-
   useEffect(() => {
-    console.log('Index page mounted');
-    console.log('Current auth state:', { 
+    console.log('Index page - Auth state:', { 
       hasUser: !!user, 
       userId: user?.id, 
       hasProfile: !!profile, 
@@ -21,9 +18,7 @@ const Index = () => {
     });
   }, [user, profile, loading]);
 
-  // Show loading while checking authentication
   if (loading) {
-    console.log('Index: Showing loading state');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
         <div className="text-center">
@@ -34,35 +29,31 @@ const Index = () => {
     );
   }
 
-  // If user is authenticated with a complete profile, redirect to appropriate dashboard
-  if (user && profile && !loading) {
-    console.log('Index: User authenticated with profile, redirecting based on role:', profile.role);
-    
+  if (user && profile) {
     const redirectMap = {
       admin: '/admin',
       coach: '/coach',
-      client: '/client/browse'
+      client: '/client'
     };
     
     const redirectTo = redirectMap[profile.role];
     if (redirectTo) {
-      console.log('Redirecting to:', redirectTo);
       return <Navigate to={redirectTo} replace />;
-    } else {
-      console.warn('Unknown role:', profile.role, 'redirecting to auth');
-      return <Navigate to="/auth" replace />;
     }
   }
 
-  // If user exists but no profile found (shouldn't happen with new trigger)
-  if (user && !profile && !loading) {
-    console.warn('User exists but no profile found, redirecting to auth');
-    return <Navigate to="/auth" replace />;
+  if (user && !profile) {
+    // User exists but no profile - this shouldn't happen with the trigger
+    // but handle it gracefully
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Setting up your profile...</p>
+        </div>
+      </div>
+    );
   }
 
-  console.log('Index: Showing landing page for non-authenticated users');
-
-  // Show landing page for non-authenticated users
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="container mx-auto px-4 py-16">
@@ -107,15 +98,6 @@ const Index = () => {
             <h3 className="text-xl font-semibold mb-2">Track Progress</h3>
             <p className="text-gray-600">Monitor your learning journey and achievements</p>
           </div>
-        </div>
-
-        {/* Debug info for troubleshooting */}
-        <div className="mt-8 p-4 bg-blue-50 rounded text-sm text-blue-800 max-w-md mx-auto">
-          <strong>Debug Info:</strong><br/>
-          User ID: {user?.id || 'Not authenticated'}<br/>
-          Profile Role: {profile?.role || 'No profile'}<br/>
-          Loading: {loading ? 'Yes' : 'No'}<br/>
-          Current URL: {window.location.href}
         </div>
       </div>
     </div>

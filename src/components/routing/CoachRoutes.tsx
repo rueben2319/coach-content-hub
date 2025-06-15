@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Route } from 'react-router-dom';
-import { ProtectedRoute } from './ProtectedRoute';
+import { RoleProtectedRoute } from './RoleProtectedRoute';
 import ResponsiveDashboardLayout from '@/components/layout/ResponsiveDashboardLayout';
 import CoachDashboard from '@/pages/coach/CoachDashboard';
 import CoachProfile from '@/pages/coach/CoachProfile';
@@ -10,25 +10,25 @@ import SubscriptionPage from '@/pages/coach/SubscriptionPage';
 export const CoachRoutes = () => (
   <>
     <Route path="/coach" element={
-      <ProtectedRoute>
+      <RoleProtectedRoute allowedRoles={['coach']}>
         <ResponsiveDashboardLayout>
           <CoachDashboard />
         </ResponsiveDashboardLayout>
-      </ProtectedRoute>
+      </RoleProtectedRoute>
     } />
     <Route path="/coach/profile" element={
-      <ProtectedRoute>
+      <RoleProtectedRoute allowedRoles={['coach']}>
         <ResponsiveDashboardLayout>
           <CoachProfile />
         </ResponsiveDashboardLayout>
-      </ProtectedRoute>
+      </RoleProtectedRoute>
     } />
     <Route path="/coach/subscription" element={
-      <ProtectedRoute>
+      <RoleProtectedRoute allowedRoles={['coach']}>
         <ResponsiveDashboardLayout>
           <SubscriptionPage />
         </ResponsiveDashboardLayout>
-      </ProtectedRoute>
+      </RoleProtectedRoute>
     } />
   </>
 );

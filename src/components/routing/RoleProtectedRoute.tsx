@@ -2,17 +2,20 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Profile } from '@/types/profile';
 
-interface ProtectedRouteProps {
+interface RoleProtectedRouteProps {
   children: React.ReactNode;
+  allowedRoles: Profile['role'][];
   redirectTo?: string;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({ 
   children, 
+  allowedRoles, 
   redirectTo = '/auth' 
 }) => {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
 
   if (loading) {
     return (
@@ -25,8 +28,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  if (!user) {
+  if (!user || !profile) {
     return <Navigate to={redirectTo} replace />;
+  }
+
+  if (!allowedRoles.includes(profile.role)) {
+    // Redirect to appropriate dashboard based on user's actual role
+    const roleRedirects = {
+      admin: '/admin',
+      coach: '/coach',
+      client: '/client'
+    };
+    
+    return <Navigate to={roleRedirects[profile.role] || '/'} replace />;
   }
 
   return <>{children}</>;

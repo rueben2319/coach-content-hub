@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import LoginForm from '@/components/auth/LoginForm';
@@ -7,21 +7,6 @@ import LoginForm from '@/components/auth/LoginForm';
 const AuthPage = () => {
   const { user, loading, profile } = useAuth();
 
-  // If user is authenticated, redirect to appropriate dashboard
-  if (!loading && user && profile) {
-    switch (profile.role) {
-      case 'admin':
-        return <Navigate to="/admin" replace />;
-      case 'coach':
-        return <Navigate to="/coach" replace />;
-      case 'client':
-        return <Navigate to="/client" replace />;
-      default:
-        return <Navigate to="/" replace />;
-    }
-  }
-
-  // Show loading while checking authentication
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
@@ -31,6 +16,17 @@ const AuthPage = () => {
         </div>
       </div>
     );
+  }
+
+  if (user && profile) {
+    const redirectMap = {
+      admin: '/admin',
+      coach: '/coach',
+      client: '/client'
+    };
+    
+    const redirectTo = redirectMap[profile.role];
+    return <Navigate to={redirectTo || '/'} replace />;
   }
 
   return <LoginForm />;

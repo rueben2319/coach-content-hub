@@ -5,7 +5,6 @@ import { Profile } from '@/types/profile';
 export const profileService = {
   async fetchProfile(userId: string): Promise<Profile | null> {
     try {
-      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -14,63 +13,36 @@ export const profileService = {
 
       if (error) {
         console.error('Error fetching profile:', error);
-        return null;
+        throw new Error(error.message);
       }
 
       if (!data) {
-        console.log('No profile found for user:', userId);
-        // With the new trigger, this shouldn't happen for new users
-        // But we'll still try to create one for existing users without profiles
-        return await this.createProfile(userId);
-      }
-
-      console.log('Profile fetched successfully:', data);
-      return data;
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      return null;
-    }
-  },
-
-  async createProfile(userId: string): Promise<Profile | null> {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return null;
-
-      console.log('Creating profile for user:', userId);
-      const { data: newProfile, error: createError } = await supabase
-        .from('profiles')
-        .insert({
-          user_id: userId,
-          email: userData.user.email || '',
-          role: 'client' as const,
-          first_name: userData.user.user_metadata?.first_name || null,
-          last_name: userData.user.user_metadata?.last_name || null,
-        })
-        .select()
-        .maybeSingle();
-
-      if (createError) {
-        console.error('Error creating profile:', createError);
+        // Profile should be created automatically by the trigger
+        // If it doesn't exist, something went wrong
+        console.warn('No profile found for user:', userId);
         return null;
       }
 
-      console.log('Profile created successfully:', newProfile);
-      return newProfile;
-    } catch (error) {
-      console.error('Error creating profile:', error);
-      return null;
+      return data;
+    } catch (error: any) {
+      console.error('Error in fetchProfile:', error);
+      throw new Error(error.message || 'Failed to fetch profile');
     }
   },
 
   async updateProfile(userId: string, updates: Partial<Profile>): Promise<void> {
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('user_id', userId);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('user_id', userId);
 
-    if (error) {
-      throw error;
+      if (error) {
+        throw new Error(error.message);
+      }
+    } catch (error: any) {
+      console.error('Error in updateProfile:', error);
+      throw new Error(error.message || 'Failed to update profile');
     }
   }
 };

@@ -1,16 +1,16 @@
 
 import React from 'react';
 import { Route } from 'react-router-dom';
-import { ProtectedRoute } from './ProtectedRoute';
+import { RoleProtectedRoute } from './RoleProtectedRoute';
 import ResponsiveDashboardLayout from '@/components/layout/ResponsiveDashboardLayout';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 
 export const AdminRoutes = () => (
   <Route path="/admin" element={
-    <ProtectedRoute>
+    <RoleProtectedRoute allowedRoles={['admin']}>
       <ResponsiveDashboardLayout>
         <AdminDashboard />
       </ResponsiveDashboardLayout>
-    </ProtectedRoute>
+    </RoleProtectedRoute>
   } />
 );

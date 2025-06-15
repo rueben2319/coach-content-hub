@@ -29,9 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('Fetching profile for user:', userId);
       const profileData = await profileService.fetchProfile(userId);
-      console.log('Profile fetched successfully:', profileData);
       setProfile(profileData);
       return profileData;
     } catch (error) {
@@ -42,50 +40,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    console.log('AuthProvider: Initializing auth state');
-    
     let mounted = true;
 
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        console.log('Auth state changed:', event, 'Session exists:', !!newSession);
-        
         if (!mounted) return;
         
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (newSession?.user) {
-          console.log('User authenticated, fetching profile...');
-          await fetchUserProfile(newSession.user.id);
-        } else {
-          console.log('No user, clearing profile');
-          setProfile(null);
+        try {
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          
+          if (newSession?.user) {
+            await fetchUserProfile(newSession.user.id);
+          } else {
+            setProfile(null);
+          }
+        } catch (error) {
+          console.error('Auth state change error:', error);
+          if (mounted) {
+            setUser(null);
+            setProfile(null);
+            setSession(null);
+          }
+        } finally {
+          if (mounted) {
+            setLoading(false);
+          }
         }
-        
-        setLoading(false);
       }
     );
 
-    // Initialize current session
     const initializeAuth = async () => {
       try {
-        console.log('Getting current session...');
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error getting session:', error);
+          throw error;
         }
-        
-        console.log('Current session:', !!currentSession);
         
         if (mounted) {
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
           
           if (currentSession?.user) {
-            console.log('User found, fetching profile...');
             await fetchUserProfile(currentSession.user.id);
           }
           
@@ -94,6 +92,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('Error initializing auth:', error);
         if (mounted) {
+          setUser(null);
+          setProfile(null);
+          setSession(null);
           setLoading(false);
         }
       }
@@ -102,7 +103,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initializeAuth();
 
     return () => {
-      console.log('AuthProvider: Cleaning up');
       mounted = false;
       subscription.unsubscribe();
     };
@@ -111,7 +111,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      console.log('Signing in user:', email);
       await authService.signIn(email, password);
 
       toast({
@@ -122,10 +121,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Sign in error:', error);
       toast({
         title: "Error signing in",
-        description: error.message,
+        description: error.message || "Failed to sign in. Please try again.",
         variant: "destructive",
       });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,9 +140,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Please check your email to verify your account.",
       });
     } catch (error: any) {
+      console.error('Sign up error:', error);
       toast({
         title: "Error creating account",
-        description: error.message,
+        description: error.message || "Failed to create account. Please try again.",
         variant: "destructive",
       });
       throw error;
@@ -152,10 +154,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      console.log('Signing out user');
       await authService.signOut();
       
-      // Clear state immediately
       setUser(null);
       setProfile(null);
       setSession(null);
@@ -168,19 +168,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Sign out error:', error);
       toast({
         title: "Error signing out",
-        description: error.message,
+        description: error.message || "Failed to sign out.",
         variant: "destructive",
       });
     }
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {
-    if (!user) return;
+    if (!user) {
+      throw new Error('No authenticated user found');
+    }
 
     try {
       await profileService.updateProfile(user.id, updates);
-
-      // Update local profile state
       setProfile(prev => prev ? { ...prev, ...updates } : null);
       
       toast({
@@ -188,16 +188,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Your profile has been successfully updated.",
       });
     } catch (error: any) {
+      console.error('Update profile error:', error);
       toast({
         title: "Error updating profile",
-        description: error.message,
+        description: error.message || "Failed to update profile.",
         variant: "destructive",
       });
       throw error;
     }
   };
-
-  console.log('AuthProvider render - User:', !!user, 'Profile:', !!profile, 'Loading:', loading);
 
   const contextValue: AuthContextType = {
     user,
