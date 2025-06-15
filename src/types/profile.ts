@@ -15,4 +15,9 @@ export interface Profile {
   profile_completed: boolean;
   created_at: string;
   updated_at: string;
+  // Payment integration fields
+  paychangu_enabled?: boolean;
+  paychangu_public_key?: string;
+  paychangu_secret_key?: string;
+  payment_settings?: Record<string, any>;
 }

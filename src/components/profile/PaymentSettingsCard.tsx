@@ -23,7 +23,7 @@ export const PaymentSettingsCard: React.FC = () => {
       await updateProfile({
         paychangu_enabled: enabled,
         paychangu_public_key: publicKey,
-        paychangu_secret_key: secretKey
+        paychangu_secret_key: secretKey,
       });
       toast({
         title: "Saved!",
@@ -59,21 +59,25 @@ export const PaymentSettingsCard: React.FC = () => {
             />
             Enable PayChangu Payments
           </label>
-          <Input
-            label="PayChangu Public Key"
-            placeholder="Enter your PayChangu public key"
-            value={publicKey}
-            onChange={e => setPublicKey(e.target.value)}
-            disabled={!enabled}
-          />
-          <Input
-            label="PayChangu Secret Key"
-            placeholder="Enter your PayChangu secret key"
-            value={secretKey}
-            onChange={e => setSecretKey(e.target.value)}
-            disabled={!enabled}
-            type="password"
-          />
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-700">PayChangu Public Key</label>
+            <Input
+              placeholder="Enter your PayChangu public key"
+              value={publicKey}
+              onChange={e => setPublicKey(e.target.value)}
+              disabled={!enabled}
+            />
+          </div>
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-700">PayChangu Secret Key</label>
+            <Input
+              placeholder="Enter your PayChangu secret key"
+              value={secretKey}
+              onChange={e => setSecretKey(e.target.value)}
+              disabled={!enabled}
+              type="password"
+            />
+          </div>
           <Button onClick={handleSave} disabled={saving || !enabled} className="w-full">
             {saving ? 'Saving...' : 'Save Payment Settings'}
           </Button>
