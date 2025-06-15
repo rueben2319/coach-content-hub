@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,6 +30,24 @@ export const useCoachSubscription = () => {
 
       console.log('Subscription data:', data);
       return data as CoachSubscription | null;
+    },
+    enabled: !!user,
+  });
+};
+
+export const useClientSubscription = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['client-subscription', user?.id],
+    queryFn: async () => {
+      if (!user) throw new Error('No user found');
+
+      console.log('Fetching client subscription for user:', user.id);
+
+      // For now, return null since we don't have client subscriptions table
+      // This can be updated when client subscriptions are implemented
+      return null as CoachSubscription | null;
     },
     enabled: !!user,
   });
