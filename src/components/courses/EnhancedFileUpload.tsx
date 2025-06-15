@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -241,12 +240,13 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
   };
 
   if (currentUrl) {
-    const contentTypeFromUrl = contentType || 'text';
+    // Handle interactive content type by mapping to a supported type for MediaPreview
+    const previewType = contentType === 'interactive' ? 'text' : (contentType || 'text');
     return (
       <div className="space-y-4">
         <MediaPreview
           url={currentUrl}
-          type={contentTypeFromUrl}
+          type={previewType as 'video' | 'audio' | 'image' | 'pdf' | 'text'}
           title="Current File"
         />
         <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">

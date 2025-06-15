@@ -1,10 +1,8 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 import { FileText, Video, Music, HelpCircle, BookOpen, Plus } from 'lucide-react';
 
 interface ContentTemplate {
@@ -27,18 +25,43 @@ const ContentTemplateSelector: React.FC<ContentTemplateSelectorProps> = ({
 }) => {
   const [selectedType, setSelectedType] = useState<string>('all');
 
-  const { data: templates, isLoading } = useQuery({
-    queryKey: ['content-templates'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('content_templates')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data as ContentTemplate[];
+  // Mock templates data for now - will be replaced with actual API call once table is available
+  const mockTemplates: ContentTemplate[] = [
+    {
+      id: '1',
+      name: 'Basic Lesson Template',
+      description: 'A simple text-based lesson template with rich formatting',
+      template_type: 'lesson',
+      content_structure: {
+        title: 'New Lesson',
+        content: '<h2>Lesson Title</h2><p>Start writing your lesson content here...</p>',
+        description: 'Lesson description'
+      },
+      is_public: true
     },
-  });
+    {
+      id: '2',
+      name: 'Video Lesson Template',
+      description: 'Video-based lesson with description and notes',
+      template_type: 'video',
+      content_structure: {
+        title: 'Video Lesson',
+        description: 'Video lesson with supplementary materials'
+      },
+      is_public: true
+    },
+    {
+      id: '3',
+      name: 'Quiz Template',
+      description: 'Interactive quiz template with multiple choice questions',
+      template_type: 'quiz',
+      content_structure: {
+        title: 'Quiz: Topic Name',
+        description: 'Test your knowledge on this topic'
+      },
+      is_public: true
+    }
+  ];
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -62,9 +85,9 @@ const ContentTemplateSelector: React.FC<ContentTemplateSelectorProps> = ({
     }
   };
 
-  const filteredTemplates = templates?.filter(template => 
+  const filteredTemplates = mockTemplates.filter(template => 
     selectedType === 'all' || template.template_type === selectedType
-  ) || [];
+  );
 
   const templateTypes = [
     { value: 'all', label: 'All Templates' },
@@ -74,14 +97,6 @@ const ContentTemplateSelector: React.FC<ContentTemplateSelectorProps> = ({
     { value: 'video', label: 'Videos' },
     { value: 'article', label: 'Articles' }
   ];
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-gray-500">Loading templates...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

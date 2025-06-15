@@ -2,11 +2,11 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Volume2, VolumeX, FileText, Image, Film } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, FileText, Image, Film, Gamepad2 } from 'lucide-react';
 
 interface MediaPreviewProps {
   url: string;
-  type: 'video' | 'audio' | 'image' | 'pdf' | 'text';
+  type: 'video' | 'audio' | 'image' | 'pdf' | 'text' | 'interactive';
   title?: string;
   duration?: number;
   onPlay?: () => void;
@@ -142,6 +142,24 @@ const MediaPreview: React.FC<MediaPreviewProps> = ({
                 <Button variant="link" className="p-0 h-auto" asChild>
                   <a href={url} target="_blank" rel="noopener noreferrer">
                     Open PDF
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </Card>
+        );
+
+      case 'interactive':
+        return (
+          <Card className="p-4">
+            <div className="flex items-center space-x-3">
+              <Gamepad2 className="h-8 w-8 text-purple-500" />
+              <div>
+                <div className="font-medium">{title || 'Interactive Content'}</div>
+                <div className="text-sm text-gray-500">Interactive lesson or quiz</div>
+                <Button variant="link" className="p-0 h-auto" asChild>
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    Open Interactive Content
                   </a>
                 </Button>
               </div>
