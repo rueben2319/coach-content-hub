@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -28,8 +27,9 @@ const LoginForm = () => {
     }
   };
 
+  // Adjusted comment: Admin must be seeded via signup and then manually promoted in the DB!
   const demoAccounts = [
-    { email: 'admin@system.com', role: 'Admin', color: 'bg-purple-100 text-purple-800', password: 'admin123' },
+    { email: 'admin@system.com', role: 'Admin', color: 'bg-purple-100 text-purple-800', password: 'admin123 (register and promote)' },
     { email: 'coach@example.com', role: 'Coach', color: 'bg-blue-100 text-blue-800', password: 'password' },
     { email: 'client@example.com', role: 'Client', color: 'bg-green-100 text-green-800', password: 'password' },
   ];
