@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +13,11 @@ import ClientDashboard from "@/pages/client/ClientDashboard";
 import Index from "@/pages/Index";
 import CoachProfile from "@/pages/coach/CoachProfile";
 import ClientProfile from "@/pages/client/ClientProfile";
+import React from "react"; // Needed for Suspense and lazy
+
+// Lazy import subscription pages
+const CoachSubscriptionPage = React.lazy(() => import('@/pages/coach/SubscriptionPage'));
+const ClientSubscriptionPage = React.lazy(() => import('@/pages/client/SubscriptionPage'));
 
 const queryClient = new QueryClient();
 
@@ -93,7 +99,7 @@ const App = () => (
                 <ProtectedRoute>
                   <AdminDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
             <Route 
               path="/coach/*" 
@@ -103,9 +109,16 @@ const App = () => (
                 </ProtectedRoute>
               }
             >
-              {/* Add nested routes for coach */}
+              {/* Nested routes for coach */}
               <Route path="profile" element={<CoachProfile />} />
-              <Route path="subscription" element={<React.lazy(() => import('@/pages/coach/SubscriptionPage')) />} />
+              <Route 
+                path="subscription" 
+                element={
+                  <React.Suspense fallback={<div className="flex justify-center p-6">Loading...</div>}>
+                    <CoachSubscriptionPage />
+                  </React.Suspense>
+                } 
+              />
             </Route>
             <Route 
               path="/client/*" 
@@ -115,9 +128,16 @@ const App = () => (
                 </ProtectedRoute>
               }
             >
-              {/* Add nested routes for client */}
+              {/* Nested routes for client */}
               <Route path="profile" element={<ClientProfile />} />
-              <Route path="subscription" element={<React.lazy(() => import('@/pages/client/SubscriptionPage')) />} />
+              <Route 
+                path="subscription" 
+                element={
+                  <React.Suspense fallback={<div className="flex justify-center p-6">Loading...</div>}>
+                    <ClientSubscriptionPage />
+                  </React.Suspense>
+                } 
+              />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
