@@ -24,11 +24,13 @@ export const fetchCourseContent = async (courseId: string) => {
 };
 
 export const addOrUpdateCourseContent = async (
-  formData: Partial<CourseContent> & { course_id: string }, 
+  formData: Omit<Partial<CourseContent>, 'id' | 'sort_order'> & { course_id: string; title: string; content_type: CourseContent['content_type'] },
   content?: CourseContent
 ) => {
   let newSortOrder = 0;
+
   if (!content) {
+    // New content: calculate new sort_order = max+1
     const { data: maxOrderData, error: maxOrderError } = await supabase
       .from('course_content')
       .select('sort_order')
@@ -42,8 +44,27 @@ export const addOrUpdateCourseContent = async (
     }
   }
 
+  const {
+    title,
+    description,
+    content_type,
+    content_url,
+    content_text,
+    duration,
+    is_preview,
+    course_id,
+  } = formData;
+
+  // Minimal object for insert or update - only valid props
   const contentData = {
-    ...formData,
+    title,
+    description: description ?? null,
+    content_type,
+    content_url: content_url ?? null,
+    content_text: content_text ?? null,
+    duration: typeof duration === "number" ? duration : null,
+    is_preview: !!is_preview,
+    course_id,
     sort_order: content ? content.sort_order : newSortOrder,
   };
 
@@ -54,6 +75,7 @@ export const addOrUpdateCourseContent = async (
       .eq('id', content.id);
     if (error) throw error;
   } else {
+    // insert expects an array of objects
     const { error } = await supabase
       .from('course_content')
       .insert([contentData]);
