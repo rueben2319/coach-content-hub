@@ -1,154 +1,147 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import AuthForm from "@/components/auth/AuthForm";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import CoachDashboard from "@/pages/coach/CoachDashboard";
-import ClientDashboard from "@/pages/client/ClientDashboard";
-import Index from "@/pages/Index";
-import CoachProfile from "@/pages/coach/CoachProfile";
-import ClientProfile from "@/pages/client/ClientProfile";
-import React from "react"; // Needed for Suspense and lazy
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { Toaster } from '@/components/ui/toaster';
+import ResponsiveDashboardLayout from '@/components/layout/ResponsiveDashboardLayout';
 
-// Lazy import subscription pages
-const CoachSubscriptionPage = React.lazy(() => import('@/pages/coach/SubscriptionPage'));
-const ClientSubscriptionPage = React.lazy(() => import('@/pages/client/SubscriptionPage'));
+// Auth pages
+import Index from '@/pages/Index';
+import NotFound from '@/pages/NotFound';
 
-const queryClient = new QueryClient();
+// Admin pages
+import AdminDashboard from '@/pages/admin/AdminDashboard';
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-  
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  return <DashboardLayout>{children}</DashboardLayout>;
-};
+// Coach pages
+import CoachDashboard from '@/pages/coach/CoachDashboard';
+import CoachProfile from '@/pages/coach/CoachProfile';
+import SubscriptionPage from '@/pages/coach/SubscriptionPage';
 
-const AuthenticatedRedirect = () => {
-  const { user, profile, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-  
-  if (user && profile) {
-    switch (profile.role) {
-      case 'admin':
-        return <Navigate to="/admin" replace />;
-      case 'coach':
-        return <Navigate to="/coach" replace />;
-      case 'client':
-        return <Navigate to="/client" replace />;
-      default:
-        return <Index />;
-    }
-  }
-  
-  return <Index />;
-};
+// Client pages
+import ClientDashboard from '@/pages/client/ClientDashboard';
+import ClientProfile from '@/pages/client/ClientProfile';
+import ClientSubscriptionPage from '@/pages/client/SubscriptionPage';
+import CourseView from '@/pages/client/CourseView';
+import BrowseContent from '@/pages/client/BrowseContent';
+import Goals from '@/pages/client/Goals';
+import Progress from '@/pages/client/Progress';
+import Achievements from '@/pages/client/Achievements';
+import Coaches from '@/pages/client/Coaches';
+import Sessions from '@/pages/client/Sessions';
+import Messages from '@/pages/client/Messages';
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+import './App.css';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<AuthenticatedRedirect />} />
-            <Route path="/auth" element={<AuthForm />} />
-            
-            {/* Admin Routes */}
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              
+              {/* Admin routes */}
+              <Route path="/admin" element={
+                <ResponsiveDashboardLayout>
                   <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Coach Routes */}
-            <Route 
-              path="/coach" 
-              element={
-                <ProtectedRoute>
+                </ResponsiveDashboardLayout>
+              } />
+              
+              {/* Coach routes */}
+              <Route path="/coach" element={
+                <ResponsiveDashboardLayout>
                   <CoachDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route 
-              path="/coach/profile" 
-              element={
-                <ProtectedRoute>
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/coach/profile" element={
+                <ResponsiveDashboardLayout>
                   <CoachProfile />
-                </ProtectedRoute>
-              }
-            />
-            <Route 
-              path="/coach/subscription" 
-              element={
-                <ProtectedRoute>
-                  <React.Suspense fallback={<div className="flex justify-center p-6">Loading...</div>}>
-                    <CoachSubscriptionPage />
-                  </React.Suspense>
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Client Routes */}
-            <Route 
-              path="/client" 
-              element={
-                <ProtectedRoute>
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/coach/subscription" element={
+                <ResponsiveDashboardLayout>
+                  <SubscriptionPage />
+                </ResponsiveDashboardLayout>
+              } />
+              
+              {/* Client routes */}
+              <Route path="/client" element={
+                <ResponsiveDashboardLayout>
                   <ClientDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route 
-              path="/client/profile" 
-              element={
-                <ProtectedRoute>
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/client/profile" element={
+                <ResponsiveDashboardLayout>
                   <ClientProfile />
-                </ProtectedRoute>
-              }
-            />
-            <Route 
-              path="/client/subscription" 
-              element={
-                <ProtectedRoute>
-                  <React.Suspense fallback={<div className="flex justify-center p-6">Loading...</div>}>
-                    <ClientSubscriptionPage />
-                  </React.Suspense>
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/client/subscription" element={
+                <ResponsiveDashboardLayout>
+                  <ClientSubscriptionPage />
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/client/courses/:courseId" element={
+                <ResponsiveDashboardLayout>
+                  <CourseView />
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/client/content" element={
+                <ResponsiveDashboardLayout>
+                  <BrowseContent />
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/client/goals" element={
+                <ResponsiveDashboardLayout>
+                  <Goals />
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/client/progress" element={
+                <ResponsiveDashboardLayout>
+                  <Progress />
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/client/achievements" element={
+                <ResponsiveDashboardLayout>
+                  <Achievements />
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/client/coaches" element={
+                <ResponsiveDashboardLayout>
+                  <Coaches />
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/client/sessions" element={
+                <ResponsiveDashboardLayout>
+                  <Sessions />
+                </ResponsiveDashboardLayout>
+              } />
+              <Route path="/client/messages" element={
+                <ResponsiveDashboardLayout>
+                  <Messages />
+                </ResponsiveDashboardLayout>
+              } />
+              
+              {/* Catch all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
+          <Toaster />
+        </Router>
       </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+}
 
 export default App;
