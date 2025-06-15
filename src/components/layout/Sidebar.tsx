@@ -73,19 +73,9 @@ const Sidebar = () => {
     if (itemPath === location.pathname) {
       return true;
     }
-    
-    // For nested paths, check if current path starts with the item path
-    // but make sure we don't match /coach with /coach/something if the item is /coach
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    const itemSegments = itemPath.split('/').filter(Boolean);
-    
-    // If the item path is longer than current path, it can't be active
-    if (itemSegments.length > pathSegments.length) {
-      return false;
-    }
-    
-    // Check if all segments of the item path match the beginning of current path
-    return itemSegments.every((segment, index) => segment === pathSegments[index]);
+    // For top-level paths (e.g. "/client/profile"), match exactly
+    // For nested paths (e.g. "/coach/content/abc"), you might want to match the substring
+    return location.pathname.startsWith(itemPath) && itemPath !== "/" && itemPath.length > 1;
   };
 
   const SidebarContent = () => (
@@ -122,12 +112,14 @@ const Sidebar = () => {
             <Link
               key={item.path}
               to={item.path}
-              onClick={() => isMobile && setIsOpen(false)}
               className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                 isActive
                   ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
+              // On mobile, close sidebar after clicking a menu item
+              onClick={() => isMobile && setIsOpen(false)}
+              style={{ textDecoration: 'none' }}
             >
               <item.icon className="w-4 h-4 md:w-5 md:h-5" />
               <span className="font-medium text-sm md:text-base">{item.label}</span>
