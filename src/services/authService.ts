@@ -35,9 +35,26 @@ export const authService = {
   },
 
   async signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      throw error;
+    try {
+      // Clear any local storage items related to auth
+      localStorage.removeItem('supabase.auth.token');
+      
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.warn('Logout warning:', error.message);
+        // Don't throw error for session_not_found as user is effectively logged out
+        if (error.message !== 'Session not found') {
+          throw error;
+        }
+      }
+      
+      // Force reload to clear any remaining state
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force redirect even if logout fails
+      window.location.href = '/auth';
     }
   }
 };
