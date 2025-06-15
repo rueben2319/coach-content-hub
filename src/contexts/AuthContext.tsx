@@ -25,7 +25,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
 
   const fetchUserProfile = async (userId: string) => {
@@ -45,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const initializeAuth = async () => {
       try {
-        // Get initial session
+        console.log('Initializing auth...');
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -53,15 +52,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         
         if (mounted) {
+          console.log('Setting initial session:', !!currentSession);
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
           
           if (currentSession?.user) {
+            console.log('Fetching profile for user:', currentSession.user.id);
             await fetchUserProfile(currentSession.user.id);
           }
           
-          setInitialized(true);
           setLoading(false);
+          console.log('Auth initialization complete');
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -69,7 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
           setProfile(null);
           setSession(null);
-          setInitialized(true);
           setLoading(false);
         }
       }
@@ -78,15 +78,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        if (!mounted || !initialized) return;
+        if (!mounted) return;
         
-        console.log('Auth state change:', event, newSession?.user?.id);
+        console.log('Auth state change:', event, !!newSession);
         
         try {
           setSession(newSession);
           setUser(newSession?.user ?? null);
           
           if (newSession?.user) {
+            console.log('Fetching profile after auth change:', newSession.user.id);
             await fetchUserProfile(newSession.user.id);
           } else {
             setProfile(null);
