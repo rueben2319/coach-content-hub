@@ -10,7 +10,9 @@ import CourseEditor from '@/components/courses/CourseEditor';
 import CoursePreview from '@/components/courses/CoursePreview';
 import CourseContentManager from '@/components/courses/CourseContentManager';
 import SubscriptionPage from './SubscriptionPage';
+import TrialStatusCard from '@/components/subscription/TrialStatusCard';
 import { useCoachSubscription, useSubscriptionUsage } from '@/hooks/useSubscription';
+import { useStartTrial } from '@/hooks/useSubscriptionManagement';
 import { getTierById } from '@/config/subscriptionTiers';
 
 type ViewType = 'dashboard' | 'create' | 'edit' | 'preview' | 'content' | 'subscription';
@@ -22,9 +24,10 @@ const CoachDashboard = () => {
   
   const { data: subscription } = useCoachSubscription();
   const { data: usage } = useSubscriptionUsage();
+  const startTrial = useStartTrial();
 
   const currentTier = subscription ? getTierById(subscription.tier) : null;
-  const hasActiveSubscription = subscription?.status === 'active';
+  const hasActiveSubscription = subscription?.status === 'active' || subscription?.status === 'trial';
 
   const handleCreateCourse = () => {
     // Check if user has an active subscription
@@ -63,9 +66,14 @@ const CoachDashboard = () => {
     setSelectedCourseId('');
   };
 
+  const handleStartTrial = () => {
+    startTrial.mutate();
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       active: { label: 'Active', variant: 'default' as const },
+      trial: { label: 'Trial', variant: 'secondary' as const },
       expired: { label: 'Expired', variant: 'destructive' as const },
       inactive: { label: 'Inactive', variant: 'destructive' as const },
     };
@@ -149,25 +157,40 @@ const CoachDashboard = () => {
           </div>
         </div>
 
-        {/* Subscription Status */}
-        {!hasActiveSubscription && (
+        {/* Trial or Subscription Status */}
+        {!subscription ? (
+          <TrialStatusCard 
+            subscription={subscription} 
+            onUpgrade={() => setCurrentView('subscription')} 
+          />
+        ) : !hasActiveSubscription ? (
           <Card className="mb-4 border-orange-200 bg-orange-50">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <AlertTriangle className="h-5 w-5 text-orange-600" />
                 <div>
-                  <div className="font-semibold text-orange-800">No Active Subscription</div>
-                  <p className="text-sm text-orange-700">Subscribe to a plan to start creating courses and managing students.</p>
+                  <div className="font-semibold text-orange-800">
+                    {subscription.status === 'expired' ? 'Trial Expired' : 'No Active Subscription'}
+                  </div>
+                  <p className="text-sm text-orange-700">
+                    {subscription.status === 'expired' 
+                      ? 'Your trial has ended. Subscribe to continue creating courses and managing students.'
+                      : 'Subscribe to a plan to start creating courses and managing students.'
+                    }
+                  </p>
                 </div>
                 <Button onClick={() => setCurrentView('subscription')} className="ml-auto">
-                  Subscribe Now
+                  {subscription.status === 'expired' ? 'Subscribe Now' : 'View Plans'}
                 </Button>
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {subscription && hasActiveSubscription && (
+        ) : subscription.is_trial ? (
+          <TrialStatusCard 
+            subscription={subscription} 
+            onUpgrade={() => setCurrentView('subscription')} 
+          />
+        ) : (
           <Card className="mb-4">
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -180,7 +203,7 @@ const CoachDashboard = () => {
                         {getStatusBadge(subscription.status).label}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600">${subscription.price}/{subscription.billing_cycle}</p>
+                    <p className="text-sm text-gray-600">{subscription.currency} {subscription.price}/{subscription.billing_cycle}</p>
                   </div>
                 </div>
                 
@@ -254,9 +277,9 @@ const CoachDashboard = () => {
               <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">$0</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold">MWK 0</div>
               <p className="text-xs text-muted-foreground">
-                +$0 from last month
+                +MWK 0 from last month
               </p>
             </CardContent>
           </Card>

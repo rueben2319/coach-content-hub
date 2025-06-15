@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { useCoachSubscription, useSubscriptionUsage, useCreateSubscription } from '@/hooks/useSubscription';
-import { SUBSCRIPTION_TIERS, getTierById, SubscriptionTier } from '@/config/subscriptionTiers';
+import { SUBSCRIPTION_TIERS, getTierById } from '@/config/subscriptionTiers';
 import SubscriptionPricingCard from '@/components/subscription/SubscriptionPricingCard';
 import SubscriptionUsageCard from '@/components/subscription/SubscriptionUsageCard';
+import SubscriptionManagementCard from '@/components/subscription/SubscriptionManagementCard';
+import TrialStatusCard from '@/components/subscription/TrialStatusCard';
 import { ArrowLeft, CreditCard } from 'lucide-react';
 
 const CoachSubscriptionPage: React.FC = () => {
@@ -20,6 +21,7 @@ const CoachSubscriptionPage: React.FC = () => {
   const createSubscription = useCreateSubscription();
 
   const currentTier = subscription ? getTierById(subscription.tier) : null;
+  const hasActiveSubscription = subscription?.status === 'active' || subscription?.status === 'trial';
 
   const handleSelectPlan = (tierId: string, billingCycle: 'monthly' | 'yearly') => {
     setLoadingTier(tierId);
@@ -35,15 +37,9 @@ const CoachSubscriptionPage: React.FC = () => {
     });
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: { label: 'Active', variant: 'default' as const },
-      trial: { label: 'Trial', variant: 'secondary' as const },
-      expired: { label: 'Expired', variant: 'destructive' as const },
-      inactive: { label: 'Inactive', variant: 'destructive' as const },
-    };
-    
-    return statusConfig[status as keyof typeof statusConfig] || statusConfig.inactive;
+  const handleUpgradeClick = () => {
+    // Scroll to pricing cards
+    document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   if (subscriptionLoading || usageLoading) {
@@ -62,71 +58,54 @@ const CoachSubscriptionPage: React.FC = () => {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Subscription Management</h1>
         </div>
 
-        {/* Current Subscription Status */}
-        {subscription && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Current Subscription
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-lg">{currentTier?.name || subscription.tier}</span>
-                    <Badge {...getStatusBadge(subscription.status)}>
-                      {getStatusBadge(subscription.status).label}
-                    </Badge>
-                  </div>
-                  <p className="text-gray-600">
-                    ${subscription.price}/{subscription.billing_cycle}
-                  </p>
-                  {subscription.expires_at && (
-                    <p className="text-sm text-gray-500">
-                      Expires: {new Date(subscription.expires_at).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-                
-                {currentTier && usage && (
-                  <div className="sm:w-80">
-                    <SubscriptionUsageCard tier={currentTier} usage={usage} />
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Trial Status or Current Subscription */}
+          <div className="lg:col-span-2">
+            {!hasActiveSubscription ? (
+              <TrialStatusCard subscription={subscription} onUpgrade={handleUpgradeClick} />
+            ) : (
+              <SubscriptionManagementCard subscription={subscription} />
+            )}
+          </div>
 
-        {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-8">
-          <span className={`text-sm ${!isYearly ? 'font-semibold' : ''}`}>Monthly</span>
-          <Switch checked={isYearly} onCheckedChange={setIsYearly} />
-          <span className={`text-sm ${isYearly ? 'font-semibold' : ''}`}>
-            Yearly <span className="text-green-600">(Save 20%)</span>
-          </span>
+          {/* Usage Overview */}
+          {currentTier && usage && hasActiveSubscription && (
+            <div>
+              <SubscriptionUsageCard tier={currentTier} usage={usage} />
+            </div>
+          )}
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {SUBSCRIPTION_TIERS.map((tier) => (
-            <SubscriptionPricingCard
-              key={tier.id}
-              tier={tier}
-              isYearly={isYearly}
-              currentTier={subscription?.tier}
-              onSelect={handleSelectPlan}
-              isLoading={createSubscription.isPending}
-              loadingTier={loadingTier}
-              loadingBillingCycle={loadingBillingCycle}
-            />
-          ))}
+        {/* Pricing Section */}
+        <div id="pricing-section" className="space-y-6">
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-4">
+            <span className={`text-sm ${!isYearly ? 'font-semibold' : ''}`}>Monthly</span>
+            <Switch checked={isYearly} onCheckedChange={setIsYearly} />
+            <span className={`text-sm ${isYearly ? 'font-semibold' : ''}`}>
+              Yearly <span className="text-green-600">(Save 20%)</span>
+            </span>
+          </div>
+
+          {/* Pricing Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {SUBSCRIPTION_TIERS.map((tier) => (
+              <SubscriptionPricingCard
+                key={tier.id}
+                tier={tier}
+                isYearly={isYearly}
+                currentTier={subscription?.tier}
+                onSelect={handleSelectPlan}
+                isLoading={createSubscription.isPending}
+                loadingTier={loadingTier}
+                loadingBillingCycle={loadingBillingCycle}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Additional Info */}
-        <Card>
+        <Card className="mt-8">
           <CardHeader>
             <CardTitle>Need Help?</CardTitle>
           </CardHeader>

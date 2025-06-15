@@ -18,7 +18,7 @@ export const useCoachSubscription = () => {
         .from('coach_subscriptions')
         .select('*')
         .eq('coach_id', user.id)
-        .eq('status', 'active')
+        .in('status', ['active', 'trial', 'inactive']) // Include inactive for canceled subs
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -116,7 +116,6 @@ export const useCreateSubscription = () => {
     }) => {
       console.log('Creating subscription:', subscriptionData);
       
-      // Get the current session to ensure we have a valid auth token
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -142,7 +141,6 @@ export const useCreateSubscription = () => {
       console.log('Subscription created successfully, redirecting to payment...');
       queryClient.invalidateQueries({ queryKey: ['coach-subscription'] });
       
-      // Redirect to PayChangu payment page
       if (data.payment_url) {
         window.open(data.payment_url, '_blank');
         toast({

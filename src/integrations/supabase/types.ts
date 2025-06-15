@@ -9,6 +9,56 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      billing_history: {
+        Row: {
+          amount: number
+          billing_period_end: string
+          billing_period_start: string
+          created_at: string
+          currency: string
+          id: string
+          invoice_url: string | null
+          paid_at: string | null
+          paychangu_reference: string | null
+          status: string
+          subscription_id: string | null
+        }
+        Insert: {
+          amount: number
+          billing_period_end: string
+          billing_period_start: string
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_url?: string | null
+          paid_at?: string | null
+          paychangu_reference?: string | null
+          status: string
+          subscription_id?: string | null
+        }
+        Update: {
+          amount?: number
+          billing_period_end?: string
+          billing_period_start?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_url?: string | null
+          paid_at?: string | null
+          paychangu_reference?: string | null
+          status?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_history_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "coach_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificates: {
         Row: {
           certificate_url: string | null
@@ -43,45 +93,63 @@ export type Database = {
       }
       coach_subscriptions: {
         Row: {
+          auto_renew: boolean | null
           billing_cycle: string
+          canceled_at: string | null
+          cancellation_reason: string | null
           coach_id: string
           created_at: string
           currency: string
           expires_at: string | null
           id: string
+          is_trial: boolean | null
+          next_billing_date: string | null
           paychangu_subscription_id: string | null
           price: number
           started_at: string
           status: Database["public"]["Enums"]["subscription_status"]
           tier: string
+          trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
+          auto_renew?: boolean | null
           billing_cycle?: string
+          canceled_at?: string | null
+          cancellation_reason?: string | null
           coach_id: string
           created_at?: string
           currency?: string
           expires_at?: string | null
           id?: string
+          is_trial?: boolean | null
+          next_billing_date?: string | null
           paychangu_subscription_id?: string | null
           price: number
           started_at?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           tier?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
+          auto_renew?: boolean | null
           billing_cycle?: string
+          canceled_at?: string | null
+          cancellation_reason?: string | null
           coach_id?: string
           created_at?: string
           currency?: string
           expires_at?: string | null
           id?: string
+          is_trial?: boolean | null
+          next_billing_date?: string | null
           paychangu_subscription_id?: string | null
           price?: number
           started_at?: string
           status?: Database["public"]["Enums"]["subscription_status"]
           tier?: string
+          trial_ends_at?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -479,6 +547,91 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_changes: {
+        Row: {
+          change_type: string
+          created_at: string
+          effective_date: string
+          from_price: number | null
+          from_tier: string | null
+          id: string
+          metadata: Json | null
+          prorated_amount: number | null
+          subscription_id: string | null
+          to_price: number | null
+          to_tier: string | null
+        }
+        Insert: {
+          change_type: string
+          created_at?: string
+          effective_date: string
+          from_price?: number | null
+          from_tier?: string | null
+          id?: string
+          metadata?: Json | null
+          prorated_amount?: number | null
+          subscription_id?: string | null
+          to_price?: number | null
+          to_tier?: string | null
+        }
+        Update: {
+          change_type?: string
+          created_at?: string
+          effective_date?: string
+          from_price?: number | null
+          from_tier?: string | null
+          id?: string
+          metadata?: Json | null
+          prorated_amount?: number | null
+          subscription_id?: string | null
+          to_price?: number | null
+          to_tier?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_changes_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "coach_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_notifications: {
+        Row: {
+          email_sent: boolean | null
+          id: string
+          metadata: Json | null
+          notification_type: string
+          sent_at: string
+          subscription_id: string | null
+        }
+        Insert: {
+          email_sent?: boolean | null
+          id?: string
+          metadata?: Json | null
+          notification_type: string
+          sent_at?: string
+          subscription_id?: string | null
+        }
+        Update: {
+          email_sent?: boolean | null
+          id?: string
+          metadata?: Json | null
+          notification_type?: string
+          sent_at?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_notifications_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "coach_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
@@ -562,6 +715,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      expire_trials: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -572,6 +729,10 @@ export type Database = {
       is_coach_subscribed: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      start_trial_subscription: {
+        Args: { _coach_id: string }
+        Returns: string
       }
     }
     Enums: {
