@@ -14,6 +14,7 @@ import TrialStatusCard from '@/components/subscription/TrialStatusCard';
 import { useCoachSubscription, useSubscriptionUsage } from '@/hooks/useSubscription';
 import { useStartTrial } from '@/hooks/useSubscriptionManagement';
 import { getTierById } from '@/config/subscriptionTiers';
+import CourseCreationWizard from '@/components/courses/CourseCreationWizard';
 
 type ViewType = 'dashboard' | 'create' | 'edit' | 'preview' | 'content' | 'subscription';
 
@@ -21,6 +22,7 @@ const CoachDashboard = () => {
   const { profile } = useAuth();
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+  const [showWizard, setShowWizard] = useState(false);
   
   const { data: subscription } = useCoachSubscription();
   const { data: usage } = useSubscriptionUsage();
@@ -43,7 +45,7 @@ const CoachDashboard = () => {
         return;
       }
     }
-    setCurrentView('create');
+    setShowWizard(true);
   };
 
   const handleEditCourse = (courseId: string) => {
@@ -87,6 +89,17 @@ const CoachDashboard = () => {
 
   if (currentView === 'subscription') {
     return <SubscriptionPage />;
+  }
+
+  if (showWizard) {
+    return (
+      <div className="w-full">
+        <CourseCreationWizard
+          onSuccess={() => { setShowWizard(false); handleBackToDashboard(); }}
+          onCancel={() => setShowWizard(false)}
+        />
+      </div>
+    );
   }
 
   if (currentView === 'create') {
