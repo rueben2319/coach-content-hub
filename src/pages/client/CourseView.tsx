@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookOpen, Award, Download, Play, Clock, FileText, Video, Music, Image } from 'lucide-react';
+import { ArrowLeft, BookOpen, Award, Download, Play, Clock, FileText, Video, Music, Image, Lock } from 'lucide-react';
 import CoursePlayer from '@/components/courses/CoursePlayer';
 import { useCourseProgress, useUpdateProgress } from '@/hooks/useCourseProgress';
 import { useAuth } from '@/contexts/AuthContext';
@@ -96,13 +96,16 @@ const CourseView: React.FC = () => {
         .select('*')
         .eq('course_id', courseId)
         .eq('client_id', user.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
-      return data as Enrollment;
+      return data as Enrollment | null;
     },
     enabled: !!courseId && !!user?.id,
   });
+
+  // Check if user is enrolled
+  const isEnrolled = enrollment && enrollment.payment_status === 'paid';
 
   // Fetch course content
   const { data: content = [] } = useQuery({
@@ -187,9 +190,25 @@ const CourseView: React.FC = () => {
     }
   };
 
-  const handleStartContent = (contentId: string) => {
+  const handleStartContent = (contentId: string, isPreview: boolean) => {
+    if (!isEnrolled && !isPreview) {
+      toast({
+        title: 'Enrollment Required',
+        description: 'Please enroll in this course to access this content.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setCurrentContentId(contentId);
     setShowPlayer(true);
+  };
+
+  const handleEnrollment = () => {
+    toast({
+      title: 'Enrollment Coming Soon',
+      description: 'Course enrollment functionality will be available soon.',
+    });
   };
 
   if (!courseId) {
@@ -229,18 +248,34 @@ const CourseView: React.FC = () => {
                   {course.title}
                 </h1>
                 <p className="text-gray-600 mt-1">by {course.instructor}</p>
+                {!isEnrolled && (
+                  <div className="mt-3">
+                    <Badge variant="outline" className="text-orange-600 border-orange-600">
+                      Not Enrolled
+                    </Badge>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Downloads
-              </Button>
-              <Button variant="outline" size="sm">
-                <Award className="h-4 w-4 mr-2" />
-                Certificate
-              </Button>
+              {isEnrolled && (
+                <>
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Downloads
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Award className="h-4 w-4 mr-2" />
+                    Certificate
+                  </Button>
+                </>
+              )}
+              {!isEnrolled && (
+                <Button onClick={handleEnrollment} className="bg-blue-600 hover:bg-blue-700">
+                  Enroll Now - {course.currency} {course.price}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -249,29 +284,31 @@ const CourseView: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Course Info & Progress */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Course Progress */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <Progress value={getOverallProgress()} className="h-3" />
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium text-gray-900">
-                      {Math.round(getOverallProgress())}% Complete
-                    </span>
-                    <span className="text-gray-500">
-                      {completedContent.size} of {content.length}
-                    </span>
+            {/* Course Progress - Only show if enrolled */}
+            {isEnrolled && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Progress</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <Progress value={getOverallProgress()} className="h-3" />
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium text-gray-900">
+                        {Math.round(getOverallProgress())}% Complete
+                      </span>
+                      <span className="text-gray-500">
+                        {completedContent.size} of {content.length}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 flex items-center">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {formatDuration(course.duration)} total
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500 flex items-center">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {formatDuration(course.duration)} total
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Course Info */}
             <Card>
@@ -285,14 +322,21 @@ const CourseView: React.FC = () => {
                 <p className="text-gray-700 text-sm leading-relaxed">
                   {course.description}
                 </p>
+                {!isEnrolled && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      Enroll to unlock all course content and track your progress.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
           {/* Right Column - Course Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Course Player */}
-            {showPlayer && content.length > 0 && (
+            {/* Course Player - Only show if enrolled and content selected */}
+            {showPlayer && isEnrolled && content.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                 <CoursePlayer
                   courseId={courseId}
@@ -314,71 +358,94 @@ const CourseView: React.FC = () => {
               <CardContent className="p-0">
                 {content.length > 0 ? (
                   <div className="divide-y divide-gray-100">
-                    {content.map((item, index) => (
-                      <div
-                        key={item.id}
-                        className="p-4 hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center space-x-4 min-w-0 flex-1">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 flex-shrink-0">
-                              <span className="text-sm font-medium text-gray-700">
-                                {index + 1}
-                              </span>
+                    {content.map((item, index) => {
+                      const isCompleted = completedContent.has(item.id);
+                      const canAccess = isEnrolled || item.is_preview;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-4 hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center space-x-4 min-w-0 flex-1">
+                              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 flex-shrink-0">
+                                <span className="text-sm font-medium text-gray-700">
+                                  {index + 1}
+                                </span>
+                              </div>
+                              
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  {getContentIcon(item.content_type)}
+                                  <h4 className="font-medium text-gray-900 truncate">
+                                    {item.title}
+                                  </h4>
+                                  {!canAccess && (
+                                    <Lock className="h-4 w-4 text-gray-400" />
+                                  )}
+                                </div>
+                                
+                                {item.description && (
+                                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                                    {item.description}
+                                  </p>
+                                )}
+                                
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge variant="outline" className="text-xs">
+                                    {item.content_type}
+                                  </Badge>
+                                  {item.duration && (
+                                    <div className="flex items-center text-xs text-gray-500">
+                                      <Clock className="h-3 w-3 mr-1" />
+                                      {item.duration} min
+                                    </div>
+                                  )}
+                                  {item.is_preview && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      Preview
+                                    </Badge>
+                                  )}
+                                  {isCompleted && (
+                                    <Badge className="text-xs bg-green-500">
+                                      ✓ Completed
+                                    </Badge>
+                                  )}
+                                  {!canAccess && (
+                                    <Badge variant="outline" className="text-xs text-orange-600">
+                                      Locked
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                             
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center space-x-3 mb-2">
-                                {getContentIcon(item.content_type)}
-                                <h4 className="font-medium text-gray-900 truncate">
-                                  {item.title}
-                                </h4>
-                              </div>
-                              
-                              {item.description && (
-                                <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                                  {item.description}
-                                </p>
-                              )}
-                              
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="outline" className="text-xs">
-                                  {item.content_type}
-                                </Badge>
-                                {item.duration && (
-                                  <div className="flex items-center text-xs text-gray-500">
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    {item.duration} min
-                                  </div>
+                            <div className="flex-shrink-0">
+                              <Button
+                                size="sm"
+                                onClick={() => handleStartContent(item.id, item.is_preview)}
+                                variant={canAccess ? (isCompleted ? "outline" : "default") : "outline"}
+                                className="min-w-[80px]"
+                                disabled={!canAccess}
+                              >
+                                {!canAccess ? (
+                                  <>
+                                    <Lock className="h-3 w-3 mr-1" />
+                                    Locked
+                                  </>
+                                ) : (
+                                  <>
+                                    <Play className="h-3 w-3 mr-1" />
+                                    {item.is_preview ? 'Preview' : (isCompleted ? 'Review' : 'Start')}
+                                  </>
                                 )}
-                                {item.is_preview && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    Preview
-                                  </Badge>
-                                )}
-                                {completedContent.has(item.id) && (
-                                  <Badge className="text-xs bg-green-500">
-                                    ✓ Completed
-                                  </Badge>
-                                )}
-                              </div>
+                              </Button>
                             </div>
                           </div>
-                          
-                          <div className="flex-shrink-0">
-                            <Button
-                              size="sm"
-                              onClick={() => handleStartContent(item.id)}
-                              variant={completedContent.has(item.id) ? "outline" : "default"}
-                              className="min-w-[80px]"
-                            >
-                              <Play className="h-3 w-3 mr-1" />
-                              {completedContent.has(item.id) ? 'Review' : 'Start'}
-                            </Button>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-12">
