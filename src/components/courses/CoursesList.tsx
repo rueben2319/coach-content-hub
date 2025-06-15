@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Edit, Eye, DollarSign, Clock, Users, BookOpen, Settings } from 'lucide-react';
+import { Edit, Eye, DollarSign, Clock, Users, BookOpen, Settings, AlertTriangle } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -57,6 +57,15 @@ const CoursesList: React.FC<CoursesListProps> = ({
     enabled: !!user,
   });
 
+  // Detect access denied errors and render upgrade prompt for unsubscribed/expired coaches
+  const isAccessDenied = error && (error.code === '42501' || 
+    (typeof error.message === 'string' && (
+      error.message.toLowerCase().includes('permission denied') || 
+      error.message.toLowerCase().includes('access denied') ||
+      error.message.toLowerCase().includes('row level security policy') // covers "new row violates row-level security policy"
+    ))
+  );
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -75,6 +84,24 @@ const CoursesList: React.FC<CoursesListProps> = ({
           </Card>
         ))}
       </div>
+    );
+  }
+
+  if (isAccessDenied) {
+    return (
+      <Card className="border-orange-200 bg-orange-50 my-8">
+        <CardContent className="py-8 flex flex-col items-center text-center gap-4">
+          <AlertTriangle className="h-8 w-8 text-orange-600" />
+          <div className="font-semibold text-orange-800 text-lg">Access Restricted</div>
+          <p className="text-sm text-orange-700 max-w-md">
+            Your subscription has expired or is inactive.<br />
+            Please subscribe or renew your plan to unlock course management features.
+          </p>
+          <Button onClick={() => window.location.href = '/coach'} className="mt-1">
+            Upgrade Subscription
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -200,3 +227,4 @@ const CoursesList: React.FC<CoursesListProps> = ({
 };
 
 export default CoursesList;
+

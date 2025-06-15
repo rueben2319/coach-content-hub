@@ -569,6 +569,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_coach_subscribed: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "coach" | "client"
