@@ -38,17 +38,22 @@ const Index = () => {
     
     const redirectTo = redirectMap[profile.role];
     if (redirectTo) {
+      console.log('Index - Redirecting to:', redirectTo);
       return <Navigate to={redirectTo} replace />;
     }
   }
 
   if (user && !profile) {
     // User exists but no profile - this shouldn't happen with the trigger
-    // but handle it gracefully
+    // but handle it gracefully by showing a message and retry option
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Setting up your profile...</p>
+        <div className="text-center max-w-md mx-auto p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Setting up your profile...</h2>
+          <p className="text-gray-600 mb-4">We're preparing your account. This should only take a moment.</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Refresh Page
+          </Button>
         </div>
       </div>
     );
