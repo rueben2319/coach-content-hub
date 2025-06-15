@@ -124,25 +124,34 @@ export type Database = {
       }
       certificates: {
         Row: {
+          certificate_data: Json | null
           certificate_url: string | null
           created_at: string
           enrollment_id: string
           id: string
           issued_at: string
+          template_id: string | null
+          verification_code: string | null
         }
         Insert: {
+          certificate_data?: Json | null
           certificate_url?: string | null
           created_at?: string
           enrollment_id: string
           id?: string
           issued_at?: string
+          template_id?: string | null
+          verification_code?: string | null
         }
         Update: {
+          certificate_data?: Json | null
           certificate_url?: string | null
           created_at?: string
           enrollment_id?: string
           id?: string
           issued_at?: string
+          template_id?: string | null
+          verification_code?: string | null
         }
         Relationships: [
           {
@@ -574,8 +583,78 @@ export type Database = {
           },
         ]
       }
+      course_downloads: {
+        Row: {
+          content_id: string
+          created_at: string
+          download_count: number | null
+          download_url: string
+          expires_at: string | null
+          id: string
+          max_downloads: number | null
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          download_count?: number | null
+          download_url: string
+          expires_at?: string | null
+          id?: string
+          max_downloads?: number | null
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          download_count?: number | null
+          download_url?: string
+          expires_at?: string | null
+          id?: string
+          max_downloads?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      course_notes: {
+        Row: {
+          content_id: string | null
+          course_id: string
+          created_at: string
+          id: string
+          note_text: string
+          note_title: string | null
+          timestamp_seconds: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_id?: string | null
+          course_id: string
+          created_at?: string
+          id?: string
+          note_text: string
+          note_title?: string | null
+          timestamp_seconds?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string | null
+          course_id?: string
+          created_at?: string
+          id?: string
+          note_text?: string
+          note_title?: string | null
+          timestamp_seconds?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       course_progress: {
         Row: {
+          bookmarks: Json | null
           completed: boolean | null
           completed_at: string | null
           content_id: string
@@ -587,12 +666,16 @@ export type Database = {
           learning_path_id: string | null
           notes: string | null
           progress_percentage: number | null
+          quality_preference: string | null
+          resume_position: number | null
           satisfaction_rating: number | null
           session_id: string | null
+          speed_preference: number | null
           time_spent: number | null
           updated_at: string
         }
         Insert: {
+          bookmarks?: Json | null
           completed?: boolean | null
           completed_at?: string | null
           content_id: string
@@ -604,12 +687,16 @@ export type Database = {
           learning_path_id?: string | null
           notes?: string | null
           progress_percentage?: number | null
+          quality_preference?: string | null
+          resume_position?: number | null
           satisfaction_rating?: number | null
           session_id?: string | null
+          speed_preference?: number | null
           time_spent?: number | null
           updated_at?: string
         }
         Update: {
+          bookmarks?: Json | null
           completed?: boolean | null
           completed_at?: string | null
           content_id?: string
@@ -621,8 +708,11 @@ export type Database = {
           learning_path_id?: string | null
           notes?: string | null
           progress_percentage?: number | null
+          quality_preference?: string | null
+          resume_position?: number | null
           satisfaction_rating?: number | null
           session_id?: string | null
+          speed_preference?: number | null
           time_spent?: number | null
           updated_at?: string
         }
