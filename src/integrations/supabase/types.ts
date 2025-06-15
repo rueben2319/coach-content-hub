@@ -122,6 +122,42 @@ export type Database = {
           },
         ]
       }
+      bulk_enrollments: {
+        Row: {
+          client_id: string
+          course_ids: Json
+          created_at: string
+          currency: string
+          expires_at: string | null
+          id: string
+          paychangu_reference: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          total_amount: number
+        }
+        Insert: {
+          client_id: string
+          course_ids?: Json
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          paychangu_reference?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          total_amount: number
+        }
+        Update: {
+          client_id?: string
+          course_ids?: Json
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          paychangu_reference?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          total_amount?: number
+        }
+        Relationships: []
+      }
       certificates: {
         Row: {
           certificate_data: Json | null
@@ -1009,6 +1045,10 @@ export type Database = {
           is_public: boolean | null
           last_name: string | null
           location: string | null
+          paychangu_enabled: boolean | null
+          paychangu_public_key: string | null
+          paychangu_secret_key: string | null
+          payment_settings: Json | null
           profile_completed: boolean | null
           role: Database["public"]["Enums"]["app_role"]
           specialties: string[] | null
@@ -1026,6 +1066,10 @@ export type Database = {
           is_public?: boolean | null
           last_name?: string | null
           location?: string | null
+          paychangu_enabled?: boolean | null
+          paychangu_public_key?: string | null
+          paychangu_secret_key?: string | null
+          payment_settings?: Json | null
           profile_completed?: boolean | null
           role?: Database["public"]["Enums"]["app_role"]
           specialties?: string[] | null
@@ -1043,6 +1087,10 @@ export type Database = {
           is_public?: boolean | null
           last_name?: string | null
           location?: string | null
+          paychangu_enabled?: boolean | null
+          paychangu_public_key?: string | null
+          paychangu_secret_key?: string | null
+          payment_settings?: Json | null
           profile_completed?: boolean | null
           role?: Database["public"]["Enums"]["app_role"]
           specialties?: string[] | null

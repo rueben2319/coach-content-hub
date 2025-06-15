@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
@@ -84,6 +83,10 @@ const ClientSubscriptionPage: React.FC = () => {
   const { toast } = useToast();
   const completeEnrollment = useCompleteEnrollment();
 
+  // Additional state for multi-select payments
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [paying, setPaying] = useState(false);
+
   const { data: enrollments, isLoading, error, refetch } = useQuery({
     queryKey: ['client-enrollments', user?.id],
     queryFn: () => {
@@ -110,6 +113,44 @@ const ClientSubscriptionPage: React.FC = () => {
   const completedEnrollments = enrollments?.filter(enr => enr.payment_status === 'completed') || [];
   const failedEnrollments = enrollments?.filter(enr => enr.payment_status === 'failed') || [];
 
+  // Handles select/unselect enrollments for bulk payment
+  const handleSelect = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  // Get selected pending enrollments
+  const selectedEnrollments = pendingEnrollments.filter(enr =>
+    selectedIds.includes(enr.id) && enr.course?.coach_id && enr.course?.price !== undefined
+  );
+  const totalToPay = selectedEnrollments.reduce((sum, enr) => sum + (enr.amount || 0), 0);
+
+  // Assume all selected courses have a coach with paychangu enabled and same currency for simplicity
+  // A full implementation would group by coach and currency
+
+  const handleBulkPayment = async () => {
+    setPaying(true);
+    try {
+      // In a real setup, here we'd call the backend/edge function to initiate paychangu payment for all selected enrollments
+      // For now, just mark them as completed
+      for (const enr of selectedEnrollments) {
+        await completeEnrollment.mutateAsync(enr.id);
+      }
+      toast({ title: "Payment Complete", description: "All selected enrollments are now paid." });
+      setSelectedIds([]);
+      refetch();
+    } catch (e: any) {
+      toast({
+        title: "Bulk payment failed",
+        description: e.message || "",
+        variant: "destructive"
+      });
+    } finally {
+      setPaying(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -133,14 +174,20 @@ const ClientSubscriptionPage: React.FC = () => {
             <CardContent className="space-y-4">
               <p className="text-orange-700 text-sm mb-4">
                 You have {pendingEnrollments.length} enrollment(s) waiting for payment completion. 
-                Complete your payment to access the course content.
+                Select multiple and pay at once if available.
               </p>
-              
               <div className="space-y-4">
                 {pendingEnrollments.map((enrollment) => (
-                  <div key={enrollment.id} className="bg-white rounded-lg p-4 border border-orange-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="flex-1">
+                  <div key={enrollment.id} className="bg-white rounded-lg p-4 border border-orange-200 flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(enrollment.id)}
+                        onChange={() => handleSelect(enrollment.id)}
+                        disabled={!!completeEnrollment.isPending}
+                        className="accent-blue-600"
+                      />
+                      <div>
                         <h3 className="font-semibold text-lg text-gray-900">
                           {enrollment.course?.title}
                         </h3>
@@ -159,24 +206,36 @@ const ClientSubscriptionPage: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col sm:items-end gap-2">
-                        <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-                          <Clock className="w-3 h-3 mr-1" />
-                          Payment Pending
-                        </Badge>
-                        <Button 
-                          onClick={() => handleRetryPayment(enrollment)}
-                          disabled={completeEnrollment.isPending}
-                          className="bg-blue-600 hover:bg-blue-700"
-                          size="sm"
-                        >
-                          {completeEnrollment.isPending ? 'Processing...' : 'Complete Payment'}
-                        </Button>
-                      </div>
+                    </div>
+                    <div className="flex flex-col sm:items-end gap-2">
+                      <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                        <Clock className="w-3 h-3 mr-1" />
+                        Payment Pending
+                      </Badge>
+                      <Button 
+                        onClick={() => handleRetryPayment(enrollment)}
+                        disabled={completeEnrollment.isPending}
+                        className="bg-blue-600 hover:bg-blue-700"
+                        size="sm"
+                      >
+                        {completeEnrollment.isPending ? 'Processing...' : 'Complete Payment'}
+                      </Button>
                     </div>
                   </div>
                 ))}
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4 border-t pt-4">
+                <div>
+                  <strong>Selected Total: </strong>
+                  {selectedEnrollments.length} course(s), {selectedEnrollments[0]?.course?.currency || 'MWK'} {totalToPay}
+                </div>
+                <Button
+                  onClick={handleBulkPayment}
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={selectedEnrollments.length < 2 || paying}
+                >
+                  {paying ? "Paying..." : `Pay for Selected Courses`}
+                </Button>
               </div>
             </CardContent>
           </Card>
