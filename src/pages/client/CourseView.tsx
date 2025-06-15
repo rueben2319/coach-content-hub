@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, BookOpen, Award, Download } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, BookOpen, Award, Download, Play, Clock, FileText, Video, Music, Image } from 'lucide-react';
 import CoursePlayer from '@/components/courses/CoursePlayer';
 import { useCourseProgress, useUpdateProgress } from '@/hooks/useCourseProgress';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,6 +40,7 @@ const CourseView: React.FC = () => {
   const [currentContentId, setCurrentContentId] = useState<string | undefined>();
   const [completedContent, setCompletedContent] = useState<Set<string>>(new Set());
   const [enrollmentId, setEnrollmentId] = useState<string>('');
+  const [showPlayer, setShowPlayer] = useState(false);
 
   // Fetch course data
   const { data: course, isLoading: courseLoading } = useQuery({
@@ -168,6 +169,28 @@ const CourseView: React.FC = () => {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
+  const getContentIcon = (type: string) => {
+    switch (type) {
+      case 'video':
+        return <Video className="h-4 w-4" />;
+      case 'audio':
+        return <Music className="h-4 w-4" />;
+      case 'text':
+        return <FileText className="h-4 w-4" />;
+      case 'pdf':
+        return <FileText className="h-4 w-4" />;
+      case 'image':
+        return <Image className="h-4 w-4" />;
+      default:
+        return <BookOpen className="h-4 w-4" />;
+    }
+  };
+
+  const handleStartContent = (contentId: string) => {
+    setCurrentContentId(contentId);
+    setShowPlayer(true);
+  };
+
   if (!courseId) {
     return <div>Course not found</div>;
   }
@@ -236,21 +259,87 @@ const CourseView: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Course Content List */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <BookOpen className="h-5 w-5 mr-2" />
+            Course Content
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {content.length > 0 ? (
+            <div className="space-y-3">
+              {content.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100">
+                      <span className="text-sm font-medium">{index + 1}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      {getContentIcon(item.content_type)}
+                      <div>
+                        <h4 className="font-medium">{item.title}</h4>
+                        {item.description && (
+                          <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                        )}
+                        <div className="flex items-center space-x-4 mt-2">
+                          <Badge variant="outline" className="text-xs">
+                            {item.content_type}
+                          </Badge>
+                          {item.duration && (
+                            <div className="flex items-center text-xs text-gray-500">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {item.duration} min
+                            </div>
+                          )}
+                          {item.is_preview && (
+                            <Badge variant="secondary" className="text-xs">
+                              Preview
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {completedContent.has(item.id) && (
+                      <Badge variant="default" className="bg-green-500">
+                        Completed
+                      </Badge>
+                    )}
+                    <Button
+                      size="sm"
+                      onClick={() => handleStartContent(item.id)}
+                      variant={completedContent.has(item.id) ? "outline" : "default"}
+                    >
+                      <Play className="h-3 w-3 mr-1" />
+                      {completedContent.has(item.id) ? 'Review' : 'Start'}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-600">No content available for this course</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Course Player */}
-      {content.length > 0 ? (
+      {showPlayer && content.length > 0 && (
         <CoursePlayer
           courseId={courseId}
           content={content}
           initialContentId={currentContentId}
           onProgressUpdate={handleProgressUpdate}
         />
-      ) : (
-        <Card>
-          <CardContent className="p-6 text-center">
-            <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-600">No content available for this course</p>
-          </CardContent>
-        </Card>
       )}
 
       {/* Course Info */}
