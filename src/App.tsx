@@ -24,7 +24,7 @@ import ClientDashboard from '@/pages/client/ClientDashboard';
 import ClientProfile from '@/pages/client/ClientProfile';
 import ClientSubscriptionPage from '@/pages/client/SubscriptionPage';
 import CourseView from '@/pages/client/CourseView';
-import BrowseContentFallback from '@/pages/client/BrowseContentFallback';
+import BrowseContent from '@/pages/client/BrowseContent';
 import Goals from '@/pages/client/Goals';
 import Progress from '@/pages/client/Progress';
 import Achievements from '@/pages/client/Achievements';
@@ -182,7 +182,7 @@ function AppRoutes() {
         <Route path="/client/content" element={
           <ProtectedRoute>
             <ResponsiveDashboardLayout>
-              <BrowseContentFallback />
+              <BrowseContent />
             </ResponsiveDashboardLayout>
           </ProtectedRoute>
         } />
