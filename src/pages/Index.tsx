@@ -18,7 +18,6 @@ const Index = () => {
     });
   }, [user, profile, loading]);
 
-  // Show loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
@@ -30,9 +29,8 @@ const Index = () => {
     );
   }
 
-  // Handle authenticated user with profile
   if (user && profile) {
-    const redirectMap: Record<string, string> = {
+    const redirectMap = {
       admin: '/admin',
       coach: '/coach',
       client: '/client'
@@ -45,8 +43,9 @@ const Index = () => {
     }
   }
 
-  // Handle authenticated user without profile (shouldn't happen)
   if (user && !profile) {
+    // User exists but no profile - this shouldn't happen with the trigger
+    // but handle it gracefully by showing a message and retry option
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
@@ -60,7 +59,6 @@ const Index = () => {
     );
   }
 
-  // Show landing page for non-authenticated users
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="container mx-auto px-4 py-16">
