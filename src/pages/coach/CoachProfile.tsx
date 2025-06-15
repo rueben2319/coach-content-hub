@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import ProfileForm from '@/components/profile/ProfileForm';
 import { MapPin, Calendar, Users, BookOpen, Star } from 'lucide-react';
+import { PaymentSettingsCard } from '@/components/profile/PaymentSettingsCard';
 
 const CoachProfile = () => {
   const { profile } = useAuth();
@@ -174,6 +174,9 @@ const CoachProfile = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Payment Settings Card */}
+        <PaymentSettingsCard />
       </div>
     </div>
   );
