@@ -66,21 +66,16 @@ const Sidebar = () => {
   const displayName = fullName || profile.email;
   const initials = fullName ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase() : profile.email[0].toUpperCase();
 
-  // Improved function to determine if a menu item is active
+  // Fixed function to determine if a menu item is active
   const isActiveMenuItem = (itemPath: string) => {
-    // Exact match for root or direct link
-    if (location.pathname === itemPath) {
-      return true;
+    // If the item is the dashboard root (e.g., /client, /coach, /admin)
+    const dashboardRoots = ['/admin', '/coach', '/client'];
+    if (dashboardRoots.includes(itemPath)) {
+      // Only active when exactly at the dashboard root
+      return location.pathname === itemPath;
     }
-    // Only activate on subpages if itemPath is not a dashboard root
-    // (so /client should NOT match /client/profile, etc)
-    if (
-      itemPath !== '/' &&
-      location.pathname.startsWith(itemPath + '/')
-    ) {
-      return true;
-    }
-    return false;
+    // Exact match for other pages
+    return location.pathname === itemPath;
   };
 
   const SidebarContent = () => (
