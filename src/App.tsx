@@ -10,6 +10,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import CoachDashboard from "@/pages/coach/CoachDashboard";
 import ClientDashboard from "@/pages/client/ClientDashboard";
+import Index from "@/pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +26,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (!user) {
-    return <AuthForm />;
+    return <Navigate to="/auth" replace />;
   }
   
   return <DashboardLayout>{children}</DashboardLayout>;
@@ -48,6 +49,33 @@ const DashboardRouter = () => {
   }
 };
 
+const AuthenticatedRedirect = () => {
+  const { user, profile, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+  
+  if (user && profile) {
+    switch (profile.role) {
+      case 'admin':
+        return <Navigate to="/admin" replace />;
+      case 'coach':
+        return <Navigate to="/coach" replace />;
+      case 'client':
+        return <Navigate to="/client" replace />;
+      default:
+        return <Index />;
+    }
+  }
+  
+  return <Index />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -56,14 +84,8 @@ const App = () => (
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route 
-              path="/" 
-              element={
-                <ProtectedRoute>
-                  <DashboardRouter />
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/" element={<AuthenticatedRedirect />} />
+            <Route path="/auth" element={<AuthForm />} />
             <Route 
               path="/admin/*" 
               element={
