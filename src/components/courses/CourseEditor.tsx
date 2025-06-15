@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, X, Save, Eye } from 'lucide-react';
+import { Loader2, X, Save, Eye, Globe, FileText, AlertTriangle } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -43,6 +43,7 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [tagInput, setTagInput] = useState('');
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ['course', courseId],
@@ -55,6 +56,19 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
 
       if (error) throw error;
       return data as Course;
+    },
+  });
+
+  // Check if course has content
+  const { data: courseContent } = useQuery({
+    queryKey: ['course-content', courseId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('course_content')
+        .select('id')
+        .eq('course_id', courseId);
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -91,6 +105,16 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
 
   const publishCourseMutation = useMutation({
     mutationFn: async (published: boolean) => {
+      // Validation before publishing
+      if (published) {
+        if (!formData.title || !formData.short_description || !formData.description) {
+          throw new Error("Please fill in all required fields before publishing");
+        }
+        if (!courseContent || courseContent.length === 0) {
+          throw new Error("Please add at least one lesson before publishing your course");
+        }
+      }
+
       const { error } = await supabase
         .from('courses')
         .update({ is_published: published })
@@ -100,8 +124,12 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
     onSuccess: (_, published) => {
       queryClient.invalidateQueries({ queryKey: ['course', courseId] });
       queryClient.invalidateQueries({ queryKey: ['courses', user?.id] });
+      setShowPublishDialog(false);
       toast({ 
-        title: published ? "Course published successfully!" : "Course unpublished successfully!" 
+        title: published ? "Course published successfully!" : "Course unpublished successfully!",
+        description: published 
+          ? "Your course is now live and visible to students" 
+          : "Your course is now in draft mode"
       });
     },
     onError: (error: any) => {
@@ -150,11 +178,19 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
   };
 
   const handlePublishToggle = (published: boolean) => {
+    if (published && (!formData.title || !formData.short_description || !courseContent?.length)) {
+      setShowPublishDialog(true);
+      return;
+    }
     publishCourseMutation.mutate(published);
   };
 
+  const canPublish = formData.title && formData.short_description && formData.description && courseContent?.length;
+
   if (courseLoading) {
-    return <div className="flex justify-center p-8">Loading course...</div>;
+    return <div className="flex justify-center items-center min-h-[400px]">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>;
   }
 
   if (!course) {
@@ -162,221 +198,275 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle>Edit Course</CardTitle>
-            <CardDescription>
-              Update your course details and manage its publication status
-            </CardDescription>
+    <div className="w-full max-w-4xl mx-auto p-4 sm:p-6">
+      <Card>
+        <CardHeader className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-xl sm:text-2xl break-words">Edit Course</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Update your course details and manage its publication status
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Badge variant={course.is_published ? "default" : "secondary"} className="text-xs sm:text-sm">
+                {course.is_published ? "Published" : "Draft"}
+              </Badge>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant={course.is_published ? "default" : "secondary"}>
-              {course.is_published ? "Published" : "Draft"}
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        </CardHeader>
+        <CardContent className="space-y-6">
           {/* Publishing Controls */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold">Publication Status</h3>
-                  <p className="text-sm text-gray-600">
+          <Card className="border-2 border-dashed">
+            <CardContent className="pt-4 sm:pt-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <h3 className="font-semibold text-sm sm:text-base">Publication Status</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-600 break-words">
                     {course.is_published 
                       ? "Course is live and visible to students" 
                       : "Course is in draft mode"
                     }
                   </p>
+                  {!canPublish && (
+                    <div className="flex items-center gap-2 mt-2 text-orange-600">
+                      <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="text-xs sm:text-sm">Complete all fields and add content to publish</span>
+                    </div>
+                  )}
                 </div>
-                <Switch
-                  checked={course.is_published}
-                  onCheckedChange={handlePublishToggle}
-                />
+                <div className="flex-shrink-0">
+                  <Switch
+                    checked={course.is_published}
+                    onCheckedChange={handlePublishToggle}
+                    disabled={!canPublish && !course.is_published}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Course Details */}
-          <div className="space-y-2">
-            <Label htmlFor="title">Course Title</Label>
-            <Input
-              id="title"
-              value={formData.title || ''}
-              onChange={(e) => handleInputChange('title', e.target.value)}
-              placeholder="Enter course title"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="short_description">Short Description</Label>
-            <Input
-              id="short_description"
-              value={formData.short_description || ''}
-              onChange={(e) => handleInputChange('short_description', e.target.value)}
-              placeholder="Brief description for course listings"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Full Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description || ''}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Detailed course description"
-              rows={4}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Input
-                id="category"
-                value={formData.category || ''}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                placeholder="e.g., Fitness, Business, Art"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="difficulty_level">Difficulty Level</Label>
-              <Select 
-                value={formData.difficulty_level || 'beginner'} 
-                onValueChange={(value) => handleInputChange('difficulty_level', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="estimated_duration">Estimated Duration (minutes)</Label>
-            <Input
-              id="estimated_duration"
-              type="number"
-              value={formData.estimated_duration || 0}
-              onChange={(e) => handleInputChange('estimated_duration', parseInt(e.target.value))}
-              placeholder="Course duration in minutes"
-              min="1"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="pricing_model">Pricing Model</Label>
-            <Select 
-              value={formData.pricing_model || 'one_time'} 
-              onValueChange={(value: 'one_time' | 'subscription') => handleInputChange('pricing_model', value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="one_time">One-time Payment</SelectItem>
-                <SelectItem value="subscription">Subscription</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="price">
-                {formData.pricing_model === 'one_time' ? 'Price' : 'One-time Price'}
-              </Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                value={formData.price || 0}
-                onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
-                placeholder="0.00"
-                min="0"
-                required
-              />
-            </div>
-
-            {formData.pricing_model === 'subscription' && (
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            {/* Course Details */}
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
               <div className="space-y-2">
-                <Label htmlFor="subscription_price">Monthly Subscription Price</Label>
+                <Label htmlFor="title" className="text-sm sm:text-base">Course Title *</Label>
                 <Input
-                  id="subscription_price"
-                  type="number"
-                  step="0.01"
-                  value={formData.subscription_price || 0}
-                  onChange={(e) => handleInputChange('subscription_price', parseFloat(e.target.value))}
-                  placeholder="0.00"
-                  min="0"
+                  id="title"
+                  value={formData.title || ''}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder="Enter course title"
+                  className="text-sm sm:text-base"
+                  required
                 />
               </div>
-            )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="tags">Tags</Label>
-            <div className="flex gap-2">
-              <Input
-                id="tags"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                placeholder="Add a tag"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-              />
-              <Button type="button" onClick={addTag} variant="outline">
-                Add
+              <div className="space-y-2">
+                <Label htmlFor="short_description" className="text-sm sm:text-base">Short Description *</Label>
+                <Input
+                  id="short_description"
+                  value={formData.short_description || ''}
+                  onChange={(e) => handleInputChange('short_description', e.target.value)}
+                  placeholder="Brief description for course listings"
+                  className="text-sm sm:text-base"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-sm sm:text-base">Full Description *</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description || ''}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="Detailed course description"
+                  rows={4}
+                  className="text-sm sm:text-base resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category" className="text-sm sm:text-base">Category</Label>
+                  <Input
+                    id="category"
+                    value={formData.category || ''}
+                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    placeholder="e.g., Fitness, Business, Art"
+                    className="text-sm sm:text-base"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="difficulty_level" className="text-sm sm:text-base">Difficulty Level</Label>
+                  <Select 
+                    value={formData.difficulty_level || 'beginner'} 
+                    onValueChange={(value) => handleInputChange('difficulty_level', value)}
+                  >
+                    <SelectTrigger className="text-sm sm:text-base">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="beginner">Beginner</SelectItem>
+                      <SelectItem value="intermediate">Intermediate</SelectItem>
+                      <SelectItem value="advanced">Advanced</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="estimated_duration" className="text-sm sm:text-base">Estimated Duration (minutes)</Label>
+                <Input
+                  id="estimated_duration"
+                  type="number"
+                  value={formData.estimated_duration || 0}
+                  onChange={(e) => handleInputChange('estimated_duration', parseInt(e.target.value))}
+                  placeholder="Course duration in minutes"
+                  className="text-sm sm:text-base"
+                  min="1"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pricing_model" className="text-sm sm:text-base">Pricing Model</Label>
+                <Select 
+                  value={formData.pricing_model || 'one_time'} 
+                  onValueChange={(value: 'one_time' | 'subscription') => handleInputChange('pricing_model', value)}
+                >
+                  <SelectTrigger className="text-sm sm:text-base">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="one_time">One-time Payment</SelectItem>
+                    <SelectItem value="subscription">Subscription</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price" className="text-sm sm:text-base">
+                    {formData.pricing_model === 'one_time' ? 'Price' : 'One-time Price'}
+                  </Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    value={formData.price || 0}
+                    onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
+                    placeholder="0.00"
+                    className="text-sm sm:text-base"
+                    min="0"
+                    required
+                  />
+                </div>
+
+                {formData.pricing_model === 'subscription' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="subscription_price" className="text-sm sm:text-base">Monthly Subscription Price</Label>
+                    <Input
+                      id="subscription_price"
+                      type="number"
+                      step="0.01"
+                      value={formData.subscription_price || 0}
+                      onChange={(e) => handleInputChange('subscription_price', parseFloat(e.target.value))}
+                      placeholder="0.00"
+                      className="text-sm sm:text-base"
+                      min="0"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tags" className="text-sm sm:text-base">Tags</Label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    id="tags"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    placeholder="Add a tag"
+                    className="text-sm sm:text-base flex-1"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                  />
+                  <Button type="button" onClick={addTag} variant="outline" size="sm" className="w-full sm:w-auto">
+                    Add
+                  </Button>
+                </div>
+                {formData.tags && formData.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.tags.map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1 text-xs">
+                        {tag}
+                        <X
+                          className="h-3 w-3 cursor-pointer"
+                          onClick={() => removeTag(tag)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 pt-4">
+              {onCancel && (
+                <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
+                  Cancel
+                </Button>
+              )}
+              {onPreview && (
+                <Button type="button" variant="outline" onClick={onPreview} className="w-full sm:w-auto">
+                  <Eye className="mr-2 h-4 w-4" />
+                  Preview
+                </Button>
+              )}
+              <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
               </Button>
             </div>
-            {formData.tags && formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                    {tag}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => removeTag(tag)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
+          </form>
+        </CardContent>
+      </Card>
 
-          <div className="flex justify-end gap-4">
-            {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel}>
-                Cancel
-              </Button>
-            )}
-            {onPreview && (
-              <Button type="button" variant="outline" onClick={onPreview}>
-                <Eye className="mr-2 h-4 w-4" />
-                Preview
-              </Button>
-            )}
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <Save className="mr-2 h-4 w-4" />
-              Save Changes
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+      {/* Publish Dialog */}
+      {showPublishDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                Cannot Publish Course
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Please complete the following before publishing:
+              </p>
+              <ul className="space-y-2 text-sm">
+                {!formData.title && <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-500" />Course title</li>}
+                {!formData.short_description && <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-500" />Short description</li>}
+                {!formData.description && <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-500" />Full description</li>}
+                {(!courseContent || courseContent.length === 0) && <li className="flex items-center gap-2"><X className="h-4 w-4 text-red-500" />At least one lesson</li>}
+              </ul>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowPublishDialog(false)} size="sm">
+                  Close
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
   );
 };
 

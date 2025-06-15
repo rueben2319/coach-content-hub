@@ -112,8 +112,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
   if (currentUrl) {
     return (
       <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50">
-        <FileIcon className="h-5 w-5 text-blue-500" />
-        <span className="flex-1 text-sm truncate">
+        <FileIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
+        <span className="flex-1 text-xs sm:text-sm truncate">
           {currentUrl.split('/').pop()}
         </span>
         <Button
@@ -121,8 +121,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
           variant="ghost"
           size="sm"
           onClick={removeFile}
+          className="p-1 h-6 w-6 sm:h-8 sm:w-8"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3 w-3 sm:h-4 sm:w-4" />
         </Button>
       </div>
     );
@@ -130,7 +131,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   return (
     <div
-      className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+      className={`border-2 border-dashed rounded-lg p-4 sm:p-6 text-center transition-colors ${
         dragActive
           ? 'border-blue-500 bg-blue-50'
           : 'border-gray-300 hover:border-gray-400'
@@ -150,15 +151,15 @@ const FileUpload: React.FC<FileUploadProps> = ({
       />
       
       <div className="space-y-2">
-        <Upload className="h-8 w-8 mx-auto text-gray-400" />
+        <Upload className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-gray-400" />
         <div>
           <label
             htmlFor="file-upload"
-            className="cursor-pointer text-blue-600 hover:text-blue-500"
+            className="cursor-pointer text-blue-600 hover:text-blue-500 text-sm sm:text-base"
           >
             {isUploading ? 'Uploading...' : 'Click to upload'}
           </label>
-          <span className="text-gray-500"> or drag and drop</span>
+          <span className="text-gray-500 text-sm sm:text-base"> or drag and drop</span>
         </div>
         <p className="text-xs text-gray-500">
           Maximum file size: {maxSizeMB}MB

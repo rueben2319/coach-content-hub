@@ -59,7 +59,7 @@ const CoursesList: React.FC<CoursesListProps> = ({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {[...Array(6)].map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader>
@@ -81,47 +81,49 @@ const CoursesList: React.FC<CoursesListProps> = ({
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">Error loading courses: {error.message}</p>
+        <p className="text-red-600 text-sm sm:text-base">Error loading courses: {error.message}</p>
       </div>
     );
   }
 
   if (!courses || courses.length === 0) {
     return (
-      <div className="text-center py-12">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">No courses yet</h3>
-        <p className="text-gray-500 mb-6">Create your first course to get started!</p>
-        <Button onClick={onCreateNew}>Create Your First Course</Button>
-      </div>
+      <Card>
+        <CardContent className="text-center py-8 sm:py-12">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">No courses yet</h3>
+          <p className="text-sm sm:text-base text-gray-500 mb-6">Create your first course to get started!</p>
+          <Button onClick={onCreateNew} className="w-full sm:w-auto">Create Your First Course</Button>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">My Courses</h2>
-        <Button onClick={onCreateNew}>Create New Course</Button>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 className="text-xl sm:text-2xl font-bold">My Courses</h2>
+        <Button onClick={onCreateNew} className="w-full sm:w-auto">Create New Course</Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {courses.map((course) => (
           <Card key={course.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg line-clamp-2">{course.title}</CardTitle>
-                <Badge variant={course.is_published ? "default" : "secondary"}>
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start gap-2">
+                <CardTitle className="text-sm sm:text-lg line-clamp-2 min-w-0 break-words">{course.title}</CardTitle>
+                <Badge variant={course.is_published ? "default" : "secondary"} className="text-xs flex-shrink-0">
                   {course.is_published ? "Published" : "Draft"}
                 </Badge>
               </div>
-              <CardDescription className="line-clamp-2">
+              <CardDescription className="line-clamp-2 text-xs sm:text-sm">
                 {course.short_description}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 text-sm text-gray-600">
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                 <div className="flex items-center gap-1">
-                  <DollarSign className="h-4 w-4" />
-                  <span>
+                  <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="truncate">
                     {course.pricing_model === 'one_time' 
                       ? `$${course.price}`
                       : `$${course.price} / $${course.subscription_price}/mo`
@@ -129,13 +131,13 @@ const CoursesList: React.FC<CoursesListProps> = ({
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
+                  <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>{course.estimated_duration}min</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Badge variant="outline" className="text-xs truncate max-w-20 sm:max-w-none">
                   {course.category}
                 </Badge>
                 <Badge variant="outline" className="text-xs capitalize">
@@ -145,43 +147,45 @@ const CoursesList: React.FC<CoursesListProps> = ({
 
               {course.tags && course.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {course.tags.slice(0, 3).map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
+                  {course.tags.slice(0, 2).map((tag, index) => (
+                    <Badge key={index} variant="secondary" className="text-xs truncate max-w-16 sm:max-w-none">
                       {tag}
                     </Badge>
                   ))}
-                  {course.tags.length > 3 && (
+                  {course.tags.length > 2 && (
                     <Badge variant="secondary" className="text-xs">
-                      +{course.tags.length - 3} more
+                      +{course.tags.length - 2}
                     </Badge>
                   )}
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEditCourse?.(course)}
-                  className="w-full"
-                >
-                  <Edit className="h-3 w-3 mr-1" />
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onPreviewCourse?.(course)}
-                  className="w-full"
-                >
-                  <Eye className="h-3 w-3 mr-1" />
-                  Preview
-                </Button>
+              <div className="space-y-2 pt-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEditCourse?.(course)}
+                    className="w-full text-xs sm:text-sm"
+                  >
+                    <Edit className="h-3 w-3 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onPreviewCourse?.(course)}
+                    className="w-full text-xs sm:text-sm"
+                  >
+                    <Eye className="h-3 w-3 mr-1" />
+                    Preview
+                  </Button>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onManageContent?.(course)}
-                  className="w-full col-span-2"
+                  className="w-full text-xs sm:text-sm"
                 >
                   <BookOpen className="h-3 w-3 mr-1" />
                   Manage Content
