@@ -5,7 +5,7 @@ import CourseContentManager from "../CourseContentManager";
 
 const ContentStep: React.FC<{ data: CourseWizardData, setData: React.Dispatch<React.SetStateAction<CourseWizardData>> }> = () => (
   <div>
-    <CourseContentManager simpleMode />
+    <CourseContentManager />
   </div>
 );
 
