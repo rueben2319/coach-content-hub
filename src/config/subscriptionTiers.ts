@@ -18,7 +18,7 @@ export const subscriptionTiers: SubscriptionTier[] = [
   {
     id: 'basic',
     name: 'Basic',
-    price: 29000, // MWK
+    price: 10000, // MWK
     features: {
       maxCourses: 5,
       maxStudents: 50,
@@ -31,7 +31,7 @@ export const subscriptionTiers: SubscriptionTier[] = [
   {
     id: 'premium',
     name: 'Premium',
-    price: 79000, // MWK
+    price: 50000, // MWK
     features: {
       maxCourses: 20,
       maxStudents: 200,
@@ -45,7 +45,7 @@ export const subscriptionTiers: SubscriptionTier[] = [
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: 199000, // MWK
+    price: 100000, // MWK
     features: {
       maxCourses: -1, // Unlimited
       maxStudents: -1, // Unlimited
@@ -56,6 +56,11 @@ export const subscriptionTiers: SubscriptionTier[] = [
     },
   },
 ];
+
+export const SUBSCRIPTION_TIERS = subscriptionTiers;
+
+export const getTierById = (id: string): SubscriptionTier | undefined =>
+  subscriptionTiers.find((tier) => tier.id === id);
 
 export const getYearlyPrice = (monthlyPrice: number): number => {
   return Math.round(monthlyPrice * 12 * 0.8); // 20% discount for yearly
