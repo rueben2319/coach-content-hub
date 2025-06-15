@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -208,154 +209,193 @@ const CourseView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/client')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{course.title}</h1>
-            <p className="text-gray-600 mt-1">by {course.instructor}</p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Header Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex items-start space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/client')}
+                className="flex-shrink-0"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 break-words">
+                  {course.title}
+                </h1>
+                <p className="text-gray-600 mt-1">by {course.instructor}</p>
+              </div>
+            </div>
 
-        <div className="flex items-center space-x-4">
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Downloads
-          </Button>
-          <Button variant="outline">
-            <Award className="h-4 w-4 mr-2" />
-            Certificate
-          </Button>
-        </div>
-      </div>
-
-      {/* Course Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Course Progress</span>
-            <span className="text-sm font-normal text-gray-600">
-              {completedContent.size} of {content.length} lessons completed
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Progress value={getOverallProgress()} className="h-3" />
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>{Math.round(getOverallProgress())}% Complete</span>
-              <span>{formatDuration(course.duration)} total duration</span>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Downloads
+              </Button>
+              <Button variant="outline" size="sm">
+                <Award className="h-4 w-4 mr-2" />
+                Certificate
+              </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Course Content List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <BookOpen className="h-5 w-5 mr-2" />
-            Course Content
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {content.length > 0 ? (
-            <div className="space-y-3">
-              {content.map((item, index) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100">
-                      <span className="text-sm font-medium">{index + 1}</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      {getContentIcon(item.content_type)}
-                      <div>
-                        <h4 className="font-medium">{item.title}</h4>
-                        {item.description && (
-                          <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                        )}
-                        <div className="flex items-center space-x-4 mt-2">
-                          <Badge variant="outline" className="text-xs">
-                            {item.content_type}
-                          </Badge>
-                          {item.duration && (
-                            <div className="flex items-center text-xs text-gray-500">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {item.duration} min
-                            </div>
-                          )}
-                          {item.is_preview && (
-                            <Badge variant="secondary" className="text-xs">
-                              Preview
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Course Info & Progress */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Course Progress */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Progress value={getOverallProgress()} className="h-3" />
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium text-gray-900">
+                      {Math.round(getOverallProgress())}% Complete
+                    </span>
+                    <span className="text-gray-500">
+                      {completedContent.size} of {content.length}
+                    </span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {completedContent.has(item.id) && (
-                      <Badge variant="default" className="bg-green-500">
-                        Completed
-                      </Badge>
-                    )}
-                    <Button
-                      size="sm"
-                      onClick={() => handleStartContent(item.id)}
-                      variant={completedContent.has(item.id) ? "outline" : "default"}
-                    >
-                      <Play className="h-3 w-3 mr-1" />
-                      {completedContent.has(item.id) ? 'Review' : 'Start'}
-                    </Button>
+                  <div className="text-xs text-gray-500 flex items-center">
+                    <Clock className="h-3 w-3 mr-1" />
+                    {formatDuration(course.duration)} total
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-600">No content available for this course</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
 
-      {/* Course Player */}
-      {showPlayer && content.length > 0 && (
-        <CoursePlayer
-          courseId={courseId}
-          content={content}
-          initialContentId={currentContentId}
-          onProgressUpdate={handleProgressUpdate}
-        />
-      )}
+            {/* Course Info */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center">
+                  <BookOpen className="h-5 w-5 mr-2" />
+                  About
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  {course.description}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Course Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <BookOpen className="h-5 w-5 mr-2" />
-            About This Course
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-700 leading-relaxed">
-            {course.description}
-          </p>
-        </CardContent>
-      </Card>
+          {/* Right Column - Course Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Course Player */}
+            {showPlayer && content.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <CoursePlayer
+                  courseId={courseId}
+                  content={content}
+                  initialContentId={currentContentId}
+                  onProgressUpdate={handleProgressUpdate}
+                />
+              </div>
+            )}
+
+            {/* Course Content List */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center">
+                  <BookOpen className="h-5 w-5 mr-2" />
+                  Course Content
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {content.length > 0 ? (
+                  <div className="divide-y divide-gray-100">
+                    {content.map((item, index) => (
+                      <div
+                        key={item.id}
+                        className="p-4 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center space-x-4 min-w-0 flex-1">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 flex-shrink-0">
+                              <span className="text-sm font-medium text-gray-700">
+                                {index + 1}
+                              </span>
+                            </div>
+                            
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                {getContentIcon(item.content_type)}
+                                <h4 className="font-medium text-gray-900 truncate">
+                                  {item.title}
+                                </h4>
+                              </div>
+                              
+                              {item.description && (
+                                <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                                  {item.description}
+                                </p>
+                              )}
+                              
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {item.content_type}
+                                </Badge>
+                                {item.duration && (
+                                  <div className="flex items-center text-xs text-gray-500">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    {item.duration} min
+                                  </div>
+                                )}
+                                {item.is_preview && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    Preview
+                                  </Badge>
+                                )}
+                                {completedContent.has(item.id) && (
+                                  <Badge className="text-xs bg-green-500">
+                                    ✓ Completed
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex-shrink-0">
+                            <Button
+                              size="sm"
+                              onClick={() => handleStartContent(item.id)}
+                              variant={completedContent.has(item.id) ? "outline" : "default"}
+                              className="min-w-[80px]"
+                            >
+                              <Play className="h-3 w-3 mr-1" />
+                              {completedContent.has(item.id) ? 'Review' : 'Start'}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No content available
+                    </h3>
+                    <p className="text-gray-600">
+                      This course doesn't have any content yet.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
