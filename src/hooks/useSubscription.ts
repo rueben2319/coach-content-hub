@@ -99,8 +99,18 @@ export const useCreateSubscription = () => {
     }) => {
       console.log('Creating subscription:', subscriptionData);
       
+      // Get the current session to ensure we have a valid auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No active session found');
+      }
+
       const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: subscriptionData,
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (error) {

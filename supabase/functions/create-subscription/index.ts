@@ -14,12 +14,19 @@ serve(async (req) => {
   }
 
   try {
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('Missing authorization header');
+      throw new Error('Missing authorization header');
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     );
@@ -31,6 +38,7 @@ serve(async (req) => {
     } = await supabaseClient.auth.getUser();
 
     if (userError || !user) {
+      console.error('User authentication error:', userError);
       throw new Error('Unauthorized');
     }
 
@@ -40,9 +48,9 @@ serve(async (req) => {
 
     // Get tier pricing in MWK
     const tierPricing = {
-      basic: { monthly: 29000, yearly: 278000 }, // 20% discount
-      premium: { monthly: 79000, yearly: 758000 },
-      enterprise: { monthly: 199000, yearly: 1910000 },
+      basic: { monthly: 10000, yearly: 96000 }, // 20% discount
+      premium: { monthly: 50000, yearly: 480000 },
+      enterprise: { monthly: 100000, yearly: 960000 },
     };
 
     const price = tierPricing[tier as keyof typeof tierPricing]?.[billingCycle as keyof typeof tierPricing.basic];
@@ -127,7 +135,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         subscription,
-        payment_url: payChanguData.data.checkout_url, // Fixed: use checkout_url from PayChangu response
+        payment_url: payChanguData.data.checkout_url,
         tx_ref: payChanguData.data.tx_ref
       }),
       {
