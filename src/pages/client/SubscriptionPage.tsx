@@ -4,18 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { useCoachSubscription, useSubscriptionUsage, useCreateSubscription } from '@/hooks/useSubscription';
+import { useClientSubscription, useSubscriptionUsage, useCreateSubscription } from '@/hooks/useSubscription';
 import { SUBSCRIPTION_TIERS, getTierById, SubscriptionTier } from '@/config/subscriptionTiers';
 import SubscriptionPricingCard from '@/components/subscription/SubscriptionPricingCard';
 import SubscriptionUsageCard from '@/components/subscription/SubscriptionUsageCard';
 import { ArrowLeft, CreditCard } from 'lucide-react';
 
-const CoachSubscriptionPage: React.FC = () => {
+const ClientSubscriptionPage: React.FC = () => {
   const [isYearly, setIsYearly] = useState(false);
   const [loadingTier, setLoadingTier] = useState<string>('');
   const [loadingBillingCycle, setLoadingBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   
-  const { data: subscription, isLoading: subscriptionLoading } = useCoachSubscription();
+  const { data: subscription, isLoading: subscriptionLoading } = useClientSubscription();
   const { data: usage, isLoading: usageLoading } = useSubscriptionUsage();
   const createSubscription = useCreateSubscription();
 
@@ -144,4 +144,4 @@ const CoachSubscriptionPage: React.FC = () => {
   );
 };
 
-export default CoachSubscriptionPage;
+export default ClientSubscriptionPage;
