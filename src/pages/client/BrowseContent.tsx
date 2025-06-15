@@ -11,7 +11,11 @@ import { EnhancedCard } from '@/components/ui/enhanced-card';
 import { InteractiveButton } from '@/components/ui/interactive-button';
 
 const BrowseContent = () => {
-  const { data: courses = [], isLoading } = usePublishedCourses();
+  console.log('BrowseContent component rendering');
+
+  const { data: courses = [], isLoading, error } = usePublishedCourses();
+
+  console.log('BrowseContent - courses:', courses, 'isLoading:', isLoading, 'error:', error);
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -23,6 +27,29 @@ const BrowseContent = () => {
     if (!coach) return 'Unknown Instructor';
     return `${coach.first_name || ''} ${coach.last_name || ''}`.trim() || 'Unknown Instructor';
   };
+
+  // Handle error state
+  if (error) {
+    console.error('BrowseContent error:', error);
+    return (
+      <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">Browse Content</h1>
+          <p className="text-lg text-muted-foreground">Discover new courses and expand your skills with expert-led content</p>
+        </div>
+        <div className="text-center py-16">
+          <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+            <BookOpen className="h-10 w-10 text-red-500" />
+          </div>
+          <h3 className="text-xl font-semibold text-foreground mb-3">Error Loading Courses</h3>
+          <p className="text-muted-foreground max-w-md mx-auto mb-4">
+            We encountered an issue while loading the courses. Please try refreshing the page.
+          </p>
+          <p className="text-sm text-red-600">Error: {error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -48,10 +75,10 @@ const BrowseContent = () => {
       </div>
 
       {courses.length > 0 ? (
-        <div className="cards-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {courses.map((course) => (
             <EnhancedCard key={course.id} interactive className="h-full flex flex-col">
-              <CardHeader className="p-4 pb-3">
+              <CardHeader className="flex-shrink-0">
                 <div className="aspect-video bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg mb-4 flex items-center justify-center overflow-hidden group-hover:from-primary-600 group-hover:to-primary-700 transition-all duration-300">
                   {course.thumbnail_url ? (
                     <img 
@@ -72,7 +99,7 @@ const BrowseContent = () => {
                 </div>
               </CardHeader>
               
-              <CardContent className="p-4 pt-0 flex-1 flex flex-col">
+              <CardContent className="flex-1 flex flex-col">
                 <p className="text-muted-foreground text-sm mb-4 line-clamp-2 flex-1 leading-relaxed">
                   {course.description}
                 </p>
