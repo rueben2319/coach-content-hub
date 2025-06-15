@@ -7,7 +7,7 @@ import { FileText, Image, Download, CheckCircle } from 'lucide-react';
 interface CourseContent {
   id: string;
   title: string;
-  content_type: 'text' | 'pdf' | 'image' | 'interactive';
+  content_type: 'video' | 'audio' | 'text' | 'pdf' | 'image' | 'interactive';
   content_url?: string;
   content_text?: string;
 }
@@ -123,6 +123,15 @@ const ContentViewer: React.FC<ContentViewerProps> = ({
                 />
               )}
             </div>
+          </div>
+        );
+      
+      case 'video':
+      case 'audio':
+        return (
+          <div className="text-center py-8">
+            <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-600">This content type is handled by specialized players</p>
           </div>
         );
       
