@@ -3,35 +3,89 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, UserCheck, CreditCard, TrendingUp, DollarSign, BookOpen } from 'lucide-react';
+import RevenueChart from '@/components/admin/RevenueChart';
+import TierAnalytics from '@/components/admin/TierAnalytics';
+import SubscriptionStatusCard from '@/components/admin/SubscriptionStatusCard';
+import { useAdminRevenueStats, useAdminTierStats, useAdminRevenueByMonth } from '@/hooks/useAdminAnalytics';
 
 const AdminDashboard = () => {
-  const stats = [
-    { title: 'Total Coaches', value: '24', change: '+12%', icon: Users, color: 'text-blue-600' },
-    { title: 'Total Clients', value: '156', change: '+18%', icon: UserCheck, color: 'text-green-600' },
-    { title: 'Active Subscriptions', value: '142', change: '+8%', icon: CreditCard, color: 'text-purple-600' },
-    { title: 'Monthly Revenue', value: '$12,450', change: '+22%', icon: DollarSign, color: 'text-orange-600' },
-    { title: 'Content Items', value: '89', change: '+15%', icon: BookOpen, color: 'text-indigo-600' },
-    { title: 'Growth Rate', value: '24%', change: '+5%', icon: TrendingUp, color: 'text-teal-600' },
-  ];
+  const { data: revenueStats, isLoading: revenueLoading } = useAdminRevenueStats();
+  const { data: tierStats, isLoading: tierLoading } = useAdminTierStats();
+  const { data: revenueByMonth, isLoading: monthlyLoading } = useAdminRevenueByMonth();
 
-  const subscriptionStats = [
-    { tier: 'Basic', count: 45, revenue: '$1,305', percentage: 32 },
-    { tier: 'Premium', count: 78, revenue: '$6,162', percentage: 55 },
-    { tier: 'Enterprise', count: 19, revenue: '$3,781', percentage: 13 },
+  if (revenueLoading || tierLoading || monthlyLoading) {
+    return (
+      <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className="text-center">Loading admin dashboard...</div>
+      </div>
+    );
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'MWK',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const stats = [
+    { 
+      title: 'Total Revenue', 
+      value: formatCurrency(revenueStats?.totalRevenue || 0), 
+      change: `+${revenueStats?.growthRate || 0}%`, 
+      icon: DollarSign, 
+      color: 'text-green-600' 
+    },
+    { 
+      title: 'Monthly Revenue', 
+      value: formatCurrency(revenueStats?.monthlyRevenue || 0), 
+      change: '+15%', 
+      icon: TrendingUp, 
+      color: 'text-blue-600' 
+    },
+    { 
+      title: 'Active Subscriptions', 
+      value: revenueStats?.activeSubscriptions?.toString() || '0', 
+      change: '+8%', 
+      icon: CreditCard, 
+      color: 'text-purple-600' 
+    },
+    { 
+      title: 'Total Coaches', 
+      value: revenueStats?.totalCoaches?.toString() || '0', 
+      change: '+12%', 
+      icon: Users, 
+      color: 'text-orange-600' 
+    },
+    { 
+      title: 'Avg Revenue/Coach', 
+      value: formatCurrency(revenueStats?.avgRevenuePerCoach || 0), 
+      change: '+5%', 
+      icon: UserCheck, 
+      color: 'text-indigo-600' 
+    },
+    { 
+      title: 'Trial Subscriptions', 
+      value: revenueStats?.trialSubscriptions?.toString() || '0', 
+      change: '+24%', 
+      icon: BookOpen, 
+      color: 'text-teal-600' 
+    },
   ];
 
   const recentActivities = [
-    { user: 'Sarah Johnson', action: 'Created new course', time: '2 hours ago', type: 'coach' },
-    { user: 'Mike Chen', action: 'Subscribed to Premium', time: '4 hours ago', type: 'client' },
-    { user: 'Emily Davis', action: 'Updated profile', time: '6 hours ago', type: 'coach' },
-    { user: 'Alex Wilson', action: 'Completed course', time: '8 hours ago', type: 'client' },
+    { user: 'Sarah Johnson', action: 'Upgraded to Premium', time: '2 hours ago', type: 'upgrade' },
+    { user: 'Mike Chen', action: 'Payment received', time: '4 hours ago', type: 'payment' },
+    { user: 'Emily Davis', action: 'Started trial', time: '6 hours ago', type: 'trial' },
+    { user: 'Alex Wilson', action: 'Canceled subscription', time: '8 hours ago', type: 'cancel' },
   ];
 
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
       <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-600 mt-2">Overview of your coaching platform</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Revenue Dashboard</h1>
+        <p className="text-gray-600 mt-2">Real-time insights into your coaching platform revenue</p>
       </div>
 
       {/* Stats Grid */}
@@ -54,35 +108,23 @@ const AdminDashboard = () => {
         ))}
       </div>
 
+      {/* Revenue Chart */}
+      {revenueByMonth && (
+        <div className="mb-6 md:mb-8">
+          <RevenueChart data={revenueByMonth} />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8 mb-8">
-        {/* Subscription Revenue Breakdown */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg md:text-xl">Subscription Revenue by Tier</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {subscriptionStats.map((sub, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <div className={`w-3 h-3 rounded-full ${
-                      sub.tier === 'Basic' ? 'bg-blue-500' :
-                      sub.tier === 'Premium' ? 'bg-purple-500' : 'bg-orange-500'
-                    }`}></div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900">{sub.tier}</p>
-                      <p className="text-xs text-gray-600">{sub.count} subscriptions</p>
-                    </div>
-                  </div>
-                  <div className="text-right flex-shrink-0 ml-2">
-                    <p className="text-sm font-semibold text-gray-900">{sub.revenue}</p>
-                    <p className="text-xs text-gray-500">{sub.percentage}%</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Subscription Status Overview */}
+        {revenueStats && (
+          <SubscriptionStatusCard
+            activeSubscriptions={revenueStats.activeSubscriptions}
+            canceledSubscriptions={revenueStats.canceledSubscriptions}
+            trialSubscriptions={revenueStats.trialSubscriptions}
+            totalCoaches={revenueStats.totalCoaches}
+          />
+        )}
 
         {/* Recent Activities */}
         <Card>
@@ -103,7 +145,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0 ml-2">
-                    <Badge variant={activity.type === 'coach' ? 'default' : 'secondary'} className="text-xs">
+                    <Badge variant={activity.type === 'upgrade' ? 'default' : 'secondary'} className="text-xs">
                       {activity.type}
                     </Badge>
                     <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
@@ -115,44 +157,10 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* Top Performing Coaches */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg md:text-xl">Top Performing Coaches</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 md:space-y-4">
-            {[
-              { name: 'Sarah Johnson', clients: 23, revenue: '$3,200', rating: 4.9, tier: 'Enterprise' },
-              { name: 'Michael Brown', clients: 18, revenue: '$2,800', rating: 4.8, tier: 'Premium' },
-              { name: 'Emily Davis', clients: 16, revenue: '$2,400', rating: 4.7, tier: 'Premium' },
-              { name: 'James Wilson', clients: 14, revenue: '$2,100', rating: 4.6, tier: 'Basic' },
-            ].map((coach, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-                    {coach.name.charAt(0)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-gray-900 truncate">{coach.name}</p>
-                      <Badge variant="secondary" className="text-xs">{coach.tier}</Badge>
-                    </div>
-                    <p className="text-xs md:text-sm text-gray-600">{coach.clients} clients</p>
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0 ml-2">
-                  <p className="text-sm font-semibold text-gray-900">{coach.revenue}</p>
-                  <div className="flex items-center justify-end">
-                    <span className="text-yellow-400">★</span>
-                    <span className="text-xs text-gray-600 ml-1">{coach.rating}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tier Analytics */}
+      {tierStats && (
+        <TierAnalytics tierStats={tierStats} />
+      )}
     </div>
   );
 };

@@ -48,7 +48,7 @@ const SubscriptionPage: React.FC = () => {
         {/* Usage and Billing */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {subscription && usage && (
-            <SubscriptionUsageCard subscription={subscription} usage={usage} />
+            <SubscriptionUsageCard usage={usage} />
           )}
           
           <BillingHistoryCard />
@@ -64,7 +64,7 @@ const SubscriptionPage: React.FC = () => {
               <SubscriptionPricingCard
                 key={tier.id}
                 tier={tier}
-                isCurrentTier={subscription?.tier === tier.id}
+                currentTier={subscription?.tier}
                 disabled={subscription?.tier === tier.id}
               />
             ))}
