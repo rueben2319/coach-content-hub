@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchCourseContent } from '@/components/courses/courseContentApi';
+import { EnrollmentDialog } from '@/components/enrollment/EnrollmentDialog';
 
 interface Course {
   id: string;
@@ -42,6 +42,7 @@ const CourseView: React.FC = () => {
   const [completedContent, setCompletedContent] = useState<Set<string>>(new Set());
   const [enrollmentId, setEnrollmentId] = useState<string>('');
   const [showPlayer, setShowPlayer] = useState(false);
+  const [showEnrollmentDialog, setShowEnrollmentDialog] = useState(false);
 
   // Fetch course data
   const { data: course, isLoading: courseLoading } = useQuery({
@@ -86,7 +87,7 @@ const CourseView: React.FC = () => {
   });
 
   // Fetch enrollment data
-  const { data: enrollment } = useQuery({
+  const { data: enrollment, refetch: refetchEnrollment } = useQuery({
     queryKey: ['enrollment', courseId, user?.id],
     queryFn: async () => {
       if (!courseId || !user?.id) throw new Error('Missing data');
@@ -105,7 +106,7 @@ const CourseView: React.FC = () => {
   });
 
   // Check if user is enrolled
-  const isEnrolled = enrollment && enrollment.payment_status === 'paid';
+  const isEnrolled = enrollment && enrollment.payment_status === 'completed';
 
   // Fetch course content
   const { data: content = [] } = useQuery({
@@ -205,9 +206,22 @@ const CourseView: React.FC = () => {
   };
 
   const handleEnrollment = () => {
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to enroll in this course.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setShowEnrollmentDialog(true);
+  };
+
+  const handleEnrollmentComplete = () => {
+    refetchEnrollment();
     toast({
-      title: 'Enrollment Coming Soon',
-      description: 'Course enrollment functionality will be available soon.',
+      title: 'Enrollment Successful! 🎉',
+      description: 'Welcome to the course! You now have full access to all content.',
     });
   };
 
@@ -248,13 +262,22 @@ const CourseView: React.FC = () => {
                   {course.title}
                 </h1>
                 <p className="text-gray-600 mt-1">by {course.instructor}</p>
-                {!isEnrolled && (
-                  <div className="mt-3">
+                <div className="mt-3 flex items-center gap-2">
+                  {!isEnrolled ? (
                     <Badge variant="outline" className="text-orange-600 border-orange-600">
                       Not Enrolled
                     </Badge>
-                  </div>
-                )}
+                  ) : (
+                    <Badge className="bg-green-500 hover:bg-green-600">
+                      ✓ Enrolled
+                    </Badge>
+                  )}
+                  {enrollment?.payment_status === 'pending' && (
+                    <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+                      Payment Pending
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -272,7 +295,11 @@ const CourseView: React.FC = () => {
                 </>
               )}
               {!isEnrolled && (
-                <Button onClick={handleEnrollment} className="bg-blue-600 hover:bg-blue-700">
+                <Button 
+                  onClick={handleEnrollment} 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  size="lg"
+                >
                   Enroll Now - {course.currency} {course.price}
                 </Button>
               )}
@@ -463,6 +490,16 @@ const CourseView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Enrollment Dialog */}
+      {course && (
+        <EnrollmentDialog
+          open={showEnrollmentDialog}
+          onOpenChange={setShowEnrollmentDialog}
+          course={course}
+          onEnrollmentComplete={handleEnrollmentComplete}
+        />
+      )}
     </div>
   );
 };
