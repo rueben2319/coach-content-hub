@@ -1,102 +1,97 @@
 
-/* Mobile-specific styles */
-.safe-area-pb {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.safe-area-pt {
-  padding-top: env(safe-area-inset-top);
-}
-
-.safe-area-pl {
-  padding-left: env(safe-area-inset-left);
-}
-
-.safe-area-pr {
-  padding-right: env(safe-area-inset-right);
-}
-
-/* Touch optimization */
-.touch-manipulation {
-  touch-action: manipulation;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* Smooth scrolling on mobile */
-.mobile-scroll {
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-}
-
-/* iOS specific fixes */
-@supports (-webkit-touch-callout: none) {
-  .ios-bounce-fix {
-    -webkit-overflow-scrolling: touch;
-    overflow-scrolling: touch;
-  }
-}
-
-/* Android specific fixes */
+/* Mobile-specific optimizations */
 @media (max-width: 768px) {
-  .android-select-fix select {
-    background-image: none;
-    -webkit-appearance: none;
-    appearance: none;
+  /* Prevent text selection on interactive elements */
+  .touch-manipulation {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
-}
 
-/* Improve tap targets for accessibility */
-button, 
-[role="button"], 
-input[type="button"], 
-input[type="submit"], 
-a {
-  min-height: 44px;
-  min-width: 44px;
-}
+  /* Smooth scrolling for mobile */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
 
-/* Custom scrollbar for mobile */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
+  /* Optimize font rendering on mobile */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
+  /* Ensure sufficient touch targets */
+  button, 
+  [role="button"], 
+  input[type="button"], 
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 2px;
-}
+  /* Improve form inputs on mobile */
+  input, 
+  textarea, 
+  select {
+    font-size: 16px; /* Prevent zoom on iOS */
+    border-radius: 8px;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
+  /* Optimize card interactions */
+  .mobile-card-hover:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease-out;
+  }
 
-/* Mobile-first responsive utilities */
-@media (max-width: 640px) {
-  .mobile-hidden {
-    display: none !important;
+  /* Swipe indicators */
+  .swipe-indicator {
+    position: relative;
+  }
+
+  .swipe-indicator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent);
+    border-radius: 2px;
+  }
+
+  /* Pull to refresh styling */
+  .pull-to-refresh {
+    overscroll-behavior-y: contain;
+  }
+
+  /* Bottom navigation safe area */
+  .bottom-nav-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Hide scrollbars but keep functionality */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   
-  .mobile-full-width {
-    width: 100vw !important;
-  }
-  
-  .mobile-padding {
-    padding: 1rem !important;
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 
-/* Landscape mobile optimizations */
-@media (max-width: 768px) and (orientation: landscape) {
-  .landscape-hidden {
-    display: none !important;
+/* iOS specific optimizations */
+@supports (-webkit-appearance: none) {
+  .ios-bounce-fix {
+    overscroll-behavior-y: none;
   }
-  
-  .landscape-compact {
-    padding: 0.5rem !important;
+}
+
+/* Android specific optimizations */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .android-scroll-fix {
+    transform: translateZ(0);
   }
 }

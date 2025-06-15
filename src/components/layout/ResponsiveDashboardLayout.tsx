@@ -4,6 +4,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import MobileSidebar from './MobileSidebar';
 import Sidebar from './Sidebar';
+import { MobileNavigation } from '@/components/mobile/MobileNavigation';
 
 interface ResponsiveDashboardLayoutProps {
   children: React.ReactNode;
@@ -15,7 +16,7 @@ const ResponsiveDashboardLayout: React.FC<ResponsiveDashboardLayoutProps> = ({ c
   if (isMobile) {
     return (
       <SidebarProvider>
-        <div className="min-h-screen flex w-full">
+        <div className="min-h-screen flex w-full flex-col">
           <MobileSidebar />
           <SidebarInset className="flex flex-col w-full">
             <header className="sticky top-0 z-40 bg-white border-b border-gray-200 p-4">
@@ -26,10 +27,13 @@ const ResponsiveDashboardLayout: React.FC<ResponsiveDashboardLayoutProps> = ({ c
                 <SidebarTrigger />
               </div>
             </header>
-            <main className="flex-1 overflow-auto p-4 md:p-6">
-              {children}
+            <main className="flex-1 overflow-auto pb-20">
+              <div className="p-4 md:p-6">
+                {children}
+              </div>
             </main>
           </SidebarInset>
+          <MobileNavigation />
         </div>
       </SidebarProvider>
     );
