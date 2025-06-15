@@ -61,9 +61,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log('Fetching profile for user:', currentSession.user.id);
             await fetchUserProfile(currentSession.user.id);
           }
-          
-          console.log('Auth initialization complete - setting loading to false');
-          setLoading(false);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -71,6 +68,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
           setProfile(null);
           setSession(null);
+        }
+      } finally {
+        if (mounted) {
+          console.log('Auth initialization complete - setting loading to false');
           setLoading(false);
         }
       }
@@ -93,17 +94,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             setProfile(null);
           }
-          
-          // Always ensure loading is false after any auth state change
-          console.log('Setting loading to false after auth state change:', event);
-          setLoading(false);
         } catch (error) {
           console.error('Auth state change error:', error);
           if (mounted) {
             setUser(null);
             setProfile(null);
             setSession(null);
-            setLoading(false);
           }
         }
       }
