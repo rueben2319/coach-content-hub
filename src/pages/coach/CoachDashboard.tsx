@@ -3,21 +3,37 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, BookOpen, DollarSign, Users, TrendingUp } from 'lucide-react';
+import { Plus, BookOpen, DollarSign, Users, TrendingUp, CreditCard, AlertTriangle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import CoursesList from '@/components/courses/CoursesList';
 import CourseForm from '@/components/courses/CourseForm';
 import CourseEditor from '@/components/courses/CourseEditor';
 import CoursePreview from '@/components/courses/CoursePreview';
 import CourseContentManager from '@/components/courses/CourseContentManager';
+import SubscriptionPage from './SubscriptionPage';
+import { useCoachSubscription, useSubscriptionUsage } from '@/hooks/useSubscription';
+import { getTierById } from '@/config/subscriptionTiers';
 
-type ViewType = 'dashboard' | 'create' | 'edit' | 'preview' | 'content';
+type ViewType = 'dashboard' | 'create' | 'edit' | 'preview' | 'content' | 'subscription';
 
 const CoachDashboard = () => {
   const { profile } = useAuth();
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+  
+  const { data: subscription } = useCoachSubscription();
+  const { data: usage } = useSubscriptionUsage();
+
+  const currentTier = subscription ? getTierById(subscription.tier) : null;
 
   const handleCreateCourse = () => {
+    // Check if user can create more courses
+    if (currentTier && currentTier.features.maxCourses !== -1 && usage) {
+      if (usage.coursesCreated >= currentTier.features.maxCourses) {
+        setCurrentView('subscription');
+        return;
+      }
+    }
     setCurrentView('create');
   };
 
@@ -40,6 +56,25 @@ const CoachDashboard = () => {
     setCurrentView('dashboard');
     setSelectedCourseId('');
   };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      active: { label: 'Active', variant: 'default' as const },
+      trial: { label: 'Trial', variant: 'secondary' as const },
+      expired: { label: 'Expired', variant: 'destructive' as const },
+      inactive: { label: 'Inactive', variant: 'destructive' as const },
+    };
+    
+    return statusConfig[status as keyof typeof statusConfig] || statusConfig.inactive;
+  };
+
+  const isAtLimit = (used: number, limit: number) => {
+    return limit !== -1 && used >= limit;
+  };
+
+  if (currentView === 'subscription') {
+    return <SubscriptionPage onBack={handleBackToDashboard} />;
+  }
 
   if (currentView === 'create') {
     return (
@@ -97,11 +132,57 @@ const CoachDashboard = () => {
             </h1>
             <p className="text-gray-600 text-sm md:text-base">Manage your courses and track your success</p>
           </div>
-          <Button onClick={handleCreateCourse} className="w-full sm:w-auto">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Course
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button onClick={() => setCurrentView('subscription')} variant="outline" className="w-full sm:w-auto">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Subscription
+            </Button>
+            <Button onClick={handleCreateCourse} className="w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Course
+            </Button>
+          </div>
         </div>
+
+        {/* Subscription Status */}
+        {subscription && (
+          <Card className="mb-4">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <CreditCard className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{currentTier?.name || subscription.tier} Plan</span>
+                      <Badge {...getStatusBadge(subscription.status)}>
+                        {getStatusBadge(subscription.status).label}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600">${subscription.price}/{subscription.billing_cycle}</p>
+                  </div>
+                </div>
+                
+                {/* Usage warnings */}
+                {currentTier && usage && (
+                  <div className="flex flex-wrap gap-2">
+                    {isAtLimit(usage.coursesCreated, currentTier.features.maxCourses) && (
+                      <Badge variant="destructive" className="text-xs">
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        Course limit reached
+                      </Badge>
+                    )}
+                    {isAtLimit(usage.studentsEnrolled, currentTier.features.maxStudents) && (
+                      <Badge variant="destructive" className="text-xs">
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        Student limit reached
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
@@ -111,7 +192,14 @@ const CoachDashboard = () => {
               <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">0</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold">
+                {usage?.coursesCreated || 0}
+                {currentTier && currentTier.features.maxCourses !== -1 && (
+                  <span className="text-sm text-gray-500 ml-1">
+                    / {currentTier.features.maxCourses}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
                 +0 from last month
               </p>
@@ -124,7 +212,14 @@ const CoachDashboard = () => {
               <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">0</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold">
+                {usage?.studentsEnrolled || 0}
+                {currentTier && currentTier.features.maxStudents !== -1 && (
+                  <span className="text-sm text-gray-500 ml-1">
+                    / {currentTier.features.maxStudents}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
                 +0 from last month
               </p>

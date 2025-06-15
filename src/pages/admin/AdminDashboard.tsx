@@ -14,6 +14,12 @@ const AdminDashboard = () => {
     { title: 'Growth Rate', value: '24%', change: '+5%', icon: TrendingUp, color: 'text-teal-600' },
   ];
 
+  const subscriptionStats = [
+    { tier: 'Basic', count: 45, revenue: '$1,305', percentage: 32 },
+    { tier: 'Premium', count: 78, revenue: '$6,162', percentage: 55 },
+    { tier: 'Enterprise', count: 19, revenue: '$3,781', percentage: 13 },
+  ];
+
   const recentActivities = [
     { user: 'Sarah Johnson', action: 'Created new course', time: '2 hours ago', type: 'coach' },
     { user: 'Mike Chen', action: 'Subscribed to Premium', time: '4 hours ago', type: 'client' },
@@ -48,7 +54,36 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8 mb-8">
+        {/* Subscription Revenue Breakdown */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg md:text-xl">Subscription Revenue by Tier</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {subscriptionStats.map((sub, index) => (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <div className={`w-3 h-3 rounded-full ${
+                      sub.tier === 'Basic' ? 'bg-blue-500' :
+                      sub.tier === 'Premium' ? 'bg-purple-500' : 'bg-orange-500'
+                    }`}></div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-900">{sub.tier}</p>
+                      <p className="text-xs text-gray-600">{sub.count} subscriptions</p>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0 ml-2">
+                    <p className="text-sm font-semibold text-gray-900">{sub.revenue}</p>
+                    <p className="text-xs text-gray-500">{sub.percentage}%</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Recent Activities */}
         <Card>
           <CardHeader>
@@ -78,43 +113,46 @@ const AdminDashboard = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
 
-        {/* Top Performers */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg md:text-xl">Top Performing Coaches</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 md:space-y-4">
-              {[
-                { name: 'Sarah Johnson', clients: 23, revenue: '$3,200', rating: 4.9 },
-                { name: 'Michael Brown', clients: 18, revenue: '$2,800', rating: 4.8 },
-                { name: 'Emily Davis', clients: 16, revenue: '$2,400', rating: 4.7 },
-                { name: 'James Wilson', clients: 14, revenue: '$2,100', rating: 4.6 },
-              ].map((coach, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-                      {coach.name.charAt(0)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900 truncate">{coach.name}</p>
-                      <p className="text-xs md:text-sm text-gray-600">{coach.clients} clients</p>
-                    </div>
+      {/* Top Performing Coaches */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg md:text-xl">Top Performing Coaches</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3 md:space-y-4">
+            {[
+              { name: 'Sarah Johnson', clients: 23, revenue: '$3,200', rating: 4.9, tier: 'Enterprise' },
+              { name: 'Michael Brown', clients: 18, revenue: '$2,800', rating: 4.8, tier: 'Premium' },
+              { name: 'Emily Davis', clients: 16, revenue: '$2,400', rating: 4.7, tier: 'Premium' },
+              { name: 'James Wilson', clients: 14, revenue: '$2,100', rating: 4.6, tier: 'Basic' },
+            ].map((coach, index) => (
+              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                    {coach.name.charAt(0)}
                   </div>
-                  <div className="text-right flex-shrink-0 ml-2">
-                    <p className="text-sm font-semibold text-gray-900">{coach.revenue}</p>
-                    <div className="flex items-center justify-end">
-                      <span className="text-yellow-400">★</span>
-                      <span className="text-xs text-gray-600 ml-1">{coach.rating}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-900 truncate">{coach.name}</p>
+                      <Badge variant="secondary" className="text-xs">{coach.tier}</Badge>
                     </div>
+                    <p className="text-xs md:text-sm text-gray-600">{coach.clients} clients</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                <div className="text-right flex-shrink-0 ml-2">
+                  <p className="text-sm font-semibold text-gray-900">{coach.revenue}</p>
+                  <div className="flex items-center justify-end">
+                    <span className="text-yellow-400">★</span>
+                    <span className="text-xs text-gray-600 ml-1">{coach.rating}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
