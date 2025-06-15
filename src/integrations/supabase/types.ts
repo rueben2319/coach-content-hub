@@ -11,41 +11,59 @@ export type Database = {
     Tables: {
       billing_history: {
         Row: {
+          admin_id: string | null
           amount: number
           billing_period_end: string
           billing_period_start: string
+          coach_id: string | null
           created_at: string
           currency: string
           id: string
+          invoice_sent: boolean | null
           invoice_url: string | null
+          last_retry_at: string | null
           paid_at: string | null
           paychangu_reference: string | null
+          receipt_sent: boolean | null
+          retry_count: number | null
           status: string
           subscription_id: string | null
         }
         Insert: {
+          admin_id?: string | null
           amount: number
           billing_period_end: string
           billing_period_start: string
+          coach_id?: string | null
           created_at?: string
           currency?: string
           id?: string
+          invoice_sent?: boolean | null
           invoice_url?: string | null
+          last_retry_at?: string | null
           paid_at?: string | null
           paychangu_reference?: string | null
+          receipt_sent?: boolean | null
+          retry_count?: number | null
           status: string
           subscription_id?: string | null
         }
         Update: {
+          admin_id?: string | null
           amount?: number
           billing_period_end?: string
           billing_period_start?: string
+          coach_id?: string | null
           created_at?: string
           currency?: string
           id?: string
+          invoice_sent?: boolean | null
           invoice_url?: string | null
+          last_retry_at?: string | null
           paid_at?: string | null
           paychangu_reference?: string | null
+          receipt_sent?: boolean | null
+          retry_count?: number | null
           status?: string
           subscription_id?: string | null
         }

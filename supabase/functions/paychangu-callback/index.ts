@@ -8,7 +8,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -16,13 +15,11 @@ serve(async (req) => {
   try {
     console.log('PayChangu callback received');
 
-    // Create Supabase client with service role key for admin operations
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get the transaction reference from URL parameters
     const url = new URL(req.url);
     const txRef = url.searchParams.get('tx_ref');
     
@@ -33,7 +30,7 @@ serve(async (req) => {
 
     console.log('Processing callback for tx_ref:', txRef);
 
-    // Verify the payment status with PayChangu
+    // Verify payment with PayChangu
     const payChanguResponse = await fetch(`https://api.paychangu.com/verify-payment/${txRef}`, {
       method: 'GET',
       headers: {
@@ -47,78 +44,24 @@ serve(async (req) => {
 
     if (!payChanguResponse.ok) {
       console.error('PayChangu verification failed:', payChanguData);
+      await handleFailedPayment(supabaseClient, txRef, payChanguData);
       throw new Error(`Payment verification failed: ${payChanguData.message || 'Unknown error'}`);
     }
 
-    // Check if payment was successful
     const paymentStatus = payChanguData.data?.status;
     
     if (paymentStatus === 'success' || paymentStatus === 'completed') {
-      console.log('Payment confirmed, updating subscription status');
-
-      // Find the subscription by PayChangu transaction reference
-      const { data: subscription, error: findError } = await supabaseClient
-        .from('coach_subscriptions')
-        .select('*')
-        .eq('paychangu_subscription_id', txRef)
-        .maybeSingle();
-
-      if (findError) {
-        console.error('Error finding subscription:', findError);
-        throw findError;
-      }
-
-      if (!subscription) {
-        console.error('Subscription not found for tx_ref:', txRef);
-        throw new Error('Subscription not found');
-      }
-
-      // Calculate expiry date based on billing cycle
-      const now = new Date();
-      const expiryDate = new Date(now);
-      
-      if (subscription.billing_cycle === 'yearly') {
-        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-      } else {
-        expiryDate.setMonth(expiryDate.getMonth() + 1);
-      }
-
-      // Update subscription status to active
-      const { error: updateError } = await supabaseClient
-        .from('coach_subscriptions')
-        .update({
-          status: 'active',
-          expires_at: expiryDate.toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', subscription.id);
-
-      if (updateError) {
-        console.error('Error updating subscription:', updateError);
-        throw updateError;
-      }
-
-      console.log('Subscription activated successfully:', subscription.id);
-
-      return new Response(
-        JSON.stringify({ 
-          success: true,
-          message: 'Subscription activated successfully',
-          subscription_id: subscription.id
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
-        }
-      );
-
+      return await handleSuccessfulPayment(supabaseClient, txRef, payChanguData);
+    } else if (paymentStatus === 'failed') {
+      return await handleFailedPayment(supabaseClient, txRef, payChanguData);
     } else {
-      console.log('Payment not successful, status:', paymentStatus);
+      console.log('Payment pending, status:', paymentStatus);
+      await updateBillingStatus(supabaseClient, txRef, 'pending');
       
       return new Response(
         JSON.stringify({ 
           success: false,
-          message: 'Payment not confirmed',
+          message: 'Payment still pending',
           status: paymentStatus
         }),
         {
@@ -142,3 +85,185 @@ serve(async (req) => {
     );
   }
 });
+
+async function handleSuccessfulPayment(supabaseClient: any, txRef: string, payChanguData: any) {
+  console.log('Payment confirmed, updating subscription and billing status');
+
+  // Find billing record
+  const { data: billing, error: billingError } = await supabaseClient
+    .from('billing_history')
+    .select('*, coach_subscriptions!inner(*)')
+    .eq('paychangu_reference', txRef)
+    .single();
+
+  if (billingError || !billing) {
+    console.error('Billing record not found:', billingError);
+    throw new Error('Billing record not found');
+  }
+
+  const subscription = billing.coach_subscriptions;
+
+  // Calculate new expiry date
+  const now = new Date();
+  const expiryDate = new Date(now);
+  
+  if (subscription.billing_cycle === 'yearly') {
+    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+  } else {
+    expiryDate.setMonth(expiryDate.getMonth() + 1);
+  }
+
+  // Update subscription status
+  const { error: updateError } = await supabaseClient
+    .from('coach_subscriptions')
+    .update({
+      status: 'active',
+      expires_at: expiryDate.toISOString(),
+      next_billing_date: expiryDate.toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', subscription.id);
+
+  if (updateError) {
+    console.error('Error updating subscription:', updateError);
+    throw updateError;
+  }
+
+  // Update billing record as paid
+  const { error: billingUpdateError } = await supabaseClient
+    .from('billing_history')
+    .update({
+      status: 'paid',
+      paid_at: new Date().toISOString(),
+      invoice_sent: true,
+      receipt_sent: true,
+    })
+    .eq('id', billing.id);
+
+  if (billingUpdateError) {
+    console.error('Error updating billing record:', billingUpdateError);
+    throw billingUpdateError;
+  }
+
+  // Generate invoice and receipt (simplified - in real implementation, you'd call an invoice service)
+  const invoiceData = {
+    invoice_number: `INV-${billing.id.substring(0, 8)}-${Date.now()}`,
+    amount: billing.amount,
+    currency: billing.currency,
+    subscription_tier: subscription.tier,
+    billing_cycle: subscription.billing_cycle,
+    paid_at: new Date().toISOString(),
+    tx_ref: txRef,
+  };
+
+  console.log('Invoice/receipt generated:', invoiceData);
+
+  // Log successful payment in subscription changes
+  await supabaseClient
+    .from('subscription_changes')
+    .insert({
+      subscription_id: subscription.id,
+      change_type: 'payment_completed',
+      to_tier: subscription.tier,
+      to_price: billing.amount,
+      effective_date: new Date().toISOString(),
+      metadata: {
+        tx_ref: txRef,
+        payment_method: payChanguData.data?.payment_method,
+        invoice_data: invoiceData,
+      },
+    });
+
+  console.log('Subscription activated successfully:', subscription.id);
+
+  return new Response(
+    JSON.stringify({ 
+      success: true,
+      message: 'Payment completed and subscription activated',
+      subscription_id: subscription.id,
+      invoice_data: invoiceData,
+    }),
+    {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    }
+  );
+}
+
+async function handleFailedPayment(supabaseClient: any, txRef: string, payChanguData: any) {
+  console.log('Payment failed, updating billing and scheduling retry');
+
+  // Find billing record
+  const { data: billing, error: billingError } = await supabaseClient
+    .from('billing_history')
+    .select('*')
+    .eq('paychangu_reference', txRef)
+    .single();
+
+  if (billingError || !billing) {
+    console.error('Billing record not found for failed payment:', billingError);
+    return new Response(
+      JSON.stringify({ 
+        success: false,
+        message: 'Billing record not found for failed payment'
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        status: 404,
+      }
+    );
+  }
+
+  const retryCount = (billing.retry_count || 0) + 1;
+  const maxRetries = 3;
+
+  // Update billing record
+  await supabaseClient
+    .from('billing_history')
+    .update({
+      status: 'failed',
+      retry_count: retryCount,
+      last_retry_at: new Date().toISOString(),
+    })
+    .eq('id', billing.id);
+
+  // Create notification for failed payment
+  await supabaseClient
+    .from('subscription_notifications')
+    .insert({
+      subscription_id: billing.subscription_id,
+      notification_type: 'payment_failed',
+      metadata: {
+        tx_ref: txRef,
+        retry_count: retryCount,
+        max_retries: maxRetries,
+        failure_reason: payChanguData.message || 'Payment failed',
+        next_retry_available: retryCount < maxRetries,
+      },
+    });
+
+  console.log(`Payment failed (attempt ${retryCount}/${maxRetries})`);
+
+  return new Response(
+    JSON.stringify({ 
+      success: false,
+      message: `Payment failed (attempt ${retryCount}/${maxRetries})`,
+      can_retry: retryCount < maxRetries,
+      retry_count: retryCount,
+    }),
+    {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    }
+  );
+}
+
+async function updateBillingStatus(supabaseClient: any, txRef: string, status: string) {
+  await supabaseClient
+    .from('billing_history')
+    .update({
+      status,
+      last_retry_at: new Date().toISOString(),
+    })
+    .eq('paychangu_reference', txRef);
+}
