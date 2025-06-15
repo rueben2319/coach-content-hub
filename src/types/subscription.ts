@@ -1,3 +1,4 @@
+
 export interface SubscriptionTier {
   id: string;
   name: string;
@@ -26,6 +27,12 @@ export interface CoachSubscription {
   paychangu_subscription_id: string | null;
   created_at: string;
   updated_at: string;
+  is_trial?: boolean;
+  trial_ends_at?: string | null;
+  auto_renew?: boolean;
+  canceled_at?: string | null;
+  cancellation_reason?: string | null;
+  next_billing_date?: string | null;
 }
 
 export interface SubscriptionUsage {
