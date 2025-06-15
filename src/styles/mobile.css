@@ -1,0 +1,102 @@
+
+/* Mobile-specific styles */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-pl {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-pr {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Touch optimization */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth scrolling on mobile */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .ios-bounce-fix {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+}
+
+/* Android specific fixes */
+@media (max-width: 768px) {
+  .android-select-fix select {
+    background-image: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
+
+/* Improve tap targets for accessibility */
+button, 
+[role="button"], 
+input[type="button"], 
+input[type="submit"], 
+a {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Custom scrollbar for mobile */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile-first responsive utilities */
+@media (max-width: 640px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-full-width {
+    width: 100vw !important;
+  }
+  
+  .mobile-padding {
+    padding: 1rem !important;
+  }
+}
+
+/* Landscape mobile optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  .landscape-hidden {
+    display: none !important;
+  }
+  
+  .landscape-compact {
+    padding: 0.5rem !important;
+  }
+}
