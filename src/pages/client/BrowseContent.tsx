@@ -65,7 +65,9 @@ const BrowseContent = () => {
               <CardTitle className="text-lg">{course.title}</CardTitle>
               <div className="flex items-center text-sm text-gray-500">
                 <User className="w-4 h-4 mr-1" />
-                <span>by {course.coach.first_name} {course.coach.last_name}</span>
+                <span>
+                  by {course.coach?.first_name || 'Unknown'} {course.coach?.last_name || 'Coach'}
+                </span>
               </div>
             </CardHeader>
             
@@ -75,7 +77,7 @@ const BrowseContent = () => {
               <div className="flex items-center justify-between text-sm mb-4">
                 <div className="flex items-center text-gray-500">
                   <Clock className="w-4 h-4 mr-1" />
-                  <span>{course.estimated_duration} hours</span>
+                  <span>{course.estimated_duration || 0} hours</span>
                 </div>
                 <div className="flex items-center">
                   <Star className="w-4 h-4 mr-1 text-yellow-500 fill-current" />
