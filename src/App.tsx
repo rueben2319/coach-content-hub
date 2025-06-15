@@ -39,23 +39,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <DashboardLayout>{children}</DashboardLayout>;
 };
 
-const DashboardRouter = () => {
-  const { profile } = useAuth();
-  
-  if (!profile) return null;
-  
-  switch (profile.role) {
-    case 'admin':
-      return <AdminDashboard />;
-    case 'coach':
-      return <CoachDashboard />;
-    case 'client':
-      return <ClientDashboard />;
-    default:
-      return <Navigate to="/" replace />;
-  }
-};
-
 const AuthenticatedRedirect = () => {
   const { user, profile, loading } = useAuth();
   
@@ -93,52 +76,73 @@ const App = () => (
           <Routes>
             <Route path="/" element={<AuthenticatedRedirect />} />
             <Route path="/auth" element={<AuthForm />} />
+            
+            {/* Admin Routes */}
             <Route 
-              path="/admin/*" 
+              path="/admin" 
               element={
                 <ProtectedRoute>
                   <AdminDashboard />
                 </ProtectedRoute>
               }
             />
+            
+            {/* Coach Routes */}
             <Route 
-              path="/coach/*" 
+              path="/coach" 
               element={
                 <ProtectedRoute>
                   <CoachDashboard />
                 </ProtectedRoute>
               }
-            >
-              {/* Nested routes for coach */}
-              <Route path="profile" element={<CoachProfile />} />
-              <Route 
-                path="subscription" 
-                element={
+            />
+            <Route 
+              path="/coach/profile" 
+              element={
+                <ProtectedRoute>
+                  <CoachProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/coach/subscription" 
+              element={
+                <ProtectedRoute>
                   <React.Suspense fallback={<div className="flex justify-center p-6">Loading...</div>}>
                     <CoachSubscriptionPage />
                   </React.Suspense>
-                } 
-              />
-            </Route>
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Client Routes */}
             <Route 
-              path="/client/*" 
+              path="/client" 
               element={
                 <ProtectedRoute>
                   <ClientDashboard />
                 </ProtectedRoute>
               }
-            >
-              {/* Nested routes for client */}
-              <Route path="profile" element={<ClientProfile />} />
-              <Route 
-                path="subscription" 
-                element={
+            />
+            <Route 
+              path="/client/profile" 
+              element={
+                <ProtectedRoute>
+                  <ClientProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/client/subscription" 
+              element={
+                <ProtectedRoute>
                   <React.Suspense fallback={<div className="flex justify-center p-6">Loading...</div>}>
                     <ClientSubscriptionPage />
                   </React.Suspense>
-                } 
-              />
-            </Route>
+                </ProtectedRoute>
+              }
+            />
+            
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
