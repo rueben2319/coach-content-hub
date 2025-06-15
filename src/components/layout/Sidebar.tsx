@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -23,7 +24,6 @@ const Sidebar = () => {
   const { profile, signOut } = useAuth();
   const location = useLocation();
   const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = useState(false);
 
   if (!profile) return null;
 
@@ -66,29 +66,26 @@ const Sidebar = () => {
   const displayName = fullName || profile.email;
   const initials = fullName ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase() : profile.email[0].toUpperCase();
 
-  // Fixed function to determine if a menu item is active
   const isActiveMenuItem = (itemPath: string) => {
-    // If the item is the dashboard root (e.g., /client, /coach, /admin)
     const dashboardRoots = ['/admin', '/coach', '/client'];
     if (dashboardRoots.includes(itemPath)) {
-      // Only active when exactly at the dashboard root
       return location.pathname === itemPath;
     }
-    // Exact match for other pages
     return location.pathname === itemPath;
   };
 
-  const SidebarContent = () => (
-    <>
+  // For desktop, return a properly positioned fixed sidebar
+  return (
+    <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 flex flex-col z-30">
       {/* Logo */}
-      <div className="p-4 md:p-6 border-b border-gray-200">
+      <div className="p-4 md:p-6 border-b border-gray-200 flex-shrink-0">
         <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
           CoachHub
         </h1>
       </div>
 
       {/* User Info */}
-      <div className="p-3 md:p-4 border-b border-gray-200">
+      <div className="p-3 md:p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
             {initials}
@@ -104,8 +101,8 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-3 md:p-4 space-y-1 md:space-y-2">
+      {/* Navigation - scrollable area */}
+      <nav className="flex-1 p-3 md:p-4 space-y-1 md:space-y-2 overflow-y-auto">
         {menuItems.map((item) => {
           const isActive = isActiveMenuItem(item.path);
           return (
@@ -117,63 +114,26 @@ const Sidebar = () => {
                   ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
-              // On mobile, close sidebar after clicking a menu item
-              onClick={() => isMobile && setIsOpen(false)}
               style={{ textDecoration: 'none' }}
             >
-              <item.icon className="w-4 h-4 md:w-5 md:h-5" />
+              <item.icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
               <span className="font-medium text-sm md:text-base">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Sign Out */}
-      <div className="p-3 md:p-4 border-t border-gray-200">
+      {/* Sign Out - always visible at bottom */}
+      <div className="p-3 md:p-4 border-t border-gray-200 flex-shrink-0">
         <Button
           variant="ghost"
           className="w-full justify-start text-gray-600 hover:text-gray-900 text-sm md:text-base"
           onClick={signOut}
         >
-          <LogOut className="w-4 h-4 md:w-5 md:h-5 mr-3" />
+          <LogOut className="w-4 h-4 md:w-5 md:h-5 mr-3 flex-shrink-0" />
           Sign Out
         </Button>
       </div>
-    </>
-  );
-
-  if (isMobile) {
-    return (
-      <>
-        {/* Mobile Menu Button - Fixed position for better accessibility */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="fixed top-4 right-4 z-50 bg-white shadow-md border border-gray-200 hover:bg-gray-50 md:hidden"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </Button>
-
-        {/* Mobile Sidebar Overlay */}
-        {isOpen && (
-          <div className="fixed inset-0 z-40 md:hidden">
-            <div 
-              className="absolute inset-0 bg-black bg-opacity-50"
-              onClick={() => setIsOpen(false)}
-            />
-            <div className="absolute right-0 top-0 h-full w-80 bg-white border-l border-gray-200 flex flex-col shadow-xl">
-              <SidebarContent />
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
-
-  return (
-    <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
-      <SidebarContent />
     </div>
   );
 };
