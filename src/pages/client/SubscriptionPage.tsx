@@ -1,129 +1,131 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
-import { useClientSubscription, useSubscriptionUsage, useCreateSubscription } from '@/hooks/useSubscription';
-import { SUBSCRIPTION_TIERS, getTierById, SubscriptionTier } from '@/config/subscriptionTiers';
-import SubscriptionPricingCard from '@/components/subscription/SubscriptionPricingCard';
-import SubscriptionUsageCard from '@/components/subscription/SubscriptionUsageCard';
-import { ArrowLeft, CreditCard } from 'lucide-react';
+import { CreditCard, Layers } from 'lucide-react';
+
+interface Enrollment {
+  id: string;
+  course: {
+    id: string;
+    title: string;
+    coach_id: string;
+    price: number;
+    currency: string;
+  } | null;
+  enrolled_at: string;
+  amount: number;
+  payment_status: string;
+  expires_at: string | null;
+}
+
+const fetchEnrollments = async (userId: string): Promise<Enrollment[]> => {
+  const { data, error } = await supabase
+    .from('enrollments')
+    .select(`
+      id,
+      course:course_id (
+        id,
+        title,
+        coach_id,
+        price,
+        currency
+      ),
+      enrolled_at,
+      amount,
+      payment_status,
+      expires_at
+    `)
+    .eq('client_id', userId)
+    .order('enrolled_at', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+  // Filter out enrollments where course is null
+  return (data || []).filter((enr: any) => enr.course) as Enrollment[];
+};
+
+// Helper for payment status badge
+const getStatusBadge = (status: string) => {
+  const statusConfig = {
+    completed: { label: 'Active', variant: 'default' as const },
+    active: { label: 'Active', variant: 'default' as const },
+    pending: { label: 'Pending', variant: 'secondary' as const },
+    expired: { label: 'Expired', variant: 'destructive' as const },
+    cancelled: { label: 'Cancelled', variant: 'outline' as const },
+  };
+  return statusConfig[status as keyof typeof statusConfig] || { label: status, variant: 'secondary' as const };
+};
 
 const ClientSubscriptionPage: React.FC = () => {
-  const [isYearly, setIsYearly] = useState(false);
-  const [loadingTier, setLoadingTier] = useState<string>('');
-  const [loadingBillingCycle, setLoadingBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  
-  const { data: subscription, isLoading: subscriptionLoading } = useClientSubscription();
-  const { data: usage, isLoading: usageLoading } = useSubscriptionUsage();
-  const createSubscription = useCreateSubscription();
+  const { user } = useAuth();
 
-  const currentTier = subscription ? getTierById(subscription.tier) : null;
-
-  const handleSelectPlan = (tierId: string, billingCycle: 'monthly' | 'yearly') => {
-    setLoadingTier(tierId);
-    setLoadingBillingCycle(billingCycle);
-    
-    createSubscription.mutate({
-      tier: tierId,
-      billingCycle,
-    }, {
-      onSettled: () => {
-        setLoadingTier('');
-      }
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: { label: 'Active', variant: 'default' as const },
-      trial: { label: 'Trial', variant: 'secondary' as const },
-      expired: { label: 'Expired', variant: 'destructive' as const },
-      inactive: { label: 'Inactive', variant: 'destructive' as const },
-    };
-    
-    return statusConfig[status as keyof typeof statusConfig] || statusConfig.inactive;
-  };
-
-  if (subscriptionLoading || usageLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  const { data: enrollments, isLoading, error } = useQuery({
+    queryKey: ['client-enrollments', user?.id],
+    queryFn: () => {
+      if (!user) throw new Error('No user found');
+      return fetchEnrollments(user.id);
+    },
+    enabled: !!user,
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Subscription Management</h1>
+          <Layers className="w-7 h-7 text-blue-600" />
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
+            My Enrollments &amp; Subscriptions
+          </h1>
         </div>
 
-        {/* Current Subscription Status */}
-        {subscription && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Current Subscription
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-lg">{currentTier?.name || subscription.tier}</span>
-                    <Badge {...getStatusBadge(subscription.status)}>
-                      {getStatusBadge(subscription.status).label}
-                    </Badge>
-                  </div>
-                  <p className="text-gray-600">
-                    ${subscription.price}/{subscription.billing_cycle}
-                  </p>
-                  {subscription.expires_at && (
-                    <p className="text-sm text-gray-500">
-                      Expires: {new Date(subscription.expires_at).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-                
-                {currentTier && usage && (
-                  <div className="sm:w-80">
-                    <SubscriptionUsageCard tier={currentTier} usage={usage} />
-                  </div>
-                )}
+        {/* Enrollments */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Your Courses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center p-6">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-8">
-          <span className={`text-sm ${!isYearly ? 'font-semibold' : ''}`}>Monthly</span>
-          <Switch checked={isYearly} onCheckedChange={setIsYearly} />
-          <span className={`text-sm ${isYearly ? 'font-semibold' : ''}`}>
-            Yearly <span className="text-green-600">(Save 20%)</span>
-          </span>
-        </div>
-
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {SUBSCRIPTION_TIERS.map((tier) => (
-            <SubscriptionPricingCard
-              key={tier.id}
-              tier={tier}
-              isYearly={isYearly}
-              currentTier={subscription?.tier}
-              onSelect={handleSelectPlan}
-              isLoading={createSubscription.isPending}
-              loadingTier={loadingTier}
-              loadingBillingCycle={loadingBillingCycle}
-            />
-          ))}
-        </div>
+            ) : (enrollments && enrollments.length > 0) ? (
+              <div className="divide-y space-y-0">
+                {enrollments.map((enr) => (
+                  <div className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2" key={enr.id}>
+                    <div>
+                      <div className="font-semibold text-lg">{enr.course?.title}</div>
+                      <div className="text-xs text-gray-500">{new Date(enr.enrolled_at).toLocaleDateString()}</div>
+                    </div>
+                    <div className="flex flex-col sm:items-end">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-700 font-medium">
+                          {enr.course?.price} {enr.course?.currency}
+                        </span>
+                        <Badge {...getStatusBadge(enr.payment_status)}>
+                          {getStatusBadge(enr.payment_status).label}
+                        </Badge>
+                      </div>
+                      {enr.expires_at && (
+                        <div className="text-xs text-gray-400">Expires: {new Date(enr.expires_at).toLocaleDateString()}</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-gray-500 p-6">
+                You are not enrolled in any courses yet.
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Additional Info */}
         <Card>
@@ -132,7 +134,7 @@ const ClientSubscriptionPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">
-              Contact our support team if you have questions about subscriptions or need help choosing the right plan.
+              Contact our support team if you have questions about payments, subscriptions, or need help choosing the right course.
             </p>
             <Button variant="outline">
               Contact Support
