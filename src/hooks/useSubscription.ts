@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,16 +12,23 @@ export const useCoachSubscription = () => {
     queryFn: async () => {
       if (!user) throw new Error('No user found');
 
+      console.log('Fetching subscription for user:', user.id);
+
       const { data, error } = await supabase
         .from('coach_subscriptions')
         .select('*')
         .eq('coach_id', user.id)
-        .eq('status', 'active') // Only get active subscriptions
+        .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) {
+        console.error('Subscription query error:', error);
+        throw error;
+      }
+
+      console.log('Subscription data:', data);
       return data as CoachSubscription | null;
     },
     enabled: !!user,
@@ -37,13 +43,18 @@ export const useSubscriptionUsage = () => {
     queryFn: async () => {
       if (!user) throw new Error('No user found');
 
+      console.log('Fetching usage for user:', user.id);
+
       // Get course count and course IDs
       const { data: coursesData, count: coursesCount, error: coursesError } = await supabase
         .from('courses')
         .select('id', { count: 'exact', head: false })
         .eq('coach_id', user.id);
 
-      if (coursesError) throw coursesError;
+      if (coursesError) {
+        console.error('Courses query error:', coursesError);
+        throw coursesError;
+      }
 
       const courseIds = (coursesData || []).map((course: { id: string }) => course.id);
 
@@ -55,16 +66,22 @@ export const useSubscriptionUsage = () => {
           .select('client_id', { count: 'exact', head: true })
           .in('course_id', courseIds);
 
-        if (studentsError) throw studentsError;
+        if (studentsError) {
+          console.error('Students query error:', studentsError);
+          throw studentsError;
+        }
 
         studentsCount = studentsCnt || 0;
       }
 
-      return {
+      const usage = {
         coursesCreated: coursesCount || 0,
         studentsEnrolled: studentsCount,
         storageUsedMB: 0, // TODO: Calculate actual storage usage
       } as SubscriptionUsage;
+
+      console.log('Usage data:', usage);
+      return usage;
     },
     enabled: !!user,
   });
