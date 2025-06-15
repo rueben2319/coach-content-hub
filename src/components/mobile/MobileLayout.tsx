@@ -2,6 +2,7 @@
 import React from 'react';
 import { MobileNavigation } from './MobileNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface MobileLayoutProps {
   children: React.ReactNode;
@@ -29,3 +30,4 @@ export function MobileLayout({ children, showBottomNav = true }: MobileLayoutPro
     </div>
   );
 }
+
