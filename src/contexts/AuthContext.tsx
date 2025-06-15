@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     let mounted = true;
 
-    // Set up auth state listener first
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log('Auth state changed:', event, 'Session exists:', !!newSession);
@@ -57,19 +57,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
-          console.log('New session with user, fetching profile...');
+          console.log('User authenticated, fetching profile...');
           await fetchUserProfile(newSession.user.id);
         } else {
-          console.log('Session cleared, clearing profile');
+          console.log('No user, clearing profile');
           setProfile(null);
         }
         
-        // Set loading to false after handling auth state
         setLoading(false);
       }
     );
 
-    // Then initialize current session
+    // Initialize current session
     const initializeAuth = async () => {
       try {
         console.log('Getting current session...');
@@ -200,17 +199,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   console.log('AuthProvider render - User:', !!user, 'Profile:', !!profile, 'Loading:', loading);
 
+  const contextValue: AuthContextType = {
+    user,
+    profile,
+    session,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+    updateProfile
+  };
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      profile,
-      session,
-      loading,
-      signIn,
-      signUp,
-      signOut,
-      updateProfile
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
