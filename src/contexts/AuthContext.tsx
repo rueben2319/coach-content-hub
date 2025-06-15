@@ -94,10 +94,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setProfile(null);
           }
           
-          // Ensure loading is set to false after any auth state change
-          if (event !== 'INITIAL_SESSION') {
-            setLoading(false);
-          }
+          // Always ensure loading is false after any auth state change
+          console.log('Setting loading to false after auth state change:', event);
+          setLoading(false);
         } catch (error) {
           console.error('Auth state change error:', error);
           if (mounted) {
