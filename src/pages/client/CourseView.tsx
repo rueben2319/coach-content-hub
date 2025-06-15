@@ -9,55 +9,27 @@ import CoursePlayer from '@/components/courses/CoursePlayer';
 import { useCourseProgress, useUpdateProgress } from '@/hooks/useCourseProgress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { fetchCourseContent } from '@/components/courses/courseContentApi';
 
-// Mock data - replace with actual data fetching
-const mockCourse = {
-  id: '1',
-  title: 'Complete Web Development Bootcamp',
-  description: 'Learn full-stack web development from scratch',
-  instructor: 'John Doe',
-  duration: 1200, // minutes
-  enrollmentId: 'enroll_123'
-};
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  instructor: string;
+  duration: number;
+  price: number;
+  currency: string;
+}
 
-const mockContent = [
-  {
-    id: '1',
-    title: 'Introduction to Web Development',
-    content_type: 'video' as const,
-    content_url: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-    duration: 300,
-    sort_order: 1,
-    is_preview: true
-  },
-  {
-    id: '2',
-    title: 'HTML Fundamentals',
-    content_type: 'video' as const,
-    content_url: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4',
-    duration: 600,
-    sort_order: 2,
-    is_preview: false
-  },
-  {
-    id: '3',
-    title: 'CSS Styling Guide',
-    content_type: 'text' as const,
-    content_text: '<h2>CSS Basics</h2><p>CSS (Cascading Style Sheets) is used to style HTML elements...</p>',
-    duration: 0,
-    sort_order: 3,
-    is_preview: false
-  },
-  {
-    id: '4',
-    title: 'JavaScript Introduction',
-    content_type: 'audio' as const,
-    content_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
-    duration: 450,
-    sort_order: 4,
-    is_preview: false
-  }
-];
+interface Enrollment {
+  id: string;
+  course_id: string;
+  client_id: string;
+  enrolled_at: string;
+  payment_status: string;
+}
 
 const CourseView: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -67,9 +39,84 @@ const CourseView: React.FC = () => {
   
   const [currentContentId, setCurrentContentId] = useState<string | undefined>();
   const [completedContent, setCompletedContent] = useState<Set<string>>(new Set());
-  
-  // In a real app, you'd fetch the enrollment ID based on user and course
-  const { data: progressData } = useCourseProgress(mockCourse.enrollmentId);
+  const [enrollmentId, setEnrollmentId] = useState<string>('');
+
+  // Fetch course data
+  const { data: course, isLoading: courseLoading } = useQuery({
+    queryKey: ['course', courseId],
+    queryFn: async () => {
+      if (!courseId) throw new Error('No course ID');
+      
+      const { data, error } = await supabase
+        .from('courses')
+        .select(`
+          id,
+          title,
+          description,
+          estimated_duration,
+          price,
+          currency,
+          profiles!coach_id (
+            first_name,
+            last_name
+          )
+        `)
+        .eq('id', courseId)
+        .single();
+      
+      if (error) throw error;
+      
+      const instructor = data.profiles 
+        ? `${data.profiles.first_name || ''} ${data.profiles.last_name || ''}`.trim()
+        : 'Unknown Instructor';
+      
+      return {
+        id: data.id,
+        title: data.title,
+        description: data.description || '',
+        instructor,
+        duration: data.estimated_duration || 0,
+        price: data.price,
+        currency: data.currency
+      } as Course;
+    },
+    enabled: !!courseId,
+  });
+
+  // Fetch enrollment data
+  const { data: enrollment } = useQuery({
+    queryKey: ['enrollment', courseId, user?.id],
+    queryFn: async () => {
+      if (!courseId || !user?.id) throw new Error('Missing data');
+      
+      const { data, error } = await supabase
+        .from('enrollments')
+        .select('*')
+        .eq('course_id', courseId)
+        .eq('client_id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return data as Enrollment;
+    },
+    enabled: !!courseId && !!user?.id,
+  });
+
+  // Fetch course content
+  const { data: content = [] } = useQuery({
+    queryKey: ['course-content', courseId],
+    queryFn: () => fetchCourseContent(courseId!),
+    enabled: !!courseId,
+  });
+
+  // Set enrollment ID when enrollment data is available
+  useEffect(() => {
+    if (enrollment) {
+      setEnrollmentId(enrollment.id);
+    }
+  }, [enrollment]);
+
+  const { data: progressData } = useCourseProgress(enrollmentId);
   const updateProgressMutation = useUpdateProgress();
 
   useEffect(() => {
@@ -84,34 +131,35 @@ const CourseView: React.FC = () => {
   }, [progressData]);
 
   const handleProgressUpdate = (contentId: string, progress: number, completed: boolean) => {
+    if (!enrollmentId) return;
+
     updateProgressMutation.mutate({
       content_id: contentId,
-      enrollment_id: mockCourse.enrollmentId,
+      enrollment_id: enrollmentId,
       progress_percentage: Math.round(progress),
       completed,
       completed_at: completed ? new Date().toISOString() : undefined,
-      time_spent: 0, // This should be calculated based on actual viewing time
+      time_spent: 0,
     });
 
     if (completed && !completedContent.has(contentId)) {
       setCompletedContent(prev => new Set(prev).add(contentId));
       
-      // Check if course is fully completed
-      const totalContent = mockContent.length;
-      const completedCount = completedContent.size + 1; // +1 for the newly completed content
+      const totalContent = content.length;
+      const completedCount = completedContent.size + 1;
       
       if (completedCount === totalContent) {
         toast({
           title: 'Congratulations! 🎉',
           description: 'You have completed the entire course!',
         });
-        // Here you could trigger certificate generation
       }
     }
   };
 
   const getOverallProgress = () => {
-    return (completedContent.size / mockContent.length) * 100;
+    if (content.length === 0) return 0;
+    return (completedContent.size / content.length) * 100;
   };
 
   const formatDuration = (minutes: number) => {
@@ -124,6 +172,18 @@ const CourseView: React.FC = () => {
     return <div>Course not found</div>;
   }
 
+  if (courseLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!course) {
+    return <div>Course not found</div>;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -132,14 +192,14 @@ const CourseView: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/client/dashboard')}
+            onClick={() => navigate('/client')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">{mockCourse.title}</h1>
-            <p className="text-gray-600 mt-1">by {mockCourse.instructor}</p>
+            <h1 className="text-3xl font-bold">{course.title}</h1>
+            <p className="text-gray-600 mt-1">by {course.instructor}</p>
           </div>
         </div>
 
@@ -161,7 +221,7 @@ const CourseView: React.FC = () => {
           <CardTitle className="flex items-center justify-between">
             <span>Course Progress</span>
             <span className="text-sm font-normal text-gray-600">
-              {completedContent.size} of {mockContent.length} lessons completed
+              {completedContent.size} of {content.length} lessons completed
             </span>
           </CardTitle>
         </CardHeader>
@@ -170,19 +230,28 @@ const CourseView: React.FC = () => {
             <Progress value={getOverallProgress()} className="h-3" />
             <div className="flex justify-between text-sm text-gray-600">
               <span>{Math.round(getOverallProgress())}% Complete</span>
-              <span>{formatDuration(mockCourse.duration)} total duration</span>
+              <span>{formatDuration(course.duration)} total duration</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Course Player */}
-      <CoursePlayer
-        courseId={courseId}
-        content={mockContent}
-        initialContentId={currentContentId}
-        onProgressUpdate={handleProgressUpdate}
-      />
+      {content.length > 0 ? (
+        <CoursePlayer
+          courseId={courseId}
+          content={content}
+          initialContentId={currentContentId}
+          onProgressUpdate={handleProgressUpdate}
+        />
+      ) : (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-600">No content available for this course</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Course Info */}
       <Card>
@@ -194,7 +263,7 @@ const CourseView: React.FC = () => {
         </CardHeader>
         <CardContent>
           <p className="text-gray-700 leading-relaxed">
-            {mockCourse.description}
+            {course.description}
           </p>
         </CardContent>
       </Card>
