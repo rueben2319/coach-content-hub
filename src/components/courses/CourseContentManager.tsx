@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -328,10 +327,28 @@ const CourseContentForm: React.FC<{
     setIsLoading(true);
 
     try {
+      let newSortOrder = 0;
+      if (!content) {
+        // Fetch the current highest sort_order for this course
+        const { data: maxOrderData, error: maxOrderError } = await supabase
+          .from('course_content')
+          .select('sort_order')
+          .eq('course_id', courseId)
+          .order('sort_order', { ascending: false })
+          .limit(1);
+
+        if (maxOrderError) throw maxOrderError;
+        if (Array.isArray(maxOrderData) && maxOrderData.length > 0) {
+          newSortOrder = (maxOrderData[0].sort_order ?? 0) + 1;
+        }
+      }
+
       const contentData = {
         ...formData,
         course_id: courseId,
-        sort_order: content?.sort_order || Date.now(),
+        sort_order: content
+          ? content.sort_order
+          : newSortOrder,
       };
 
       if (content) {
