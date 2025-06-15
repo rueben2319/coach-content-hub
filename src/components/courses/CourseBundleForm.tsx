@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +27,21 @@ const bundleSchema = z.object({
 });
 
 type BundleFormData = z.infer<typeof bundleSchema>;
+
+// Database bundle type (may include 'both')
+interface DatabaseBundle {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  subscription_price?: number | null;
+  pricing_model: 'one_time' | 'subscription' | 'both';
+  currency: string;
+  is_published: boolean;
+  coach_id: string;
+  created_at: string;
+  updated_at: string;
+}
 
 interface CourseBundleFormProps {
   bundleId?: string;
@@ -70,7 +84,7 @@ const CourseBundleForm: React.FC<CourseBundleFormProps> = ({
         .single();
 
       if (error) throw error;
-      return data;
+      return data as DatabaseBundle;
     },
     enabled: !!bundleId,
   });
@@ -95,12 +109,14 @@ const CourseBundleForm: React.FC<CourseBundleFormProps> = ({
   // Populate form with existing data
   useEffect(() => {
     if (bundleData) {
+      const pricingModel = bundleData.pricing_model === 'both' ? 'one_time' : bundleData.pricing_model as 'one_time' | 'subscription';
+      
       reset({
         title: bundleData.title,
         description: bundleData.description || '',
         price: bundleData.price,
         subscription_price: bundleData.subscription_price || 0,
-        pricing_model: bundleData.pricing_model === 'both' ? 'one_time' : bundleData.pricing_model as 'one_time' | 'subscription',
+        pricing_model: pricingModel,
         currency: bundleData.currency,
         is_published: bundleData.is_published,
       });

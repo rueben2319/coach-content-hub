@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +25,22 @@ interface CourseBundle {
   updated_at: string;
 }
 
+// Database bundle type (may include 'both')
+interface DatabaseBundle {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  subscription_price?: number | null;
+  pricing_model: 'one_time' | 'subscription' | 'both';
+  currency: string;
+  is_published: boolean;
+  thumbnail_url?: string | null;
+  coach_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const CourseBundleManager: React.FC = () => {
   const { user } = useAuth();
   const [currentView, setCurrentView] = useState<ViewType>('list');
@@ -45,10 +60,11 @@ const CourseBundleManager: React.FC = () => {
       if (error) throw error;
       
       // Filter out 'both' pricing models and transform to expected type
-      return data
+      return (data as DatabaseBundle[])
         .filter(bundle => bundle.pricing_model !== 'both')
         .map(bundle => ({
           ...bundle,
+          description: bundle.description || '',
           pricing_model: bundle.pricing_model as 'one_time' | 'subscription'
         })) as CourseBundle[];
     },
