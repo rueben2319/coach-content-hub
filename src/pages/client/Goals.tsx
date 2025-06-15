@@ -41,79 +41,104 @@ const Goals = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
+        return <CheckCircle className="w-5 h-5 text-success-600" />;
       case 'in_progress':
-        return <AlertCircle className="w-5 h-5 text-blue-600" />;
+        return <AlertCircle className="w-5 h-5 text-primary-600" />;
       default:
-        return <Target className="w-5 h-5 text-gray-600" />;
+        return <Target className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
-        return 'bg-red-100 text-red-800';
+        return 'status-error';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'status-warning';
       case 'low':
-        return 'bg-green-100 text-green-800';
+        return 'status-success';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-secondary-100 text-secondary-700 border border-secondary-200';
     }
   };
 
+  const getProgressColor = (progress: number) => {
+    if (progress >= 80) return 'bg-success-500';
+    if (progress >= 50) return 'bg-warning-500';
+    return 'bg-primary-500';
+  };
+
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
-      <div className="mb-6 md:mb-8 flex justify-between items-center">
+    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My Goals</h1>
-          <p className="text-gray-600 mt-2">Track your learning objectives and progress</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">My Goals</h1>
+          <p className="text-lg text-muted-foreground">Track your learning objectives and celebrate your progress</p>
         </div>
-        <Button>
+        <Button className="touch-target bg-primary hover:bg-primary-600 transition-colors w-fit">
           <Plus className="w-4 h-4 mr-2" />
-          Add Goal
+          Add New Goal
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+      <div className="three-column-grid">
         {goals.map((goal) => (
-          <Card key={goal.id} className="hover:shadow-md transition-shadow h-full flex flex-col">
+          <Card key={goal.id} className="card-interactive card-soft h-full flex flex-col group">
             <CardHeader className="pb-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  {getStatusIcon(goal.status)}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start space-x-3 flex-1 min-w-0">
+                  <div className="flex-shrink-0 p-2 bg-primary-50 rounded-lg group-hover:bg-primary-100 transition-colors">
+                    {getStatusIcon(goal.status)}
+                  </div>
                   <div className="min-w-0 flex-1">
-                    <CardTitle className="text-lg font-semibold line-clamp-2">
+                    <CardTitle className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors">
                       {goal.title}
                     </CardTitle>
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
                       {goal.description}
                     </p>
                   </div>
                 </div>
-                <Badge className={`text-xs ml-2 flex-shrink-0 ${getPriorityColor(goal.priority)}`}>
+                <Badge className={`text-xs font-medium flex-shrink-0 ${getPriorityColor(goal.priority)}`}>
                   {goal.priority}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col">
+            
+            <CardContent className="flex-1 flex flex-col pt-0">
               <div className="space-y-4 flex-1">
                 <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>Progress</span>
-                    <span className="font-medium">{goal.progress}%</span>
+                  <div className="flex justify-between text-sm mb-3">
+                    <span className="font-medium text-foreground">Progress</span>
+                    <span className="font-semibold text-foreground">{goal.progress}%</span>
                   </div>
-                  <Progress value={goal.progress} className="h-2" />
+                  <Progress 
+                    value={goal.progress} 
+                    className="h-2"
+                    style={{
+                      background: `linear-gradient(to right, ${getProgressColor(goal.progress)} ${goal.progress}%, hsl(var(--muted)) ${goal.progress}%)`
+                    }}
+                  />
                 </div>
 
-                <div className="flex items-center justify-between text-sm mt-auto">
-                  <div className="flex items-center text-gray-600">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    Target: {new Date(goal.target_date).toLocaleDateString()}
+                <div className="flex items-center justify-between text-sm mt-auto pt-4 border-t border-border">
+                  <div className="flex items-center text-muted-foreground">
+                    <Calendar className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                    <span className="font-medium">
+                      Target: {new Date(goal.target_date).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                      })}
+                    </span>
                   </div>
                   <Badge 
                     variant={goal.status === 'completed' ? 'default' : 'secondary'}
-                    className="text-xs"
+                    className={`text-xs font-medium ${
+                      goal.status === 'completed' 
+                        ? "status-success" 
+                        : "bg-secondary-100 text-secondary-700 border border-secondary-200"
+                    }`}
                   >
                     {goal.status.replace('_', ' ')}
                   </Badge>
@@ -125,11 +150,15 @@ const Goals = () => {
       </div>
 
       {goals.length === 0 && (
-        <div className="text-center py-12">
-          <Target className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No goals set yet</h3>
-          <p className="text-gray-600 mb-4">Start setting learning goals to track your progress</p>
-          <Button>
+        <div className="text-center py-16">
+          <div className="mx-auto w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
+            <Target className="h-10 w-10 text-muted-foreground" />
+          </div>
+          <h3 className="text-xl font-semibold text-foreground mb-3">No goals set yet</h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            Start setting learning goals to track your progress and stay motivated on your journey.
+          </p>
+          <Button className="touch-target bg-primary hover:bg-primary-600 transition-colors">
             <Plus className="w-4 h-4 mr-2" />
             Create Your First Goal
           </Button>
