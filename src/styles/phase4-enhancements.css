@@ -1,0 +1,210 @@
+
+/* Phase 4: Polish & Testing Enhancements */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card,
+  .border {
+    border-width: 2px !important;
+  }
+  
+  button,
+  .button {
+    border: 2px solid currentColor !important;
+  }
+  
+  .text-muted-foreground {
+    color: inherit !important;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus management improvements */
+.focus-trap {
+  position: relative;
+}
+
+/* Enhanced focus indicators */
+.enhanced-focus:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Browser-specific fixes */
+.browser-safari {
+  /* Safari-specific optimizations */
+}
+
+.browser-safari .sticky-element {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.browser-firefox {
+  /* Firefox-specific optimizations */
+}
+
+.browser-chrome {
+  /* Chrome-specific optimizations */
+}
+
+/* Mobile browser fixes */
+.is-ios {
+  /* iOS-specific fixes */
+}
+
+.is-ios .fixed-element {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
+.is-android {
+  /* Android-specific fixes */
+}
+
+/* Accessibility improvements */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--primary);
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Performance optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Legacy browser fallbacks */
+.no-grid .grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.no-flexbox .flex {
+  display: block;
+}
+
+.no-custom-properties {
+  /* Fallback styles without CSS custom properties */
+}
+
+/* Touch optimization */
+.touch-optimized {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Cross-browser input improvements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* iOS zoom prevention */
+@media screen and (max-device-width: 480px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Performance monitoring visualization */
+.performance-indicator {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 9999;
+  font-family: monospace;
+}
+
+/* Error boundary styling */
+.error-boundary {
+  padding: 20px;
+  border: 2px dashed #ff6b6b;
+  border-radius: 8px;
+  background: #ffe0e0;
+  color: #d63031;
+  text-align: center;
+}
+
+/* Loading state optimizations */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-skeleton {
+    animation: none;
+    background: #f0f0f0;
+  }
+}
