@@ -44,51 +44,51 @@ const ClientProgress = () => {
       </div>
 
       {/* Progress Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Courses</p>
-                <p className="text-2xl font-bold text-gray-900">{totalCourses}</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">{totalCourses}</p>
               </div>
-              <BookOpen className="w-8 h-8 text-blue-600" />
+              <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">{completedCourses}</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">{completedCourses}</p>
               </div>
-              <Award className="w-8 h-8 text-green-600" />
+              <Award className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">In Progress</p>
-                <p className="text-2xl font-bold text-gray-900">{totalCourses - completedCourses}</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">{totalCourses - completedCourses}</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-orange-600" />
+              <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-orange-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Study Hours</p>
-                <p className="text-2xl font-bold text-gray-900">24</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">24</p>
               </div>
-              <Clock className="w-8 h-8 text-purple-600" />
+              <Clock className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>
@@ -101,7 +101,7 @@ const ClientProgress = () => {
         </CardHeader>
         <CardContent>
           {enrollments.length > 0 ? (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {enrollments.map((enrollment) => {
                 const progress = getMockProgress();
                 const isCompleted = progress === 100;
@@ -109,16 +109,16 @@ const ClientProgress = () => {
                 return (
                   <div key={enrollment.id} className="p-4 border rounded-lg">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 line-clamp-1">
                           {enrollment.course.title}
                         </h3>
                         <p className="text-sm text-gray-600">
                           by {getInstructorName(enrollment.course)}
                         </p>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={isCompleted ? 'default' : 'secondary'}>
+                      <div className="flex items-center space-x-2 ml-4">
+                        <Badge variant={isCompleted ? 'default' : 'secondary'} className="text-xs">
                           {isCompleted ? 'Completed' : 'In Progress'}
                         </Badge>
                         <Badge variant="outline" className="text-xs">

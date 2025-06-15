@@ -61,9 +61,9 @@ const Coaches = () => {
       </div>
 
       {coaches.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
           {coaches.map((coach) => (
-            <Card key={coach.id} className="hover:shadow-lg transition-shadow">
+            <Card key={coach.id} className="hover:shadow-lg transition-shadow h-full flex flex-col">
               <CardHeader className="pb-4">
                 <div className="flex items-start space-x-4">
                   <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
@@ -78,37 +78,35 @@ const Coaches = () => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-xl font-semibold">
+                    <div className="flex items-center justify-between mb-2">
+                      <CardTitle className="text-xl font-semibold line-clamp-1">
                         {coach.first_name} {coach.last_name}
                       </CardTitle>
-                      <div className="flex items-center space-x-1">
-                        <Badge 
-                          variant={coach.is_available ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {coach.is_available ? 'Available' : 'Busy'}
-                        </Badge>
-                      </div>
+                      <Badge 
+                        variant={coach.is_available ? 'default' : 'secondary'}
+                        className="text-xs ml-2"
+                      >
+                        {coach.is_available ? 'Available' : 'Busy'}
+                      </Badge>
                     </div>
                     
-                    <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                    <div className="flex items-center space-x-4 mb-2 text-sm text-gray-600">
                       <div className="flex items-center">
                         <Star className="w-4 h-4 mr-1 text-yellow-500" />
                         {coach.rating}
                       </div>
                       <div className="flex items-center">
                         <User className="w-4 h-4 mr-1" />
-                        {coach.students} students
+                        {coach.students}
                       </div>
                       <div className="flex items-center">
                         <BookOpen className="w-4 h-4 mr-1" />
-                        {coach.courses} courses
+                        {coach.courses}
                       </div>
                     </div>
                     
                     {coach.location && (
-                      <div className="flex items-center mt-2 text-sm text-gray-600">
+                      <div className="flex items-center text-sm text-gray-600">
                         <MapPin className="w-4 h-4 mr-1" />
                         {coach.location}
                       </div>
@@ -117,8 +115,8 @@ const Coaches = () => {
                 </div>
               </CardHeader>
               
-              <CardContent>
-                <p className="text-gray-700 mb-4 text-sm leading-relaxed">
+              <CardContent className="flex-1 flex flex-col">
+                <p className="text-gray-700 mb-4 text-sm leading-relaxed line-clamp-3 flex-1">
                   {coach.bio}
                 </p>
                 
@@ -133,7 +131,7 @@ const Coaches = () => {
                   </div>
                 </div>
                 
-                <div className="flex space-x-3">
+                <div className="flex space-x-3 mt-auto">
                   <Button 
                     size="sm" 
                     className="flex-1"

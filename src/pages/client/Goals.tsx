@@ -75,29 +75,29 @@ const Goals = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
         {goals.map((goal) => (
-          <Card key={goal.id} className="hover:shadow-md transition-shadow">
+          <Card key={goal.id} className="hover:shadow-md transition-shadow h-full flex flex-col">
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
                   {getStatusIcon(goal.status)}
-                  <div>
-                    <CardTitle className="text-lg font-semibold">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-lg font-semibold line-clamp-2">
                       {goal.title}
                     </CardTitle>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                       {goal.description}
                     </p>
                   </div>
                 </div>
-                <Badge className={`text-xs ${getPriorityColor(goal.priority)}`}>
+                <Badge className={`text-xs ml-2 flex-shrink-0 ${getPriorityColor(goal.priority)}`}>
                   {goal.priority}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="flex-1 flex flex-col">
+              <div className="space-y-4 flex-1">
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span>Progress</span>
@@ -106,7 +106,7 @@ const Goals = () => {
                   <Progress value={goal.progress} className="h-2" />
                 </div>
 
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-sm mt-auto">
                   <div className="flex items-center text-gray-600">
                     <Calendar className="w-4 h-4 mr-1" />
                     Target: {new Date(goal.target_date).toLocaleDateString()}

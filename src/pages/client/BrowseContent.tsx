@@ -37,11 +37,11 @@ const BrowseContent = () => {
       </div>
 
       {courses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {courses.map((course) => (
-            <Card key={course.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="p-4">
-                <div className="aspect-video bg-gradient-to-r from-blue-500 to-green-500 rounded-lg mb-4 flex items-center justify-center">
+            <Card key={course.id} className="hover:shadow-lg transition-shadow h-full flex flex-col">
+              <CardHeader className="p-4 pb-3">
+                <div className="aspect-video bg-gradient-to-r from-blue-500 to-green-500 rounded-lg mb-3 flex items-center justify-center">
                   {course.thumbnail_url ? (
                     <img 
                       src={course.thumbnail_url} 
@@ -52,7 +52,7 @@ const BrowseContent = () => {
                     <BookOpen className="w-12 h-12 text-white" />
                   )}
                 </div>
-                <CardTitle className="text-lg font-semibold line-clamp-2">
+                <CardTitle className="text-lg font-semibold line-clamp-2 leading-tight">
                   {course.title}
                 </CardTitle>
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -60,12 +60,12 @@ const BrowseContent = () => {
                   <span>by {getInstructorName(course.coach)}</span>
                 </div>
               </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+              <CardContent className="p-4 pt-0 flex-1 flex flex-col">
+                <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-1">
                   {course.description}
                 </p>
                 
-                <div className="flex flex-wrap items-center gap-2 mb-4">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
                   {course.difficulty_level && (
                     <Badge variant="outline" className="text-xs">
                       {course.difficulty_level}
@@ -78,7 +78,7 @@ const BrowseContent = () => {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+                <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-1" />
                     {formatDuration(course.estimated_duration || 0)}
@@ -89,14 +89,14 @@ const BrowseContent = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mt-auto">
                   <div className="text-lg font-bold text-gray-900">
                     {course.currency} {course.price}
                   </div>
                   <Button size="sm" asChild>
                     <Link to={`/client/courses/${course.id}`}>
                       <Play className="w-4 h-4 mr-2" />
-                      View Course
+                      View
                     </Link>
                   </Button>
                 </div>
