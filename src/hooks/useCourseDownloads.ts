@@ -75,10 +75,22 @@ export const useIncrementDownload = () => {
 
   return useMutation({
     mutationFn: async (downloadId: string) => {
+      // First get the current download count
+      const { data: currentData, error: fetchError } = await supabase
+        .from('course_downloads')
+        .select('download_count')
+        .eq('id', downloadId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Increment the count
+      const newCount = (currentData.download_count || 0) + 1;
+
       const { data, error } = await supabase
         .from('course_downloads')
         .update({ 
-          download_count: supabase.rpc('increment_download_count', { download_id: downloadId })
+          download_count: newCount
         })
         .eq('id', downloadId)
         .select()

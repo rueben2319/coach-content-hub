@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 interface CourseContent {
   id: string;
   title: string;
-  content_type: 'video' | 'audio' | 'text' | 'pdf' | 'image';
+  content_type: 'video' | 'audio' | 'text' | 'pdf' | 'image' | 'interactive';
   content_url?: string;
   content_text?: string;
   duration?: number;
