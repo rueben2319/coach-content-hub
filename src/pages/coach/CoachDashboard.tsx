@@ -1,14 +1,16 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, BookOpen, DollarSign, Users, TrendingUp, CreditCard, AlertTriangle } from 'lucide-react';
+import { Plus, BookOpen, DollarSign, Users, TrendingUp, CreditCard, AlertTriangle, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import CoursesList from '@/components/courses/CoursesList';
 import CourseForm from '@/components/courses/CourseForm';
 import CourseEditor from '@/components/courses/CourseEditor';
 import CoursePreview from '@/components/courses/CoursePreview';
 import CourseContentManager from '@/components/courses/CourseContentManager';
+import CourseBundleManager from '@/components/courses/CourseBundleManager';
 import SubscriptionPage from './SubscriptionPage';
 import TrialStatusCard from '@/components/subscription/TrialStatusCard';
 import { useCoachSubscription, useSubscriptionUsage } from '@/hooks/useSubscription';
@@ -16,7 +18,7 @@ import { useStartTrial } from '@/hooks/useSubscriptionManagement';
 import { getTierById } from '@/config/subscriptionTiers';
 import CourseCreationWizard from '@/components/courses/CourseCreationWizard';
 
-type ViewType = 'dashboard' | 'create' | 'edit' | 'preview' | 'content' | 'subscription';
+type ViewType = 'dashboard' | 'create' | 'edit' | 'preview' | 'content' | 'subscription' | 'bundles';
 
 const CoachDashboard = () => {
   const { profile } = useAuth();
@@ -91,6 +93,10 @@ const CoachDashboard = () => {
     return <SubscriptionPage />;
   }
 
+  if (currentView === 'bundles') {
+    return <CourseBundleManager />;
+  }
+
   if (showWizard) {
     return (
       <div className="w-full">
@@ -162,6 +168,10 @@ const CoachDashboard = () => {
             <Button onClick={() => setCurrentView('subscription')} variant="outline" className="w-full sm:w-auto">
               <CreditCard className="h-4 w-4 mr-2" />
               Subscription
+            </Button>
+            <Button onClick={() => setCurrentView('bundles')} variant="outline" className="w-full sm:w-auto">
+              <Package className="h-4 w-4 mr-2" />
+              Bundles
             </Button>
             <Button onClick={handleCreateCourse} className="w-full sm:w-auto" disabled={!hasActiveSubscription}>
               <Plus className="h-4 w-4 mr-2" />
