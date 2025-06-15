@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useCoachSubscription, useSubscriptionUsage, useCreateSubscription } from '@/hooks/useSubscription';
-import { SUBSCRIPTION_TIERS, getTierById } from '@/config/subscriptionTiers';
+import { SUBSCRIPTION_TIERS, getTierById, SubscriptionTier } from '@/config/subscriptionTiers';
 import SubscriptionPricingCard from '@/components/subscription/SubscriptionPricingCard';
 import SubscriptionUsageCard from '@/components/subscription/SubscriptionUsageCard';
 import { ArrowLeft, CreditCard } from 'lucide-react';

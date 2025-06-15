@@ -1,9 +1,7 @@
-
 export interface SubscriptionTier {
   id: string;
   name: string;
   price: number;
-  billingCycle: 'monthly' | 'yearly';
   features: {
     maxCourses: number;
     maxStudents: number;

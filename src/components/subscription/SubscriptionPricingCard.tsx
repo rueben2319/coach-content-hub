@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, CreditCard } from 'lucide-react';
-import { SubscriptionTier } from '@/types/subscription';
-import { getYearlyPrice, formatPrice } from '@/config/subscriptionTiers';
+import { SubscriptionTier, getYearlyPrice, formatPrice } from '@/config/subscriptionTiers';
 
 interface SubscriptionPricingCardProps {
   tier: SubscriptionTier;
