@@ -18,11 +18,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 const Sidebar = () => {
-  const { user, signOut } = useAuth();
+  const { profile, signOut } = useAuth();
   const location = useLocation();
 
+  if (!profile) return null;
+
   const getMenuItems = () => {
-    switch (user?.role) {
+    switch (profile.role) {
       case 'admin':
         return [
           { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
@@ -56,6 +58,9 @@ const Sidebar = () => {
   };
 
   const menuItems = getMenuItems();
+  const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+  const displayName = fullName || profile.email;
+  const initials = fullName ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase() : profile.email[0].toUpperCase();
 
   return (
     <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
@@ -70,19 +75,14 @@ const Sidebar = () => {
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold">
-            {user?.name?.charAt(0) || 'U'}
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
+            <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
             <div className="flex items-center space-x-2">
-              <Badge variant="secondary" className="text-xs">
-                {user?.role}
+              <Badge variant="secondary" className="text-xs capitalize">
+                {profile.role}
               </Badge>
-              {user?.subscription_status === 'active' && (
-                <Badge variant="default" className="text-xs bg-green-100 text-green-800">
-                  {user?.subscription_tier}
-                </Badge>
-              )}
             </div>
           </div>
         </div>
