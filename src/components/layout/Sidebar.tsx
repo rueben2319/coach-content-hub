@@ -80,10 +80,10 @@ const Sidebar = () => {
       <div className="p-3 md:p-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-            {initials}
+            {`${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase() || profile.email[0].toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
+            <p className="text-sm font-medium text-gray-900 truncate">{`${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email}</p>
             <div className="flex items-center space-x-2">
               <Badge variant="secondary" className="text-xs capitalize">
                 {profile.role}
@@ -95,7 +95,7 @@ const Sidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 p-3 md:p-4 space-y-1 md:space-y-2">
-        {menuItems.map((item) => {
+        {getMenuItems().map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link
