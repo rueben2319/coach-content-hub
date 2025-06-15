@@ -24,7 +24,7 @@ import ClientDashboard from '@/pages/client/ClientDashboard';
 import ClientProfile from '@/pages/client/ClientProfile';
 import ClientSubscriptionPage from '@/pages/client/SubscriptionPage';
 import CourseView from '@/pages/client/CourseView';
-import BrowseContent from '@/pages/client/BrowseContent';
+import BrowseContentFallback from '@/pages/client/BrowseContentFallback';
 import Goals from '@/pages/client/Goals';
 import Progress from '@/pages/client/Progress';
 import Achievements from '@/pages/client/Achievements';
@@ -47,6 +47,8 @@ const queryClient = new QueryClient({
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
 
+  console.log('ProtectedRoute - user:', user?.id, 'loading:', loading);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -59,6 +61,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
 
   if (!user) {
+    console.log('ProtectedRoute - No user, redirecting to /auth');
     return <Navigate to="/auth" replace />;
   }
 
@@ -68,6 +71,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 // Dashboard Route wrapper that redirects based on user role
 const DashboardRoute: React.FC = () => {
   const { profile, loading } = useAuth();
+
+  console.log('DashboardRoute - profile:', profile?.role, 'loading:', loading);
 
   if (loading) {
     return (
@@ -81,18 +86,23 @@ const DashboardRoute: React.FC = () => {
   }
 
   if (!profile) {
+    console.log('DashboardRoute - No profile, redirecting to /auth');
     return <Navigate to="/auth" replace />;
   }
 
   // Redirect to appropriate dashboard based on role
   switch (profile.role) {
     case 'admin':
+      console.log('DashboardRoute - Redirecting to /admin');
       return <Navigate to="/admin" replace />;
     case 'coach':
+      console.log('DashboardRoute - Redirecting to /coach');
       return <Navigate to="/coach" replace />;
     case 'client':
+      console.log('DashboardRoute - Redirecting to /client');
       return <Navigate to="/client" replace />;
     default:
+      console.log('DashboardRoute - Unknown role, redirecting to /auth');
       return <Navigate to="/auth" replace />;
   }
 };
@@ -172,7 +182,7 @@ function AppRoutes() {
         <Route path="/client/content" element={
           <ProtectedRoute>
             <ResponsiveDashboardLayout>
-              <BrowseContent />
+              <BrowseContentFallback />
             </ResponsiveDashboardLayout>
           </ProtectedRoute>
         } />
@@ -227,6 +237,8 @@ function AppRoutes() {
 }
 
 function App() {
+  console.log('App component rendering');
+  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
