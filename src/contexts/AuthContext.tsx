@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,9 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('Fetching profile for user:', userId);
       const profileData = await profileService.fetchProfile(userId);
-      console.log('Profile fetched:', profileData);
       setProfile(profileData);
       return profileData;
     } catch (error) {
@@ -61,6 +60,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log('Fetching profile for user:', currentSession.user.id);
             await fetchUserProfile(currentSession.user.id);
           }
+          
+          setLoading(false);
+          console.log('Auth initialization complete');
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -68,10 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
           setProfile(null);
           setSession(null);
-        }
-      } finally {
-        if (mounted) {
-          console.log('Auth initialization complete - setting loading to false');
           setLoading(false);
         }
       }
