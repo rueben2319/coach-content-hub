@@ -29,9 +29,9 @@ const LoginForm = () => {
   };
 
   const demoAccounts = [
-    { email: 'admin@coachplatform.com', role: 'Admin', color: 'bg-purple-100 text-purple-800' },
-    { email: 'coach@example.com', role: 'Coach', color: 'bg-blue-100 text-blue-800' },
-    { email: 'client@example.com', role: 'Client', color: 'bg-green-100 text-green-800' },
+    { email: 'admin@system.com', role: 'Admin', color: 'bg-purple-100 text-purple-800', password: 'admin123' },
+    { email: 'coach@example.com', role: 'Coach', color: 'bg-blue-100 text-blue-800', password: 'password' },
+    { email: 'client@example.com', role: 'Client', color: 'bg-green-100 text-green-800', password: 'password' },
   ];
 
   return (
@@ -85,11 +85,11 @@ const LoginForm = () => {
             <CardTitle className="text-sm">Demo Accounts</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-xs text-gray-600">Use password: "password" for all accounts</p>
             {demoAccounts.map((account) => (
               <div key={account.email} className="flex items-center justify-between p-2 border rounded">
                 <div>
                   <p className="text-sm font-medium">{account.email}</p>
+                  <p className="text-xs text-gray-500">Password: {account.password}</p>
                   <Badge className={`text-xs ${account.color}`}>{account.role}</Badge>
                 </div>
                 <Button
@@ -97,7 +97,7 @@ const LoginForm = () => {
                   variant="outline"
                   onClick={() => {
                     setEmail(account.email);
-                    setPassword('password');
+                    setPassword(account.password);
                   }}
                 >
                   Use
