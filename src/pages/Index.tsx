@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
@@ -7,7 +8,7 @@ import { Link } from 'react-router-dom';
 const Index = () => {
   const { user, loading, profile } = useAuth();
 
-  console.log('Index page - User:', user?.id, 'Profile role:', profile?.role, 'Loading:', loading);
+  console.log('Index page render - User:', !!user, 'Profile role:', profile?.role, 'Loading:', loading);
 
   useEffect(() => {
     console.log('Index page mounted');
@@ -33,25 +34,28 @@ const Index = () => {
     );
   }
 
-  // If user is authenticated, redirect to appropriate dashboard
+  // If user is authenticated with a complete profile, redirect to appropriate dashboard
   if (user && profile) {
-    console.log('Index: Redirecting authenticated user to dashboard based on role:', profile.role);
+    console.log('Index: User authenticated with profile, redirecting based on role:', profile.role);
     
     switch (profile.role) {
       case 'admin':
+        console.log('Redirecting to admin dashboard');
         return <Navigate to="/admin" replace />;
       case 'coach':
+        console.log('Redirecting to coach dashboard');
         return <Navigate to="/coach" replace />;
       case 'client':
+        console.log('Redirecting to client browse page');
         return <Navigate to="/client/browse" replace />;
       default:
-        console.warn('Unknown role:', profile.role);
+        console.warn('Unknown role:', profile.role, 'redirecting to auth');
         return <Navigate to="/auth" replace />;
     }
   }
 
   // If user exists but no profile, there's an issue - redirect to auth
-  if (user && !profile) {
+  if (user && !profile && !loading) {
     console.warn('User exists but no profile found, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
@@ -106,11 +110,12 @@ const Index = () => {
         </div>
 
         {/* Debug info for troubleshooting */}
-        <div className="mt-8 p-4 bg-yellow-50 rounded text-sm text-yellow-800 max-w-md mx-auto">
+        <div className="mt-8 p-4 bg-blue-50 rounded text-sm text-blue-800 max-w-md mx-auto">
           <strong>Debug Info:</strong><br/>
-          User: {user ? user.id : 'Not authenticated'}<br/>
-          Profile: {profile ? profile.role : 'No profile'}<br/>
-          Loading: {loading ? 'Yes' : 'No'}
+          User ID: {user?.id || 'Not authenticated'}<br/>
+          Profile Role: {profile?.role || 'No profile'}<br/>
+          Loading: {loading ? 'Yes' : 'No'}<br/>
+          Current URL: {window.location.href}
         </div>
       </div>
     </div>
