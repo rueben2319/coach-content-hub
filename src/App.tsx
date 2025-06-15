@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import LoginForm from "@/components/auth/LoginForm";
+import AuthForm from "@/components/auth/AuthForm";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import CoachDashboard from "@/pages/coach/CoachDashboard";
@@ -25,18 +25,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (!user) {
-    return <LoginForm />;
+    return <AuthForm />;
   }
   
   return <DashboardLayout>{children}</DashboardLayout>;
 };
 
 const DashboardRouter = () => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   
-  if (!user) return null;
+  if (!profile) return null;
   
-  switch (user.role) {
+  switch (profile.role) {
     case 'admin':
       return <AdminDashboard />;
     case 'coach':
