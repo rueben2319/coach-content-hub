@@ -11,11 +11,20 @@ import { EnhancedCard } from '@/components/ui/enhanced-card';
 import { InteractiveButton } from '@/components/ui/interactive-button';
 
 const BrowseContent = () => {
-  console.log('BrowseContent component rendering');
+  console.log('BrowseContent component mounted and rendering');
+  console.log('Current URL:', window.location.href);
+  console.log('Current pathname:', window.location.pathname);
 
   const { data: courses = [], isLoading, error } = usePublishedCourses();
 
-  console.log('BrowseContent - courses:', courses, 'isLoading:', isLoading, 'error:', error);
+  console.log('BrowseContent - Hook results:');
+  console.log('- courses:', courses);
+  console.log('- courses length:', courses?.length);
+  console.log('- isLoading:', isLoading);
+  console.log('- error:', error);
+
+  // Always render something to test if component is mounting
+  console.log('About to render BrowseContent component');
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -30,7 +39,7 @@ const BrowseContent = () => {
 
   // Handle error state
   if (error) {
-    console.error('BrowseContent error:', error);
+    console.error('BrowseContent error details:', error);
     return (
       <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
         <div className="mb-8">
@@ -45,20 +54,24 @@ const BrowseContent = () => {
           <p className="text-muted-foreground max-w-md mx-auto mb-4">
             We encountered an issue while loading the courses. Please try refreshing the page.
           </p>
-          <p className="text-sm text-red-600">Error: {error.message}</p>
+          <p className="text-sm text-red-600">Error: {error?.message || 'Unknown error'}</p>
+          <div className="mt-4 p-4 bg-gray-100 rounded text-left text-xs">
+            <pre>{JSON.stringify(error, null, 2)}</pre>
+          </div>
         </div>
       </div>
     );
   }
 
   if (isLoading) {
+    console.log('Rendering loading state');
     return (
       <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">Browse Content</h1>
           <p className="text-lg text-muted-foreground">Discover new courses and expand your skills with expert-led content</p>
         </div>
-        <div className="cards-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
             <CourseCardSkeleton key={i} />
           ))}
@@ -67,11 +80,16 @@ const BrowseContent = () => {
     );
   }
 
+  console.log('Rendering main content with courses:', courses?.length);
+
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">Browse Content</h1>
         <p className="text-lg text-muted-foreground">Discover new courses and expand your skills with expert-led content</p>
+        <div className="mt-4 p-2 bg-blue-50 rounded text-sm text-blue-800">
+          Debug: Found {courses?.length || 0} courses, Loading: {isLoading ? 'Yes' : 'No'}
+        </div>
       </div>
 
       {courses.length > 0 ? (
@@ -151,6 +169,12 @@ const BrowseContent = () => {
           <p className="text-muted-foreground max-w-md mx-auto">
             We're working on adding amazing courses for you. Check back soon for new learning opportunities.
           </p>
+          <div className="mt-4 p-4 bg-yellow-50 rounded text-left text-sm">
+            <strong>Debug Info:</strong><br/>
+            Courses loaded: {courses?.length || 0}<br/>
+            Is loading: {isLoading ? 'Yes' : 'No'}<br/>
+            Has error: {error ? 'Yes' : 'No'}
+          </div>
         </div>
       )}
     </div>
