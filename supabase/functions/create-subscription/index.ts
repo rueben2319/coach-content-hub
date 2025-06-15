@@ -71,9 +71,12 @@ serve(async (req) => {
       throw new Error('Failed to get user profile');
     }
 
+    // Generate unique transaction reference
+    const txRef = `sub_${user.id}_${Date.now()}`;
+
     // Create PayChangu payment
     const payChanguPayload = {
-      tx_ref: `sub_${user.id}_${Date.now()}`,
+      tx_ref: txRef,
       amount: price,
       currency: 'MWK',
       customer: {
@@ -120,7 +123,7 @@ serve(async (req) => {
         status: 'inactive', // Will be activated after successful payment
         started_at: new Date().toISOString(),
         expires_at: null, // Will be set after payment confirmation
-        paychangu_subscription_id: payChanguData.data.tx_ref,
+        paychangu_subscription_id: txRef, // Store the transaction reference
       })
       .select()
       .single();
@@ -136,7 +139,7 @@ serve(async (req) => {
       JSON.stringify({ 
         subscription,
         payment_url: payChanguData.data.checkout_url,
-        tx_ref: payChanguData.data.tx_ref
+        tx_ref: txRef
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -61,7 +61,7 @@ serve(async (req) => {
         .from('coach_subscriptions')
         .select('*')
         .eq('paychangu_subscription_id', txRef)
-        .single();
+        .maybeSingle();
 
       if (findError) {
         console.error('Error finding subscription:', findError);
