@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -67,15 +66,21 @@ const Sidebar = () => {
   const displayName = fullName || profile.email;
   const initials = fullName ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase() : profile.email[0].toUpperCase();
 
-  // Function to determine if a menu item is active
+  // Improved function to determine if a menu item is active
   const isActiveMenuItem = (itemPath: string) => {
-    // Exact match for root paths like /coach, /admin, /client
-    if (itemPath === location.pathname) {
+    // Exact match for root or direct link
+    if (location.pathname === itemPath) {
       return true;
     }
-    // For top-level paths (e.g. "/client/profile"), match exactly
-    // For nested paths (e.g. "/coach/content/abc"), you might want to match the substring
-    return location.pathname.startsWith(itemPath) && itemPath !== "/" && itemPath.length > 1;
+    // Only activate on subpages if itemPath is not a dashboard root
+    // (so /client should NOT match /client/profile, etc)
+    if (
+      itemPath !== '/' &&
+      location.pathname.startsWith(itemPath + '/')
+    ) {
+      return true;
+    }
+    return false;
   };
 
   const SidebarContent = () => (
