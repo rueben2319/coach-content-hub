@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Edit, Eye, DollarSign, Clock, Users } from 'lucide-react';
+import { Edit, Eye, DollarSign, Clock, Users, BookOpen, Settings } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -27,10 +27,17 @@ interface Course {
 
 interface CoursesListProps {
   onEditCourse?: (course: Course) => void;
+  onPreviewCourse?: (course: Course) => void;
+  onManageContent?: (course: Course) => void;
   onCreateNew?: () => void;
 }
 
-const CoursesList: React.FC<CoursesListProps> = ({ onEditCourse, onCreateNew }) => {
+const CoursesList: React.FC<CoursesListProps> = ({ 
+  onEditCourse, 
+  onPreviewCourse, 
+  onManageContent, 
+  onCreateNew 
+}) => {
   const { user } = useAuth();
 
   const { data: courses, isLoading, error } = useQuery({
@@ -151,19 +158,33 @@ const CoursesList: React.FC<CoursesListProps> = ({ onEditCourse, onCreateNew }) 
                 </div>
               )}
 
-              <div className="flex gap-2 pt-2">
+              <div className="grid grid-cols-2 gap-2 pt-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onEditCourse?.(course)}
-                  className="flex-1"
+                  className="w-full"
                 >
-                  <Edit className="h-4 w-4 mr-1" />
+                  <Edit className="h-3 w-3 mr-1" />
                   Edit
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Eye className="h-4 w-4 mr-1" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPreviewCourse?.(course)}
+                  className="w-full"
+                >
+                  <Eye className="h-3 w-3 mr-1" />
                   Preview
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onManageContent?.(course)}
+                  className="w-full col-span-2"
+                >
+                  <BookOpen className="h-3 w-3 mr-1" />
+                  Manage Content
                 </Button>
               </div>
             </CardContent>

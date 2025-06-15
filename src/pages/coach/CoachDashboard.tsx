@@ -6,17 +6,82 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Plus, BookOpen, DollarSign, Users, TrendingUp } from 'lucide-react';
 import CoursesList from '@/components/courses/CoursesList';
 import CourseForm from '@/components/courses/CourseForm';
+import CourseEditor from '@/components/courses/CourseEditor';
+import CoursePreview from '@/components/courses/CoursePreview';
+import CourseContentManager from '@/components/courses/CourseContentManager';
+
+type ViewType = 'dashboard' | 'create' | 'edit' | 'preview' | 'content';
 
 const CoachDashboard = () => {
   const { profile } = useAuth();
-  const [showCourseForm, setShowCourseForm] = useState(false);
+  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
+  const [selectedCourseId, setSelectedCourseId] = useState<string>('');
 
-  if (showCourseForm) {
+  const handleCreateCourse = () => {
+    setCurrentView('create');
+  };
+
+  const handleEditCourse = (courseId: string) => {
+    setSelectedCourseId(courseId);
+    setCurrentView('edit');
+  };
+
+  const handlePreviewCourse = (courseId: string) => {
+    setSelectedCourseId(courseId);
+    setCurrentView('preview');
+  };
+
+  const handleManageContent = (courseId: string) => {
+    setSelectedCourseId(courseId);
+    setCurrentView('content');
+  };
+
+  const handleBackToDashboard = () => {
+    setCurrentView('dashboard');
+    setSelectedCourseId('');
+  };
+
+  if (currentView === 'create') {
     return (
       <div className="container mx-auto py-4 md:py-6 px-4">
         <CourseForm
-          onSuccess={() => setShowCourseForm(false)}
-          onCancel={() => setShowCourseForm(false)}
+          onSuccess={handleBackToDashboard}
+          onCancel={handleBackToDashboard}
+        />
+      </div>
+    );
+  }
+
+  if (currentView === 'edit' && selectedCourseId) {
+    return (
+      <div className="container mx-auto py-4 md:py-6 px-4">
+        <CourseEditor
+          courseId={selectedCourseId}
+          onSuccess={handleBackToDashboard}
+          onCancel={handleBackToDashboard}
+          onPreview={() => setCurrentView('preview')}
+        />
+      </div>
+    );
+  }
+
+  if (currentView === 'preview' && selectedCourseId) {
+    return (
+      <div className="container mx-auto py-4 md:py-6 px-4">
+        <CoursePreview
+          courseId={selectedCourseId}
+          onBack={handleBackToDashboard}
+        />
+      </div>
+    );
+  }
+
+  if (currentView === 'content' && selectedCourseId) {
+    return (
+      <div className="container mx-auto py-4 md:py-6 px-4">
+        <CourseContentManager
+          courseId={selectedCourseId}
+          onBack={handleBackToDashboard}
         />
       </div>
     );
@@ -31,7 +96,7 @@ const CoachDashboard = () => {
           </h1>
           <p className="text-gray-600 text-sm md:text-base">Manage your courses and track your success</p>
         </div>
-        <Button onClick={() => setShowCourseForm(true)} className="w-full sm:w-auto">
+        <Button onClick={handleCreateCourse} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Create Course
         </Button>
@@ -94,11 +159,10 @@ const CoachDashboard = () => {
 
       {/* Courses Section */}
       <CoursesList
-        onCreateNew={() => setShowCourseForm(true)}
-        onEditCourse={(course) => {
-          console.log('Edit course:', course);
-          // TODO: Implement course editing
-        }}
+        onCreateNew={handleCreateCourse}
+        onEditCourse={(course) => handleEditCourse(course.id)}
+        onPreviewCourse={(course) => handlePreviewCourse(course.id)}
+        onManageContent={(course) => handleManageContent(course.id)}
       />
     </div>
   );
