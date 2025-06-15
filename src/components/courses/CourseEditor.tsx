@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -352,15 +351,15 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="price" className="text-sm sm:text-base">
-                    {formData.pricing_model === 'one_time' ? 'Price' : 'One-time Price'}
+                    {formData.pricing_model === 'one_time' ? 'Price (MWK)' : 'One-time Price (MWK)'}
                   </Label>
                   <Input
                     id="price"
                     type="number"
-                    step="0.01"
+                    step="1"
                     value={formData.price || 0}
                     onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
-                    placeholder="0.00"
+                    placeholder="0"
                     className="text-sm sm:text-base"
                     min="0"
                     required
@@ -369,14 +368,14 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
 
                 {formData.pricing_model === 'subscription' && (
                   <div className="space-y-2">
-                    <Label htmlFor="subscription_price" className="text-sm sm:text-base">Monthly Subscription Price</Label>
+                    <Label htmlFor="subscription_price" className="text-sm sm:text-base">Monthly Subscription Price (MWK)</Label>
                     <Input
                       id="subscription_price"
                       type="number"
-                      step="0.01"
+                      step="1"
                       value={formData.subscription_price || 0}
                       onChange={(e) => handleInputChange('subscription_price', parseFloat(e.target.value))}
-                      placeholder="0.00"
+                      placeholder="0"
                       className="text-sm sm:text-base"
                       min="0"
                     />

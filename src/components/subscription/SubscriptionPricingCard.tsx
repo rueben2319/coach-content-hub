@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, CreditCard } from 'lucide-react';
 import { SubscriptionTier } from '@/types/subscription';
-import { getYearlyPrice } from '@/config/subscriptionTiers';
+import { getYearlyPrice, formatPrice } from '@/config/subscriptionTiers';
 
 interface SubscriptionPricingCardProps {
   tier: SubscriptionTier;
@@ -48,11 +48,11 @@ const SubscriptionPricingCard: React.FC<SubscriptionPricingCardProps> = ({
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-lg sm:text-xl">{tier.name}</CardTitle>
         <div className="mt-2">
-          <span className="text-2xl sm:text-3xl font-bold">${displayPrice}</span>
+          <span className="text-2xl sm:text-3xl font-bold">{formatPrice(displayPrice)}</span>
           <span className="text-gray-600 text-sm">/month</span>
           {isYearly && (
             <div className="text-xs text-green-600 mt-1">
-              Save ${(tier.price * 12) - price}/year
+              Save {formatPrice((tier.price * 12) - price)}/year
             </div>
           )}
         </div>

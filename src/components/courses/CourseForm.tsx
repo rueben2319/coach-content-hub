@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +43,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
     pricing_model: 'one_time',
     price: 0,
     subscription_price: 0,
-    currency: 'USD',
+    currency: 'MWK',
     category: '',
     difficulty_level: 'beginner',
     estimated_duration: 60,
@@ -204,15 +203,15 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="price">
-                {formData.pricing_model === 'one_time' ? 'Price' : 'One-time Price'}
+                {formData.pricing_model === 'one_time' ? 'Price (MWK)' : 'One-time Price (MWK)'}
               </Label>
               <Input
                 id="price"
                 type="number"
-                step="0.01"
+                step="1"
                 value={formData.price}
                 onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
-                placeholder="0.00"
+                placeholder="0"
                 min="0"
                 required
               />
@@ -220,14 +219,14 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
 
             {formData.pricing_model === 'subscription' && (
               <div className="space-y-2">
-                <Label htmlFor="subscription_price">Monthly Subscription Price</Label>
+                <Label htmlFor="subscription_price">Monthly Subscription Price (MWK)</Label>
                 <Input
                   id="subscription_price"
                   type="number"
-                  step="0.01"
+                  step="1"
                   value={formData.subscription_price}
                   onChange={(e) => handleInputChange('subscription_price', parseFloat(e.target.value))}
-                  placeholder="0.00"
+                  placeholder="0"
                   min="0"
                 />
               </div>

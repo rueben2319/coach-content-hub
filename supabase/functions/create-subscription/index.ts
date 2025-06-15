@@ -38,11 +38,11 @@ serve(async (req) => {
 
     console.log(`Creating subscription for user ${user.id}, tier: ${tier}, billing: ${billingCycle}`);
 
-    // Get tier pricing
+    // Get tier pricing in MWK
     const tierPricing = {
-      basic: { monthly: 29, yearly: 278 }, // 20% discount
-      premium: { monthly: 79, yearly: 758 },
-      enterprise: { monthly: 199, yearly: 1910 },
+      basic: { monthly: 29000, yearly: 278000 }, // 20% discount
+      premium: { monthly: 79000, yearly: 758000 },
+      enterprise: { monthly: 199000, yearly: 1910000 },
     };
 
     const price = tierPricing[tier as keyof typeof tierPricing]?.[billingCycle as keyof typeof tierPricing.basic];
@@ -67,7 +67,7 @@ serve(async (req) => {
     const payChanguPayload = {
       tx_ref: `sub_${user.id}_${Date.now()}`,
       amount: price,
-      currency: 'USD',
+      currency: 'MWK',
       customer: {
         email: profile.email,
         name: `${profile.first_name} ${profile.last_name}`,
@@ -108,7 +108,7 @@ serve(async (req) => {
         tier,
         billing_cycle: billingCycle,
         price,
-        currency: 'USD',
+        currency: 'MWK',
         status: 'inactive', // Will be activated after successful payment
         started_at: new Date().toISOString(),
         expires_at: null, // Will be set after payment confirmation

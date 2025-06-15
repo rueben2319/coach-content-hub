@@ -1,16 +1,28 @@
 
-import { SubscriptionTier } from '@/types/subscription';
+export interface SubscriptionTier {
+  id: string;
+  name: string;
+  price: number;
+  features: {
+    maxCourses: number;
+    maxStudents: number;
+    storageGB: number;
+    analytics: boolean;
+    prioritySupport: boolean;
+    customBranding: boolean;
+  };
+  popular?: boolean;
+}
 
-export const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
+export const subscriptionTiers: SubscriptionTier[] = [
   {
     id: 'basic',
     name: 'Basic',
-    price: 29,
-    billingCycle: 'monthly',
+    price: 29000, // MWK
     features: {
       maxCourses: 5,
       maxStudents: 50,
-      storageGB: 1,
+      storageGB: 10,
       analytics: false,
       prioritySupport: false,
       customBranding: false,
@@ -19,27 +31,25 @@ export const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
     id: 'premium',
     name: 'Premium',
-    price: 79,
-    billingCycle: 'monthly',
-    popular: true,
+    price: 79000, // MWK
     features: {
-      maxCourses: 25,
-      maxStudents: 250,
-      storageGB: 10,
+      maxCourses: 20,
+      maxStudents: 200,
+      storageGB: 50,
       analytics: true,
       prioritySupport: false,
       customBranding: false,
     },
+    popular: true,
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: 199,
-    billingCycle: 'monthly',
+    price: 199000, // MWK
     features: {
-      maxCourses: -1, // unlimited
-      maxStudents: -1, // unlimited
-      storageGB: 100,
+      maxCourses: -1, // Unlimited
+      maxStudents: -1, // Unlimited
+      storageGB: 500,
       analytics: true,
       prioritySupport: true,
       customBranding: true,
@@ -47,12 +57,15 @@ export const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   },
 ];
 
-export const YEARLY_DISCOUNT = 0.2; // 20% discount for yearly billing
+export const getYearlyPrice = (monthlyPrice: number): number => {
+  return Math.round(monthlyPrice * 12 * 0.8); // 20% discount for yearly
+};
 
-export function getYearlyPrice(monthlyPrice: number): number {
-  return Math.round(monthlyPrice * 12 * (1 - YEARLY_DISCOUNT));
-}
-
-export function getTierById(tierId: string): SubscriptionTier | undefined {
-  return SUBSCRIPTION_TIERS.find(tier => tier.id === tierId);
-}
+export const formatPrice = (price: number): string => {
+  return new Intl.NumberFormat('en-MW', {
+    style: 'currency',
+    currency: 'MWK',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price);
+};
