@@ -17,7 +17,7 @@ interface CourseBundle {
   description: string;
   price: number;
   subscription_price?: number;
-  pricing_model: 'one_time' | 'subscription' | 'both';
+  pricing_model: 'one_time' | 'subscription';
   currency: string;
   is_published: boolean;
   thumbnail_url?: string;
@@ -43,7 +43,14 @@ const CourseBundleManager: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as CourseBundle[];
+      
+      // Filter out 'both' pricing models and transform to expected type
+      return data
+        .filter(bundle => bundle.pricing_model !== 'both')
+        .map(bundle => ({
+          ...bundle,
+          pricing_model: bundle.pricing_model as 'one_time' | 'subscription'
+        })) as CourseBundle[];
     },
     enabled: !!user?.id,
   });

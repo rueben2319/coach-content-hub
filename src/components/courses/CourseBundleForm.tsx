@@ -100,7 +100,7 @@ const CourseBundleForm: React.FC<CourseBundleFormProps> = ({
         description: bundleData.description || '',
         price: bundleData.price,
         subscription_price: bundleData.subscription_price || 0,
-        pricing_model: bundleData.pricing_model === 'both' ? 'one_time' : bundleData.pricing_model,
+        pricing_model: bundleData.pricing_model === 'both' ? 'one_time' : bundleData.pricing_model as 'one_time' | 'subscription',
         currency: bundleData.currency,
         is_published: bundleData.is_published,
       });
