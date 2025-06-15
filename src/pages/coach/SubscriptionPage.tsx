@@ -16,6 +16,9 @@ interface SubscriptionPageProps {
 
 const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ onBack }) => {
   const [isYearly, setIsYearly] = useState(false);
+  const [loadingTier, setLoadingTier] = useState<string>('');
+  const [loadingBillingCycle, setLoadingBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  
   const { data: subscription, isLoading: subscriptionLoading } = useCoachSubscription();
   const { data: usage, isLoading: usageLoading } = useSubscriptionUsage();
   const createSubscription = useCreateSubscription();
@@ -23,9 +26,17 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ onBack }) => {
   const currentTier = subscription ? getTierById(subscription.tier) : null;
 
   const handleSelectPlan = (tierId: string, billingCycle: 'monthly' | 'yearly') => {
+    setLoadingTier(tierId);
+    setLoadingBillingCycle(billingCycle);
+    
     createSubscription.mutate({
       tier: tierId,
       billingCycle,
+    }, {
+      onSettled: () => {
+        // Reset loading state after mutation completes (success or error)
+        setLoadingTier('');
+      }
     });
   };
 
@@ -117,6 +128,8 @@ const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ onBack }) => {
               currentTier={subscription?.tier}
               onSelect={handleSelectPlan}
               isLoading={createSubscription.isPending}
+              loadingTier={loadingTier}
+              loadingBillingCycle={loadingBillingCycle}
             />
           ))}
         </div>

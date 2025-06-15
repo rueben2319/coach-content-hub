@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -96,14 +97,22 @@ export const useCreateSubscription = () => {
       tier: string;
       billingCycle: 'monthly' | 'yearly';
     }) => {
+      console.log('Creating subscription:', subscriptionData);
+      
       const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: subscriptionData,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Subscription creation error:', error);
+        throw error;
+      }
+      
+      console.log('Subscription creation response:', data);
       return data;
     },
     onSuccess: (data) => {
+      console.log('Subscription created successfully, redirecting to payment...');
       queryClient.invalidateQueries({ queryKey: ['coach-subscription'] });
       
       // Redirect to PayChangu payment page
@@ -113,9 +122,16 @@ export const useCreateSubscription = () => {
           title: 'Payment initiated',
           description: 'Please complete your payment in the new tab. Your subscription will be activated automatically.',
         });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Payment URL not received. Please try again.',
+          variant: 'destructive',
+        });
       }
     },
     onError: (error: any) => {
+      console.error('Subscription creation failed:', error);
       toast({
         title: 'Subscription failed',
         description: error.message || 'Failed to create subscription',

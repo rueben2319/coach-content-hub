@@ -13,6 +13,8 @@ interface SubscriptionPricingCardProps {
   currentTier?: string;
   onSelect: (tierId: string, billingCycle: 'monthly' | 'yearly') => void;
   isLoading?: boolean;
+  loadingTier?: string;
+  loadingBillingCycle?: 'monthly' | 'yearly';
 }
 
 const SubscriptionPricingCard: React.FC<SubscriptionPricingCardProps> = ({
@@ -21,10 +23,14 @@ const SubscriptionPricingCard: React.FC<SubscriptionPricingCardProps> = ({
   currentTier,
   onSelect,
   isLoading,
+  loadingTier,
+  loadingBillingCycle,
 }) => {
   const price = isYearly ? getYearlyPrice(tier.price) : tier.price;
   const displayPrice = isYearly ? Math.round(price / 12) : price;
   const isCurrentTier = currentTier === tier.id;
+  const billingCycle = isYearly ? 'yearly' : 'monthly';
+  const isThisTierLoading = isLoading && loadingTier === tier.id && loadingBillingCycle === billingCycle;
 
   const formatFeatureValue = (value: number, unit: string) => {
     if (value === -1) return 'Unlimited';
@@ -89,10 +95,10 @@ const SubscriptionPricingCard: React.FC<SubscriptionPricingCardProps> = ({
         <Button
           className="w-full"
           variant={isCurrentTier ? "secondary" : "default"}
-          disabled={isCurrentTier || isLoading}
-          onClick={() => onSelect(tier.id, isYearly ? 'yearly' : 'monthly')}
+          disabled={isCurrentTier || isThisTierLoading}
+          onClick={() => onSelect(tier.id, billingCycle)}
         >
-          {isLoading ? (
+          {isThisTierLoading ? (
             <>
               <CreditCard className="h-4 w-4 mr-2 animate-pulse" />
               Processing...
