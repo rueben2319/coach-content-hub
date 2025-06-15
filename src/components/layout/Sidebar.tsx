@@ -74,20 +74,20 @@ const Sidebar = () => {
     return location.pathname === itemPath;
   };
 
-  // For desktop, return a properly positioned fixed sidebar
+  // For desktop and tablet, return a properly positioned fixed sidebar
   return (
-    <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 flex flex-col z-30">
+    <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 flex flex-col z-30 shadow-sm">
       {/* Logo */}
-      <div className="p-4 md:p-6 border-b border-gray-200 flex-shrink-0">
-        <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+      <div className="p-4 lg:p-6 border-b border-gray-200 flex-shrink-0">
+        <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
           CoachHub
         </h1>
       </div>
 
       {/* User Info */}
-      <div className="p-3 md:p-4 border-b border-gray-200 flex-shrink-0">
+      <div className="p-3 lg:p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
@@ -102,7 +102,7 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation - scrollable area */}
-      <nav className="flex-1 p-3 md:p-4 space-y-1 md:space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-3 lg:p-4 space-y-1 lg:space-y-2 overflow-y-auto">
         {menuItems.map((item) => {
           const isActive = isActiveMenuItem(item.path);
           return (
@@ -116,21 +116,21 @@ const Sidebar = () => {
               }`}
               style={{ textDecoration: 'none' }}
             >
-              <item.icon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-              <span className="font-medium text-sm md:text-base">{item.label}</span>
+              <item.icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
+              <span className="font-medium text-sm lg:text-base">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
       {/* Sign Out - always visible at bottom */}
-      <div className="p-3 md:p-4 border-t border-gray-200 flex-shrink-0">
+      <div className="p-3 lg:p-4 border-t border-gray-200 flex-shrink-0 mt-auto">
         <Button
           variant="ghost"
-          className="w-full justify-start text-gray-600 hover:text-gray-900 text-sm md:text-base"
+          className="w-full justify-start text-gray-600 hover:text-gray-900 text-sm lg:text-base"
           onClick={signOut}
         >
-          <LogOut className="w-4 h-4 md:w-5 md:h-5 mr-3 flex-shrink-0" />
+          <LogOut className="w-4 h-4 lg:w-5 lg:h-5 mr-3 flex-shrink-0" />
           Sign Out
         </Button>
       </div>
