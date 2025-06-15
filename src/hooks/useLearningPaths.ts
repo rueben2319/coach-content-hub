@@ -43,10 +43,13 @@ export const useCreateLearningPath = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (pathData: Omit<LearningPath, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (pathData: Omit<LearningPath, 'id' | 'created_at' | 'updated_at' | 'started_at'>) => {
       const { data, error } = await supabase
         .from('user_learning_paths')
-        .insert([pathData])
+        .insert([{
+          ...pathData,
+          started_at: new Date().toISOString()
+        }])
         .select()
         .single();
 
