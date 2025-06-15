@@ -4,16 +4,16 @@ import { Route } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import ResponsiveDashboardLayout from '@/components/layout/ResponsiveDashboardLayout';
 import ClientDashboard from '@/pages/client/ClientDashboard';
-import ClientProfile from '@/pages/client/ClientProfile';
-import ClientSubscriptionPage from '@/pages/client/SubscriptionPage';
-import CourseView from '@/pages/client/CourseView';
 import BrowseContent from '@/pages/client/BrowseContent';
-import Goals from '@/pages/client/Goals';
+import CourseView from '@/pages/client/CourseView';
 import Progress from '@/pages/client/Progress';
+import Goals from '@/pages/client/Goals';
 import Achievements from '@/pages/client/Achievements';
-import Coaches from '@/pages/client/Coaches';
 import Sessions from '@/pages/client/Sessions';
 import Messages from '@/pages/client/Messages';
+import Coaches from '@/pages/client/Coaches';
+import ClientProfile from '@/pages/client/ClientProfile';
+import SubscriptionPage from '@/pages/client/SubscriptionPage';
 
 export const ClientRoutes = () => (
   <>
@@ -24,24 +24,10 @@ export const ClientRoutes = () => (
         </ResponsiveDashboardLayout>
       </ProtectedRoute>
     } />
-    <Route path="/client/profile" element={
+    <Route path="/client/browse" element={
       <ProtectedRoute>
         <ResponsiveDashboardLayout>
-          <ClientProfile />
-        </ResponsiveDashboardLayout>
-      </ProtectedRoute>
-    } />
-    <Route path="/client/subscription" element={
-      <ProtectedRoute>
-        <ResponsiveDashboardLayout>
-          <ClientSubscriptionPage />
-        </ResponsiveDashboardLayout>
-      </ProtectedRoute>
-    } />
-    <Route path="/client/courses/:courseId" element={
-      <ProtectedRoute>
-        <ResponsiveDashboardLayout>
-          <CourseView />
+          <BrowseContent />
         </ResponsiveDashboardLayout>
       </ProtectedRoute>
     } />
@@ -52,10 +38,10 @@ export const ClientRoutes = () => (
         </ResponsiveDashboardLayout>
       </ProtectedRoute>
     } />
-    <Route path="/client/goals" element={
+    <Route path="/client/courses/:courseId" element={
       <ProtectedRoute>
         <ResponsiveDashboardLayout>
-          <Goals />
+          <CourseView />
         </ResponsiveDashboardLayout>
       </ProtectedRoute>
     } />
@@ -66,17 +52,17 @@ export const ClientRoutes = () => (
         </ResponsiveDashboardLayout>
       </ProtectedRoute>
     } />
+    <Route path="/client/goals" element={
+      <ProtectedRoute>
+        <ResponsiveDashboardLayout>
+          <Goals />
+        </ResponsiveDashboardLayout>
+      </ProtectedRoute>
+    } />
     <Route path="/client/achievements" element={
       <ProtectedRoute>
         <ResponsiveDashboardLayout>
           <Achievements />
-        </ResponsiveDashboardLayout>
-      </ProtectedRoute>
-    } />
-    <Route path="/client/coaches" element={
-      <ProtectedRoute>
-        <ResponsiveDashboardLayout>
-          <Coaches />
         </ResponsiveDashboardLayout>
       </ProtectedRoute>
     } />
@@ -91,6 +77,27 @@ export const ClientRoutes = () => (
       <ProtectedRoute>
         <ResponsiveDashboardLayout>
           <Messages />
+        </ResponsiveDashboardLayout>
+      </ProtectedRoute>
+    } />
+    <Route path="/client/coaches" element={
+      <ProtectedRoute>
+        <ResponsiveDashboardLayout>
+          <Coaches />
+        </ResponsiveDashboardLayout>
+      </ProtectedRoute>
+    } />
+    <Route path="/client/profile" element={
+      <ProtectedRoute>
+        <ResponsiveDashboardLayout>
+          <ClientProfile />
+        </ResponsiveDashboardLayout>
+      </ProtectedRoute>
+    } />
+    <Route path="/client/subscription" element={
+      <ProtectedRoute>
+        <ResponsiveDashboardLayout>
+          <SubscriptionPage />
         </ResponsiveDashboardLayout>
       </ProtectedRoute>
     } />
