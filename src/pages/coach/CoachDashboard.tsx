@@ -25,8 +25,15 @@ const CoachDashboard = () => {
   const { data: usage } = useSubscriptionUsage();
 
   const currentTier = subscription ? getTierById(subscription.tier) : null;
+  const hasActiveSubscription = subscription?.status === 'active';
 
   const handleCreateCourse = () => {
+    // Check if user has an active subscription
+    if (!hasActiveSubscription) {
+      setCurrentView('subscription');
+      return;
+    }
+
     // Check if user can create more courses
     if (currentTier && currentTier.features.maxCourses !== -1 && usage) {
       if (usage.coursesCreated >= currentTier.features.maxCourses) {
@@ -60,7 +67,6 @@ const CoachDashboard = () => {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       active: { label: 'Active', variant: 'default' as const },
-      trial: { label: 'Trial', variant: 'secondary' as const },
       expired: { label: 'Expired', variant: 'destructive' as const },
       inactive: { label: 'Inactive', variant: 'destructive' as const },
     };
@@ -137,7 +143,7 @@ const CoachDashboard = () => {
               <CreditCard className="h-4 w-4 mr-2" />
               Subscription
             </Button>
-            <Button onClick={handleCreateCourse} className="w-full sm:w-auto">
+            <Button onClick={handleCreateCourse} className="w-full sm:w-auto" disabled={!hasActiveSubscription}>
               <Plus className="h-4 w-4 mr-2" />
               Create Course
             </Button>
@@ -145,7 +151,24 @@ const CoachDashboard = () => {
         </div>
 
         {/* Subscription Status */}
-        {subscription && (
+        {!hasActiveSubscription && (
+          <Card className="mb-4 border-orange-200 bg-orange-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 text-orange-600" />
+                <div>
+                  <div className="font-semibold text-orange-800">No Active Subscription</div>
+                  <p className="text-sm text-orange-700">Subscribe to a plan to start creating courses and managing students.</p>
+                </div>
+                <Button onClick={() => setCurrentView('subscription')} className="ml-auto">
+                  Subscribe Now
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {subscription && hasActiveSubscription && (
           <Card className="mb-4">
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -194,7 +217,7 @@ const CoachDashboard = () => {
             <CardContent className="pb-2">
               <div className="text-lg sm:text-xl md:text-2xl font-bold">
                 {usage?.coursesCreated || 0}
-                {currentTier && currentTier.features.maxCourses !== -1 && (
+                {currentTier && hasActiveSubscription && currentTier.features.maxCourses !== -1 && (
                   <span className="text-sm text-gray-500 ml-1">
                     / {currentTier.features.maxCourses}
                   </span>
@@ -214,7 +237,7 @@ const CoachDashboard = () => {
             <CardContent className="pb-2">
               <div className="text-lg sm:text-xl md:text-2xl font-bold">
                 {usage?.studentsEnrolled || 0}
-                {currentTier && currentTier.features.maxStudents !== -1 && (
+                {currentTier && hasActiveSubscription && currentTier.features.maxStudents !== -1 && (
                   <span className="text-sm text-gray-500 ml-1">
                     / {currentTier.features.maxStudents}
                   </span>

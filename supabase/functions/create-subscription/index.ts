@@ -51,8 +51,56 @@ serve(async (req) => {
       throw new Error('Invalid tier or billing cycle');
     }
 
-    // For now, create the subscription directly in the database
-    // In production, you would integrate with PayChangu here
+    // Get user profile for PayChangu payment
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('first_name, last_name, email')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profileError) {
+      console.error('Profile fetch error:', profileError);
+      throw new Error('Failed to get user profile');
+    }
+
+    // Create PayChangu payment
+    const payChanguPayload = {
+      tx_ref: `sub_${user.id}_${Date.now()}`,
+      amount: price,
+      currency: 'USD',
+      customer: {
+        email: profile.email,
+        name: `${profile.first_name} ${profile.last_name}`,
+      },
+      customizations: {
+        title: `${tier.charAt(0).toUpperCase() + tier.slice(1)} Subscription`,
+        description: `${billingCycle} subscription to ${tier} plan`,
+      },
+      callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/paychangu-callback`,
+    };
+
+    console.log('Creating PayChangu payment with payload:', payChanguPayload);
+
+    // Call PayChangu API to create payment
+    const payChanguResponse = await fetch('https://api.paychangu.com/payment', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('PAYCHANGU_SECRET_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payChanguPayload),
+    });
+
+    const payChanguData = await payChanguResponse.json();
+
+    if (!payChanguResponse.ok) {
+      console.error('PayChangu API error:', payChanguData);
+      throw new Error(`PayChangu payment creation failed: ${payChanguData.message || 'Unknown error'}`);
+    }
+
+    console.log('PayChangu payment created:', payChanguData);
+
+    // Create subscription record in database with pending status
     const { data: subscription, error: subscriptionError } = await supabaseClient
       .from('coach_subscriptions')
       .insert({
@@ -61,9 +109,10 @@ serve(async (req) => {
         billing_cycle: billingCycle,
         price,
         currency: 'USD',
-        status: 'trial', // Start with trial, would be updated after payment
+        status: 'inactive', // Will be activated after successful payment
         started_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + (billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString(),
+        expires_at: null, // Will be set after payment confirmation
+        paychangu_subscription_id: payChanguData.data.tx_ref,
       })
       .select()
       .single();
@@ -76,7 +125,11 @@ serve(async (req) => {
     console.log('Subscription created successfully:', subscription);
 
     return new Response(
-      JSON.stringify({ subscription }),
+      JSON.stringify({ 
+        subscription,
+        payment_url: payChanguData.data.authorization_url,
+        tx_ref: payChanguData.data.tx_ref
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

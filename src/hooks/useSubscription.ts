@@ -17,6 +17,7 @@ export const useCoachSubscription = () => {
         .from('coach_subscriptions')
         .select('*')
         .eq('coach_id', user.id)
+        .eq('status', 'active') // Only get active subscriptions
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -85,12 +86,17 @@ export const useCreateSubscription = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['coach-subscription'] });
-      toast({
-        title: 'Subscription created',
-        description: 'Your subscription has been successfully created.',
-      });
+      
+      // Redirect to PayChangu payment page
+      if (data.payment_url) {
+        window.open(data.payment_url, '_blank');
+        toast({
+          title: 'Payment initiated',
+          description: 'Please complete your payment in the new tab. Your subscription will be activated automatically.',
+        });
+      }
     },
     onError: (error: any) => {
       toast({

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check } from 'lucide-react';
+import { Check, CreditCard } from 'lucide-react';
 import { SubscriptionTier } from '@/types/subscription';
 import { getYearlyPrice } from '@/config/subscriptionTiers';
 
@@ -92,7 +92,19 @@ const SubscriptionPricingCard: React.FC<SubscriptionPricingCardProps> = ({
           disabled={isCurrentTier || isLoading}
           onClick={() => onSelect(tier.id, isYearly ? 'yearly' : 'monthly')}
         >
-          {isCurrentTier ? 'Current Plan' : 'Select Plan'}
+          {isLoading ? (
+            <>
+              <CreditCard className="h-4 w-4 mr-2 animate-pulse" />
+              Processing...
+            </>
+          ) : isCurrentTier ? (
+            'Current Plan'
+          ) : (
+            <>
+              <CreditCard className="h-4 w-4 mr-2" />
+              Subscribe Now
+            </>
+          )}
         </Button>
       </CardContent>
     </Card>
