@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +10,8 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import CoachDashboard from "@/pages/coach/CoachDashboard";
 import ClientDashboard from "@/pages/client/ClientDashboard";
 import Index from "@/pages/Index";
+import CoachProfile from "@/pages/coach/CoachProfile";
+import ClientProfile from "@/pages/client/ClientProfile";
 
 const queryClient = new QueryClient();
 
@@ -100,16 +101,24 @@ const App = () => (
                 <ProtectedRoute>
                   <CoachDashboard />
                 </ProtectedRoute>
-              } 
-            />
+              }
+            >
+              {/* Add nested routes for coach */}
+              <Route path="profile" element={<CoachProfile />} />
+              <Route path="subscription" element={<React.lazy(() => import('@/pages/coach/SubscriptionPage')) />} />
+            </Route>
             <Route 
               path="/client/*" 
               element={
                 <ProtectedRoute>
                   <ClientDashboard />
                 </ProtectedRoute>
-              } 
-            />
+              }
+            >
+              {/* Add nested routes for client */}
+              <Route path="profile" element={<ClientProfile />} />
+              <Route path="subscription" element={<React.lazy(() => import('@/pages/client/SubscriptionPage')) />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
