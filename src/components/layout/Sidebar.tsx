@@ -67,6 +67,27 @@ const Sidebar = () => {
   const displayName = fullName || profile.email;
   const initials = fullName ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase() : profile.email[0].toUpperCase();
 
+  // Function to determine if a menu item is active
+  const isActiveMenuItem = (itemPath: string) => {
+    // Exact match for root paths like /coach, /admin, /client
+    if (itemPath === location.pathname) {
+      return true;
+    }
+    
+    // For nested paths, check if current path starts with the item path
+    // but make sure we don't match /coach with /coach/something if the item is /coach
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const itemSegments = itemPath.split('/').filter(Boolean);
+    
+    // If the item path is longer than current path, it can't be active
+    if (itemSegments.length > pathSegments.length) {
+      return false;
+    }
+    
+    // Check if all segments of the item path match the beginning of current path
+    return itemSegments.every((segment, index) => segment === pathSegments[index]);
+  };
+
   const SidebarContent = () => (
     <>
       {/* Logo */}
@@ -80,10 +101,10 @@ const Sidebar = () => {
       <div className="p-3 md:p-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-            {`${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase() || profile.email[0].toUpperCase()}
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{`${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email}</p>
+            <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
             <div className="flex items-center space-x-2">
               <Badge variant="secondary" className="text-xs capitalize">
                 {profile.role}
@@ -95,8 +116,8 @@ const Sidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 p-3 md:p-4 space-y-1 md:space-y-2">
-        {getMenuItems().map((item) => {
-          const isActive = location.pathname === item.path;
+        {menuItems.map((item) => {
+          const isActive = isActiveMenuItem(item.path);
           return (
             <Link
               key={item.path}
