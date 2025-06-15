@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      assessment_results: {
+        Row: {
+          answers: Json | null
+          assessment_type: string
+          attempts: number | null
+          content_id: string
+          feedback: string | null
+          id: string
+          max_score: number
+          passed: boolean
+          score: number
+          submitted_at: string
+          time_spent: number | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json | null
+          assessment_type: string
+          attempts?: number | null
+          content_id: string
+          feedback?: string | null
+          id?: string
+          max_score: number
+          passed: boolean
+          score: number
+          submitted_at?: string
+          time_spent?: number | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json | null
+          assessment_type?: string
+          attempts?: number | null
+          content_id?: string
+          feedback?: string | null
+          id?: string
+          max_score?: number
+          passed?: boolean
+          score?: number
+          submitted_at?: string
+          time_spent?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       billing_history: {
         Row: {
           admin_id: string | null
@@ -179,6 +224,48 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      coaching_insights: {
+        Row: {
+          action_items: Json | null
+          client_id: string
+          coach_id: string
+          created_at: string
+          description: string
+          expires_at: string | null
+          id: string
+          insight_type: string
+          is_read: boolean | null
+          priority: string | null
+          title: string
+        }
+        Insert: {
+          action_items?: Json | null
+          client_id: string
+          coach_id: string
+          created_at?: string
+          description: string
+          expires_at?: string | null
+          id?: string
+          insight_type: string
+          is_read?: boolean | null
+          priority?: string | null
+          title: string
+        }
+        Update: {
+          action_items?: Json | null
+          client_id?: string
+          coach_id?: string
+          created_at?: string
+          description?: string
+          expires_at?: string | null
+          id?: string
+          insight_type?: string
+          is_read?: boolean | null
+          priority?: string | null
+          title?: string
+        }
+        Relationships: []
       }
       content_analytics: {
         Row: {
@@ -493,10 +580,15 @@ export type Database = {
           completed_at: string | null
           content_id: string
           created_at: string
+          difficulty_rating: number | null
           enrollment_id: string
           id: string
           last_accessed: string | null
+          learning_path_id: string | null
+          notes: string | null
           progress_percentage: number | null
+          satisfaction_rating: number | null
+          session_id: string | null
           time_spent: number | null
           updated_at: string
         }
@@ -505,10 +597,15 @@ export type Database = {
           completed_at?: string | null
           content_id: string
           created_at?: string
+          difficulty_rating?: number | null
           enrollment_id: string
           id?: string
           last_accessed?: string | null
+          learning_path_id?: string | null
+          notes?: string | null
           progress_percentage?: number | null
+          satisfaction_rating?: number | null
+          session_id?: string | null
           time_spent?: number | null
           updated_at?: string
         }
@@ -517,10 +614,15 @@ export type Database = {
           completed_at?: string | null
           content_id?: string
           created_at?: string
+          difficulty_rating?: number | null
           enrollment_id?: string
           id?: string
           last_accessed?: string | null
+          learning_path_id?: string | null
+          notes?: string | null
           progress_percentage?: number | null
+          satisfaction_rating?: number | null
+          session_id?: string | null
           time_spent?: number | null
           updated_at?: string
         }
@@ -682,6 +784,129 @@ export type Database = {
           },
         ]
       }
+      learning_analytics: {
+        Row: {
+          average_session_duration: number | null
+          content_consumed: number | null
+          courses_completed: number | null
+          courses_started: number | null
+          created_at: string
+          engagement_score: number | null
+          id: string
+          period_end: string
+          period_start: string
+          skills_gained: Json | null
+          strong_areas: Json | null
+          total_study_time: number | null
+          user_id: string
+          weak_areas: Json | null
+        }
+        Insert: {
+          average_session_duration?: number | null
+          content_consumed?: number | null
+          courses_completed?: number | null
+          courses_started?: number | null
+          created_at?: string
+          engagement_score?: number | null
+          id?: string
+          period_end: string
+          period_start: string
+          skills_gained?: Json | null
+          strong_areas?: Json | null
+          total_study_time?: number | null
+          user_id: string
+          weak_areas?: Json | null
+        }
+        Update: {
+          average_session_duration?: number | null
+          content_consumed?: number | null
+          courses_completed?: number | null
+          courses_started?: number | null
+          created_at?: string
+          engagement_score?: number | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          skills_gained?: Json | null
+          strong_areas?: Json | null
+          total_study_time?: number | null
+          user_id?: string
+          weak_areas?: Json | null
+        }
+        Relationships: []
+      }
+      learning_milestones: {
+        Row: {
+          achieved_at: string
+          chapter_id: string | null
+          content_id: string | null
+          id: string
+          learning_path_id: string
+          metadata: Json | null
+          milestone_type: string
+          score: number | null
+          time_spent: number | null
+        }
+        Insert: {
+          achieved_at?: string
+          chapter_id?: string | null
+          content_id?: string | null
+          id?: string
+          learning_path_id: string
+          metadata?: Json | null
+          milestone_type: string
+          score?: number | null
+          time_spent?: number | null
+        }
+        Update: {
+          achieved_at?: string
+          chapter_id?: string | null
+          content_id?: string | null
+          id?: string
+          learning_path_id?: string
+          metadata?: Json | null
+          milestone_type?: string
+          score?: number | null
+          time_spent?: number | null
+        }
+        Relationships: []
+      }
+      learning_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number | null
+          id: string
+          last_activity_date: string
+          longest_streak: number | null
+          streak_type: string
+          total_activities: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number | null
+          id?: string
+          last_activity_date: string
+          longest_streak?: number | null
+          streak_type: string
+          total_activities?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number | null
+          id?: string
+          last_activity_date?: string
+          longest_streak?: number | null
+          streak_type?: string
+          total_activities?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -775,6 +1000,48 @@ export type Database = {
           submitted_at?: string
           submitted_by?: string
           workflow_type?: string
+        }
+        Relationships: []
+      }
+      study_sessions: {
+        Row: {
+          activities: Json | null
+          break_count: number | null
+          content_id: string | null
+          course_id: string | null
+          duration: number | null
+          ended_at: string | null
+          focus_score: number | null
+          id: string
+          session_quality: string | null
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          activities?: Json | null
+          break_count?: number | null
+          content_id?: string | null
+          course_id?: string | null
+          duration?: number | null
+          ended_at?: string | null
+          focus_score?: number | null
+          id?: string
+          session_quality?: string | null
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          activities?: Json | null
+          break_count?: number | null
+          content_id?: string | null
+          course_id?: string | null
+          duration?: number | null
+          ended_at?: string | null
+          focus_score?: number | null
+          id?: string
+          session_quality?: string | null
+          started_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -920,6 +1187,48 @@ export type Database = {
           },
         ]
       }
+      user_learning_paths: {
+        Row: {
+          actual_completion_date: string | null
+          course_id: string
+          created_at: string
+          estimated_completion_date: string | null
+          goals: Json | null
+          id: string
+          learning_pace: string | null
+          notes: string | null
+          started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_completion_date?: string | null
+          course_id: string
+          created_at?: string
+          estimated_completion_date?: string | null
+          goals?: Json | null
+          id?: string
+          learning_pace?: string | null
+          notes?: string | null
+          started_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_completion_date?: string | null
+          course_id?: string
+          created_at?: string
+          estimated_completion_date?: string | null
+          goals?: Json | null
+          id?: string
+          learning_pace?: string | null
+          notes?: string | null
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -950,6 +1259,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      calculate_learning_analytics: {
+        Args: { _user_id: string; _start_date: string; _end_date: string }
+        Returns: undefined
+      }
       expire_trials: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -968,6 +1281,10 @@ export type Database = {
       start_trial_subscription: {
         Args: { _coach_id: string }
         Returns: string
+      }
+      update_learning_streak: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
