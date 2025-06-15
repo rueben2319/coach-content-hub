@@ -180,6 +180,120 @@ export type Database = {
           },
         ]
       }
+      content_analytics: {
+        Row: {
+          completion_percentage: number | null
+          content_id: string
+          created_at: string
+          id: string
+          interactions_count: number | null
+          last_viewed_at: string | null
+          session_data: Json | null
+          user_id: string
+          view_duration: number | null
+        }
+        Insert: {
+          completion_percentage?: number | null
+          content_id: string
+          created_at?: string
+          id?: string
+          interactions_count?: number | null
+          last_viewed_at?: string | null
+          session_data?: Json | null
+          user_id: string
+          view_duration?: number | null
+        }
+        Update: {
+          completion_percentage?: number | null
+          content_id?: string
+          created_at?: string
+          id?: string
+          interactions_count?: number | null
+          last_viewed_at?: string | null
+          session_data?: Json | null
+          user_id?: string
+          view_duration?: number | null
+        }
+        Relationships: []
+      }
+      content_templates: {
+        Row: {
+          content_type: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          template_data: Json
+          updated_at: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          template_data: Json
+          updated_at?: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          template_data?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      content_versions: {
+        Row: {
+          change_notes: string | null
+          content_id: string
+          content_text: string | null
+          content_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_published: boolean | null
+          title: string
+          version_number: number
+        }
+        Insert: {
+          change_notes?: string | null
+          content_id: string
+          content_text?: string | null
+          content_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_published?: boolean | null
+          title: string
+          version_number: number
+        }
+        Update: {
+          change_notes?: string | null
+          content_id?: string
+          content_text?: string | null
+          content_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean | null
+          title?: string
+          version_number?: number
+        }
+        Relationships: []
+      }
       course_bundle_items: {
         Row: {
           bundle_id: string
@@ -269,8 +383,43 @@ export type Database = {
           },
         ]
       }
+      course_chapters: {
+        Row: {
+          course_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean | null
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean | null
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       course_content: {
         Row: {
+          auto_publish: boolean | null
+          chapter_id: string | null
           content_text: string | null
           content_type: Database["public"]["Enums"]["content_type"]
           content_url: string | null
@@ -281,11 +430,16 @@ export type Database = {
           file_size: number | null
           id: string
           is_preview: boolean | null
+          prerequisites: Json | null
+          scheduled_publish_at: string | null
           sort_order: number
           title: string
           updated_at: string
+          version_id: string | null
         }
         Insert: {
+          auto_publish?: boolean | null
+          chapter_id?: string | null
           content_text?: string | null
           content_type: Database["public"]["Enums"]["content_type"]
           content_url?: string | null
@@ -296,11 +450,16 @@ export type Database = {
           file_size?: number | null
           id?: string
           is_preview?: boolean | null
+          prerequisites?: Json | null
+          scheduled_publish_at?: string | null
           sort_order?: number
           title: string
           updated_at?: string
+          version_id?: string | null
         }
         Update: {
+          auto_publish?: boolean | null
+          chapter_id?: string | null
           content_text?: string | null
           content_type?: Database["public"]["Enums"]["content_type"]
           content_url?: string | null
@@ -311,9 +470,12 @@ export type Database = {
           file_size?: number | null
           id?: string
           is_preview?: boolean | null
+          prerequisites?: Json | null
+          scheduled_publish_at?: string | null
           sort_order?: number
           title?: string
           updated_at?: string
+          version_id?: string | null
         }
         Relationships: [
           {
@@ -381,6 +543,7 @@ export type Database = {
       }
       courses: {
         Row: {
+          auto_publish: boolean | null
           category: string | null
           coach_id: string
           created_at: string
@@ -392,6 +555,8 @@ export type Database = {
           is_published: boolean | null
           price: number
           pricing_model: Database["public"]["Enums"]["pricing_model"]
+          publish_status: string | null
+          scheduled_publish_at: string | null
           short_description: string | null
           subscription_price: number | null
           tags: string[] | null
@@ -400,6 +565,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auto_publish?: boolean | null
           category?: string | null
           coach_id: string
           created_at?: string
@@ -411,6 +577,8 @@ export type Database = {
           is_published?: boolean | null
           price: number
           pricing_model?: Database["public"]["Enums"]["pricing_model"]
+          publish_status?: string | null
+          scheduled_publish_at?: string | null
           short_description?: string | null
           subscription_price?: number | null
           tags?: string[] | null
@@ -419,6 +587,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auto_publish?: boolean | null
           category?: string | null
           coach_id?: string
           created_at?: string
@@ -430,6 +599,8 @@ export type Database = {
           is_published?: boolean | null
           price?: number
           pricing_model?: Database["public"]["Enums"]["pricing_model"]
+          publish_status?: string | null
+          scheduled_publish_at?: string | null
           short_description?: string | null
           subscription_price?: number | null
           tags?: string[] | null
@@ -562,6 +733,48 @@ export type Database = {
           specialties?: string[] | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      publishing_workflows: {
+        Row: {
+          approval_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          content_id: string | null
+          course_id: string | null
+          id: string
+          rejection_reason: string | null
+          status: string
+          submitted_at: string
+          submitted_by: string
+          workflow_type: string
+        }
+        Insert: {
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          content_id?: string | null
+          course_id?: string | null
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          submitted_at?: string
+          submitted_by: string
+          workflow_type: string
+        }
+        Update: {
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          content_id?: string | null
+          course_id?: string | null
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          submitted_at?: string
+          submitted_by?: string
+          workflow_type?: string
         }
         Relationships: []
       }
@@ -733,6 +946,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auto_publish_scheduled_content: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       expire_trials: {
         Args: Record<PropertyKey, never>
         Returns: number
