@@ -19,5 +19,5 @@ export interface Profile {
   paychangu_enabled?: boolean;
   paychangu_public_key?: string;
   paychangu_secret_key?: string;
-  payment_settings?: Record<string, any>;
+  payment_settings?: any; // allow Supabase's JSON or null, fixes build error
 }
