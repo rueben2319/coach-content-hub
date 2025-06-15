@@ -7,12 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useCoachSubscription = () => {
   const { user } = useAuth();
-  
+
   return useQuery({
     queryKey: ['coach-subscription', user?.id],
     queryFn: async () => {
       if (!user) throw new Error('No user found');
-      
+
       const { data, error } = await supabase
         .from('coach_subscriptions')
         .select('*')
@@ -20,7 +20,7 @@ export const useCoachSubscription = () => {
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
-      
+
       if (error && error.code !== 'PGRST116') throw error;
       return data as CoachSubscription | null;
     },
@@ -30,32 +30,38 @@ export const useCoachSubscription = () => {
 
 export const useSubscriptionUsage = () => {
   const { user } = useAuth();
-  
+
   return useQuery({
     queryKey: ['subscription-usage', user?.id],
     queryFn: async () => {
       if (!user) throw new Error('No user found');
-      
-      // Get course count
-      const { count: coursesCount } = await supabase
+
+      // Get course count and course IDs
+      const { data: coursesData, count: coursesCount, error: coursesError } = await supabase
         .from('courses')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: false })
         .eq('coach_id', user.id);
-      
-      // Get student count (unique enrollments)
-      const { count: studentsCount } = await supabase
-        .from('enrollments')
-        .select('client_id', { count: 'exact', head: true })
-        .in('course_id', 
-          supabase
-            .from('courses')
-            .select('id')
-            .eq('coach_id', user.id)
-        );
-      
+
+      if (coursesError) throw coursesError;
+
+      const courseIds = (coursesData || []).map((course: { id: string }) => course.id);
+
+      let studentsCount = 0;
+      if (courseIds.length > 0) {
+        // Get student count (unique enrollments for these courses)
+        const { count: studentsCnt, error: studentsError } = await supabase
+          .from('enrollments')
+          .select('client_id', { count: 'exact', head: true })
+          .in('course_id', courseIds);
+
+        if (studentsError) throw studentsError;
+
+        studentsCount = studentsCnt || 0;
+      }
+
       return {
         coursesCreated: coursesCount || 0,
-        studentsEnrolled: studentsCount || 0,
+        studentsEnrolled: studentsCount,
         storageUsedMB: 0, // TODO: Calculate actual storage usage
       } as SubscriptionUsage;
     },
@@ -66,7 +72,7 @@ export const useSubscriptionUsage = () => {
 export const useCreateSubscription = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (subscriptionData: {
       tier: string;
@@ -75,7 +81,7 @@ export const useCreateSubscription = () => {
       const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: subscriptionData,
       });
-      
+
       if (error) throw error;
       return data;
     },
