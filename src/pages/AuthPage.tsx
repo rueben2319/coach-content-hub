@@ -2,7 +2,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
-import LoginForm from '@/components/auth/LoginForm';
+import AuthForm from '@/components/auth/AuthForm';
 
 const AuthPage = () => {
   const { user, loading, profile } = useAuth();
@@ -29,7 +29,7 @@ const AuthPage = () => {
     return <Navigate to={redirectTo || '/'} replace />;
   }
 
-  return <LoginForm />;
+  return <AuthForm />;
 };
 
 export default AuthPage;
