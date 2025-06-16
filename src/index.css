@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -87,50 +88,62 @@
     font-feature-settings: 'cv11', 'cv02', 'cv03', 'cv04';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-size: 16px;
+    line-height: 1.6;
   }
 
-  /* Enhanced typography */
+  /* Enhanced typography for desktop */
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
+    letter-spacing: -0.025em;
   }
 
   h1 {
-    @apply text-4xl md:text-5xl leading-tight;
+    @apply text-3xl md:text-4xl lg:text-5xl leading-tight;
+    font-weight: 700;
   }
 
   h2 {
-    @apply text-3xl md:text-4xl leading-tight;
+    @apply text-2xl md:text-3xl lg:text-4xl leading-tight;
+    font-weight: 600;
   }
 
   h3 {
-    @apply text-2xl md:text-3xl leading-snug;
+    @apply text-xl md:text-2xl lg:text-3xl leading-snug;
+    font-weight: 600;
   }
 
   h4 {
-    @apply text-xl md:text-2xl leading-snug;
+    @apply text-lg md:text-xl lg:text-2xl leading-snug;
+    font-weight: 600;
   }
 
   h5 {
-    @apply text-lg md:text-xl leading-normal;
+    @apply text-base md:text-lg lg:text-xl leading-normal;
+    font-weight: 500;
   }
 
   h6 {
-    @apply text-base md:text-lg leading-normal;
+    @apply text-sm md:text-base lg:text-lg leading-normal;
+    font-weight: 500;
   }
 
   p {
     @apply text-base leading-relaxed text-muted-foreground;
+    margin-bottom: 1em;
   }
 
-  /* Improved focus states for accessibility */
+  /* Enhanced focus states for better accessibility */
   *:focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+    border-radius: 6px;
   }
 
   /* Better button focus for keyboard navigation */
   button:focus-visible,
   [role="button"]:focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+    border-radius: 8px;
   }
 
   /* Enhanced link styles */
@@ -147,30 +160,49 @@
   textarea:focus-visible,
   select:focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background border-primary;
+    border-radius: 8px;
+  }
+
+  /* Improved scrollbar styling for desktop */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
   }
 }
 
 @layer components {
-  /* Standardized grid patterns */
+  /* Enhanced grid patterns for desktop */
   .dashboard-grid {
-    @apply grid gap-4 md:gap-6;
+    @apply grid gap-6 lg:gap-8;
   }
 
   .cards-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8;
   }
 
   .two-column-grid {
-    @apply grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6;
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8;
   }
 
   .three-column-grid {
-    @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6;
+    @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8;
   }
 
-  /* Enhanced card styles */
+  /* Enhanced card styles with better shadows */
   .card-interactive {
-    @apply transition-all duration-200 hover:shadow-medium hover:-translate-y-1;
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
 
   .card-soft {
@@ -181,22 +213,50 @@
     @apply shadow-medium;
   }
 
-  /* Status indicators */
+  /* Improved status indicators */
   .status-success {
-    @apply bg-success-50 text-success-700 border border-success-200;
+    @apply bg-success-50 text-success-700 border border-success-200 px-3 py-1.5 rounded-lg font-medium;
   }
 
   .status-warning {
-    @apply bg-warning-50 text-warning-700 border border-warning-200;
+    @apply bg-warning-50 text-warning-700 border border-warning-200 px-3 py-1.5 rounded-lg font-medium;
   }
 
   .status-error {
-    @apply bg-error-50 text-error-700 border border-error-200;
+    @apply bg-error-50 text-error-700 border border-error-200 px-3 py-1.5 rounded-lg font-medium;
   }
 
-  /* Better touch targets for mobile */
+  /* Better touch targets for all devices */
   .touch-target {
     @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
+  /* Enhanced content containers for desktop */
+  .content-container {
+    @apply max-w-7xl mx-auto px-6 lg:px-8 xl:px-10;
+  }
+
+  .content-section {
+    @apply bg-white rounded-xl shadow-soft border border-gray-200 p-6 lg:p-8 xl:p-10;
+  }
+}
+
+/* Desktop-specific enhancements */
+@media (min-width: 1024px) {
+  body {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  /* Better spacing for desktop */
+  .desktop-spacing {
+    @apply px-8 py-6;
+  }
+
+  /* Enhanced hover effects for desktop */
+  .desktop-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
   }
 }
 

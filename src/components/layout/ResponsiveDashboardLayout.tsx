@@ -40,11 +40,13 @@ const ResponsiveDashboardLayout: React.FC<ResponsiveDashboardLayoutProps> = ({ c
   }
 
   return (
-    <div className="min-h-screen flex w-full">
+    <div className="min-h-screen flex w-full bg-gray-50">
       <Sidebar />
       <main className="flex-1 pl-64 overflow-auto">
-        <div className="p-4 md:p-6 lg:p-8 h-full min-h-screen">
-          {children}
+        <div className="max-w-7xl mx-auto p-6 lg:p-8 xl:p-10 h-full min-h-screen">
+          <div className="bg-white rounded-xl shadow-soft border border-gray-200 p-6 lg:p-8 xl:p-10 min-h-full">
+            {children}
+          </div>
         </div>
       </main>
     </div>
