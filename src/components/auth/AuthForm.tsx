@@ -64,126 +64,184 @@ const AuthForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Welcome to CoachPlatform</CardTitle>
-          <CardDescription className="text-center">
-            Sign in to your account or create a new one
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
+    <Card className="w-full max-w-md shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+      <CardHeader className="text-center pb-6">
+        <CardTitle className="text-2xl font-bold text-gray-900">
+          Get Started
+        </CardTitle>
+        <CardDescription className="text-gray-600">
+          Sign in to your account or create a new one
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="px-6 pb-6">
+        <Tabs defaultValue="signin" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100">
+            <TabsTrigger 
+              value="signin" 
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+            >
+              Sign In
+            </TabsTrigger>
+            <TabsTrigger 
+              value="signup"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+            >
+              Sign Up
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="signin" className="space-y-0">
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="signin-email" className="text-sm font-medium text-gray-700">
+                  Email Address
+                </Label>
+                <Input
+                  id="signin-email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={signInData.email}
+                  onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
+                  className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="signin-password" className="text-sm font-medium text-gray-700">
+                  Password
+                </Label>
+                <Input
+                  id="signin-password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={signInData.password}
+                  onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
+                  className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium transition-all duration-200 shadow-md hover:shadow-lg" 
+                disabled={isLoading}
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Sign In to Your Account
+              </Button>
+            </form>
+          </TabsContent>
+          
+          <TabsContent value="signup" className="space-y-0">
+            <form onSubmit={handleSignUp} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signup-firstname" className="text-sm font-medium text-gray-700">
+                    First Name
+                  </Label>
                   <Input
-                    id="signin-email"
-                    type="email"
-                    value={signInData.email}
-                    onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
+                    id="signup-firstname"
+                    type="text"
+                    placeholder="First name"
+                    value={signUpData.firstName}
+                    onChange={(e) => setSignUpData({ ...signUpData, firstName: e.target.value })}
+                    className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="signup-lastname" className="text-sm font-medium text-gray-700">
+                    Last Name
+                  </Label>
                   <Input
-                    id="signin-password"
-                    type="password"
-                    value={signInData.password}
-                    onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
+                    id="signup-lastname"
+                    type="text"
+                    placeholder="Last name"
+                    value={signUpData.lastName}
+                    onChange={(e) => setSignUpData({ ...signUpData, lastName: e.target.value })}
+                    className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In
-                </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-firstname">First Name</Label>
-                    <Input
-                      id="signup-firstname"
-                      type="text"
-                      value={signUpData.firstName}
-                      onChange={(e) => setSignUpData({ ...signUpData, firstName: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-lastname">Last Name</Label>
-                    <Input
-                      id="signup-lastname"
-                      type="text"
-                      value={signUpData.lastName}
-                      onChange={(e) => setSignUpData({ ...signUpData, lastName: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    value={signUpData.email}
-                    onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-role">I want to join as</Label>
-                  <Select value={signUpData.role} onValueChange={(value: 'coach' | 'client') => setSignUpData({ ...signUpData, role: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="client">Client (Learn from coaches)</SelectItem>
-                      <SelectItem value="coach">Coach (Teach and create courses)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={signUpData.password}
-                    onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-confirm-password">Confirm Password</Label>
-                  <Input
-                    id="signup-confirm-password"
-                    type="password"
-                    value={signUpData.confirmPassword}
-                    onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create Account
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="signup-email" className="text-sm font-medium text-gray-700">
+                  Email Address
+                </Label>
+                <Input
+                  id="signup-email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={signUpData.email}
+                  onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
+                  className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="signup-role" className="text-sm font-medium text-gray-700">
+                  Join As
+                </Label>
+                <Select value={signUpData.role} onValueChange={(value: 'coach' | 'client') => setSignUpData({ ...signUpData, role: value })}>
+                  <SelectTrigger className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="client">
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">Client</span>
+                        <span className="text-xs text-gray-500">Learn from expert coaches</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="coach">
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">Coach</span>
+                        <span className="text-xs text-gray-500">Teach and create courses</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="signup-password" className="text-sm font-medium text-gray-700">
+                  Password
+                </Label>
+                <Input
+                  id="signup-password"
+                  type="password"
+                  placeholder="Create a password"
+                  value={signUpData.password}
+                  onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
+                  className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="signup-confirm-password" className="text-sm font-medium text-gray-700">
+                  Confirm Password
+                </Label>
+                <Input
+                  id="signup-confirm-password"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={signUpData.confirmPassword}
+                  onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
+                  className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full h-11 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium transition-all duration-200 shadow-md hover:shadow-lg" 
+                disabled={isLoading}
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Your Account
+              </Button>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 
