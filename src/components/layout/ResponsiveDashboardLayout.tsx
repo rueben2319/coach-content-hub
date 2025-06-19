@@ -39,12 +39,14 @@ const ResponsiveDashboardLayout: React.FC<ResponsiveDashboardLayoutProps> = ({ c
     );
   }
 
+  // Enhanced desktop layout with proper grid system and spacing
   return (
-    <div className="min-h-screen flex w-full bg-gray-50">
+    <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-50 to-blue-50/30">
       <Sidebar />
       <main className="flex-1 pl-64 overflow-auto">
-        <div className="max-w-7xl mx-auto p-6 lg:p-8 xl:p-10 h-full min-h-screen">
-          <div className="bg-white rounded-xl shadow-soft border border-gray-200 p-6 lg:p-8 xl:p-10 min-h-full">
+        {/* Desktop container system with proper max-width and centering */}
+        <div className="desktop-container">
+          <div className="desktop-content-wrapper">
             {children}
           </div>
         </div>
