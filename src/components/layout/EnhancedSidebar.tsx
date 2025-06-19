@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -26,6 +25,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useDesktopKeyboardShortcuts } from '@/hooks/useDesktopKeyboardShortcuts';
+import { KeyboardShortcutsHelp } from '@/components/desktop/KeyboardShortcutsHelp';
 
 interface MenuItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -41,6 +42,9 @@ const EnhancedSidebar = () => {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedSections, setExpandedSections] = useState<string[]>(['main']);
+  
+  // Initialize keyboard shortcuts
+  useDesktopKeyboardShortcuts();
 
   if (!profile) return null;
 
@@ -150,28 +154,28 @@ const EnhancedSidebar = () => {
   };
 
   return (
-    <div className="desktop-sidebar-enhanced">
+    <div className="desktop-sidebar-enhanced desktop-contained">
       {/* Logo */}
       <div className="p-6 border-b border-gray-200">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+        <h1 className="fluid-text-xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
           Experts Coach Hub
         </h1>
       </div>
 
       {/* User Info */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="fluid-p-md border-b border-gray-200">
         <div className="flex items-center space-x-3 mb-3">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold">
+          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold desktop-gpu-accelerated">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-gray-900 truncate">{displayName}</p>
+            <p className="font-medium text-gray-900 truncate fluid-text-sm">{displayName}</p>
             <div className="flex items-center space-x-2">
               <Badge variant="secondary" className="text-xs capitalize">
                 {profile.role}
               </Badge>
               {profile.role !== 'admin' && (
-                <Bell className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors" />
+                <Bell className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors desktop-micro-bounce" />
               )}
             </div>
           </div>
@@ -181,21 +185,26 @@ const EnhancedSidebar = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
-            placeholder="Search menu..."
+            placeholder="Search menu... (Ctrl+/)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-9 bg-gray-50 border-0 focus:bg-white transition-colors"
+            className="pl-10 h-9 bg-gray-50 border-0 focus:bg-white transition-colors desktop-focus-ring"
           />
+        </div>
+
+        {/* Keyboard Shortcuts Help */}
+        <div className="mt-3 flex justify-end">
+          <KeyboardShortcutsHelp />
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 overflow-y-auto">
+      <nav className="flex-1 fluid-p-md overflow-y-auto desktop-custom-scrollbar">
         {Object.entries(groupedItems).map(([section, items]) => (
-          <div key={section} className="mb-6">
+          <div key={section} className="fluid-m-lg">
             {section !== 'main' && (
               <div 
-                className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-50 rounded-lg transition-colors"
+                className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-50 rounded-lg transition-colors desktop-micro-bounce"
                 onClick={() => toggleSection(section)}
               >
                 <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -218,10 +227,10 @@ const EnhancedSidebar = () => {
                       <Link
                         to={item.path}
                         className={cn(
-                          'desktop-nav-item group flex items-center justify-between px-3 py-3 rounded-xl transition-all duration-200',
+                          'desktop-nav-item group flex items-center justify-between px-3 py-3 rounded-xl transition-all duration-200 desktop-focus-ring',
                           isActive 
                             ? 'desktop-nav-item active bg-blue-50 text-blue-700 font-semibold shadow-sm'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 desktop-sophisticated-hover'
                         )}
                       >
                         <div className="flex items-center space-x-3">
@@ -229,10 +238,10 @@ const EnhancedSidebar = () => {
                             'w-5 h-5 transition-colors',
                             isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'
                           )} />
-                          <span className="font-medium">{item.label}</span>
+                          <span className="font-medium fluid-text-sm">{item.label}</span>
                         </div>
                         {item.badge && (
-                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200 desktop-micro-pulse">
                             {item.badge}
                           </Badge>
                         )}
@@ -248,7 +257,7 @@ const EnhancedSidebar = () => {
                               key={child.path}
                               to={child.path}
                               className={cn(
-                                'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                                'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors desktop-focus-ring',
                                 isActiveMenuItem(child.path)
                                   ? 'bg-blue-50 text-blue-700 font-medium'
                                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -270,10 +279,10 @@ const EnhancedSidebar = () => {
       </nav>
 
       {/* Sign Out */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="fluid-p-md border-t border-gray-200">
         <Button
           variant="ghost"
-          className="w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          className="w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-50 desktop-focus-ring desktop-micro-bounce"
           onClick={signOut}
         >
           <LogOut className="w-5 h-5 mr-3" />

@@ -1,0 +1,239 @@
+
+/* Advanced Desktop Features - Phase 3 */
+
+/* CSS Containment for Performance */
+.desktop-contained {
+  contain: layout style paint;
+}
+
+.desktop-contained-strict {
+  contain: strict;
+}
+
+.desktop-contained-content {
+  contain: layout style paint size;
+}
+
+/* Advanced Grid Features */
+.desktop-grid-masonry {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-rows: masonry;
+  gap: 2rem;
+}
+
+.desktop-grid-subgrid {
+  display: subgrid;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+}
+
+/* Fluid Typography Classes */
+.fluid-text-xs { font-size: clamp(12px, 12px + 0.104vw, 14px); }
+.fluid-text-sm { font-size: clamp(14px, 14px + 0.208vw, 16px); }
+.fluid-text-base { font-size: clamp(16px, 16px + 0.208vw, 18px); }
+.fluid-text-lg { font-size: clamp(18px, 18px + 0.417vw, 22px); }
+.fluid-text-xl { font-size: clamp(20px, 20px + 0.625vw, 26px); }
+.fluid-text-2xl { font-size: clamp(24px, 24px + 0.833vw, 32px); }
+.fluid-text-3xl { font-size: clamp(30px, 30px + 1.25vw, 42px); }
+.fluid-text-4xl { font-size: clamp(36px, 36px + 2.083vw, 56px); }
+.fluid-text-5xl { font-size: clamp(48px, 48px + 2.5vw, 72px); }
+
+/* Fluid Spacing */
+.fluid-p-xs { padding: clamp(4px, 4px + 0.208vw, 6px); }
+.fluid-p-sm { padding: clamp(8px, 8px + 0.417vw, 12px); }
+.fluid-p-md { padding: clamp(16px, 16px + 0.833vw, 24px); }
+.fluid-p-lg { padding: clamp(24px, 24px + 1.25vw, 36px); }
+.fluid-p-xl { padding: clamp(32px, 32px + 1.667vw, 48px); }
+
+.fluid-m-xs { margin: clamp(4px, 4px + 0.208vw, 6px); }
+.fluid-m-sm { margin: clamp(8px, 8px + 0.417vw, 12px); }
+.fluid-m-md { margin: clamp(16px, 16px + 0.833vw, 24px); }
+.fluid-m-lg { margin: clamp(24px, 24px + 1.25vw, 36px); }
+.fluid-m-xl { margin: clamp(32px, 32px + 1.667vw, 48px); }
+
+/* Advanced Animations */
+@keyframes morphing-background {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes parallax-scroll {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-20px); }
+}
+
+@keyframes data-visualization {
+  0% { 
+    transform: scale(0.8) rotate(-5deg);
+    opacity: 0;
+  }
+  50% { 
+    transform: scale(1.05) rotate(2deg);
+    opacity: 0.8;
+  }
+  100% { 
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes sophisticated-hover {
+  0% { 
+    transform: translateY(0) scale(1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  100% { 
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Interactive Elements */
+.desktop-morphing-bg {
+  background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+  background-size: 400% 400%;
+  animation: morphing-background 8s ease infinite;
+}
+
+.desktop-parallax {
+  animation: parallax-scroll 20s ease-in-out infinite;
+}
+
+.desktop-data-viz-enter {
+  animation: data-visualization 0.8s ease-out;
+}
+
+.desktop-sophisticated-hover {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.desktop-sophisticated-hover:hover {
+  animation: sophisticated-hover 0.4s ease-out forwards;
+}
+
+/* Performance Optimizations */
+.desktop-will-change-transform {
+  will-change: transform;
+}
+
+.desktop-will-change-scroll {
+  will-change: scroll-position;
+}
+
+.desktop-gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Advanced Focus States */
+.desktop-focus-ring {
+  transition: all 0.2s ease;
+}
+
+.desktop-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 
+    0 0 0 3px rgba(59, 130, 246, 0.1),
+    0 0 0 6px rgba(59, 130, 246, 0.2),
+    0 4px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Micro-interactions */
+.desktop-micro-bounce {
+  transition: transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.desktop-micro-bounce:active {
+  transform: scale(0.95);
+}
+
+.desktop-micro-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Content-based sizing */
+.desktop-intrinsic-sizing {
+  width: max-content;
+  height: max-content;
+}
+
+.desktop-fit-content {
+  width: fit-content;
+  height: fit-content;
+}
+
+/* Modern scrollbar styling */
+.desktop-custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.desktop-custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.desktop-custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.desktop-custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.desktop-custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Container Queries Support */
+@container (min-width: 400px) {
+  .desktop-container-responsive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container (min-width: 600px) {
+  .desktop-container-responsive {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* High DPI Display Support */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .desktop-retina-border {
+    border-width: 0.5px;
+  }
+  
+  .desktop-retina-shadow {
+    box-shadow: 0 0.5px 2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .desktop-morphing-bg,
+  .desktop-parallax,
+  .desktop-data-viz-enter,
+  .desktop-micro-pulse {
+    animation: none;
+  }
+  
+  .desktop-sophisticated-hover {
+    transition: none;
+  }
+}
+
+/* High Contrast Support */
+@media (prefers-contrast: high) {
+  .desktop-focus-ring:focus-visible {
+    outline: 3px solid;
+    outline-offset: 2px;
+  }
+}

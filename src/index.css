@@ -4,6 +4,7 @@
 @import './styles/mobile.css';
 @import './styles/phase4-enhancements.css';
 @import './styles/desktop-enhancements.css';
+@import './styles/desktop-advanced.css';
 
 @layer base {
   :root {
@@ -88,48 +89,56 @@
     font-feature-settings: 'cv11', 'cv02', 'cv03', 'cv04';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-size: 16px;
+    font-size: clamp(16px, 16px + 0.208vw, 18px);
     line-height: 1.6;
   }
 
-  /* Enhanced typography for desktop */
+  /* Enhanced typography for desktop with fluid scaling */
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
     letter-spacing: -0.025em;
   }
 
   h1 {
-    @apply text-3xl md:text-4xl lg:text-5xl leading-tight;
+    font-size: clamp(30px, 30px + 1.25vw, 42px);
+    line-height: 1.2;
     font-weight: 700;
   }
 
   h2 {
-    @apply text-2xl md:text-3xl lg:text-4xl leading-tight;
+    font-size: clamp(24px, 24px + 0.833vw, 32px);
+    line-height: 1.3;
     font-weight: 600;
   }
 
   h3 {
-    @apply text-xl md:text-2xl lg:text-3xl leading-snug;
+    font-size: clamp(20px, 20px + 0.625vw, 26px);
+    line-height: 1.4;
     font-weight: 600;
   }
 
   h4 {
-    @apply text-lg md:text-xl lg:text-2xl leading-snug;
+    font-size: clamp(18px, 18px + 0.417vw, 22px);
+    line-height: 1.4;
     font-weight: 600;
   }
 
   h5 {
-    @apply text-base md:text-lg lg:text-xl leading-normal;
+    font-size: clamp(16px, 16px + 0.208vw, 18px);
+    line-height: 1.5;
     font-weight: 500;
   }
 
   h6 {
-    @apply text-sm md:text-base lg:text-lg leading-normal;
+    font-size: clamp(14px, 14px + 0.208vw, 16px);
+    line-height: 1.5;
     font-weight: 500;
   }
 
   p {
-    @apply text-base leading-relaxed text-muted-foreground;
+    font-size: clamp(16px, 16px + 0.208vw, 18px);
+    line-height: 1.7;
+    color: hsl(var(--muted-foreground));
     margin-bottom: 1em;
   }
 
@@ -233,24 +242,26 @@
 
   /* Enhanced content containers for desktop */
   .content-container {
-    @apply max-w-7xl mx-auto px-8 lg:px-10 xl:px-12;
+    @apply max-w-7xl mx-auto;
+    padding: clamp(32px, 32px + 1.667vw, 48px);
   }
 
   .content-section {
-    @apply bg-white rounded-2xl shadow-xl border border-gray-200/60 p-8 lg:p-10 xl:p-12;
+    @apply bg-white rounded-2xl shadow-xl border border-gray-200/60;
+    padding: clamp(32px, 32px + 1.667vw, 48px);
   }
 }
 
 /* Desktop-specific enhancements */
 @media (min-width: 1024px) {
   body {
-    font-size: 16px;
+    font-size: clamp(16px, 16px + 0.208vw, 18px);
     line-height: 1.7;
   }
 
   /* Better spacing for desktop */
   .desktop-spacing {
-    @apply px-10 py-8;
+    padding: clamp(40px, 40px + 2.083vw, 60px);
   }
 
   /* Enhanced hover effects for desktop */
