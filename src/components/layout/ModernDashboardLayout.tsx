@@ -6,11 +6,11 @@ import MobileSidebar from './MobileSidebar';
 import ModernSidebar from './ModernSidebar';
 import { MobileNavigation } from '@/components/mobile/MobileNavigation';
 
-interface ResponsiveDashboardLayoutProps {
+interface ModernDashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const ResponsiveDashboardLayout: React.FC<ResponsiveDashboardLayoutProps> = ({ children }) => {
+const ModernDashboardLayout: React.FC<ModernDashboardLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
 
   if (isMobile) {
@@ -54,4 +54,4 @@ const ResponsiveDashboardLayout: React.FC<ResponsiveDashboardLayoutProps> = ({ c
   );
 };
 
-export default ResponsiveDashboardLayout;
+export default ModernDashboardLayout;

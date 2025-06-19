@@ -5,6 +5,7 @@
 @import './styles/phase4-enhancements.css';
 @import './styles/desktop-enhancements.css';
 @import './styles/desktop-advanced.css';
+@import './styles/modern-dashboard.css';
 
 @layer base {
   :root {
