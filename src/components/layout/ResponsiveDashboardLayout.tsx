@@ -3,7 +3,7 @@ import React from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import MobileSidebar from './MobileSidebar';
-import Sidebar from './Sidebar';
+import EnhancedSidebar from './EnhancedSidebar';
 import { MobileNavigation } from '@/components/mobile/MobileNavigation';
 
 interface ResponsiveDashboardLayoutProps {
@@ -39,12 +39,11 @@ const ResponsiveDashboardLayout: React.FC<ResponsiveDashboardLayoutProps> = ({ c
     );
   }
 
-  // Enhanced desktop layout with proper grid system and spacing
+  // Enhanced desktop layout with new sidebar
   return (
     <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-50 to-blue-50/30">
-      <Sidebar />
+      <EnhancedSidebar />
       <main className="flex-1 pl-64 overflow-auto">
-        {/* Desktop container system with proper max-width and centering */}
         <div className="desktop-container">
           <div className="desktop-content-wrapper">
             {children}

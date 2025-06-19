@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,8 @@ import { useCoachSubscription, useSubscriptionUsage } from '@/hooks/useSubscript
 import { useStartTrial } from '@/hooks/useSubscriptionManagement';
 import { getTierById } from '@/config/subscriptionTiers';
 import CourseCreationWizard from '@/components/courses/CourseCreationWizard';
+import { DesktopStatsGrid } from '@/components/dashboard/DesktopStatsGrid';
+import { DesktopContainer, DesktopGrid, DesktopSection } from '@/components/layout/DesktopLayoutUtils';
 
 type ViewType = 'dashboard' | 'create' | 'edit' | 'preview' | 'content' | 'subscription' | 'bundles';
 
@@ -154,26 +155,85 @@ const CoachDashboard = () => {
     );
   }
 
+  // Prepare stats data for the enhanced grid
+  const statsData = [
+    {
+      title: 'Total Courses',
+      value: usage?.coursesCreated || 0,
+      subtitle: '+0 from last month',
+      icon: BookOpen,
+      color: 'blue' as const,
+      limit: currentTier && hasActiveSubscription ? {
+        current: usage?.coursesCreated || 0,
+        max: currentTier.features.maxCourses
+      } : undefined,
+      change: {
+        value: 0,
+        type: 'neutral' as const,
+        period: 'vs last month'
+      }
+    },
+    {
+      title: 'Total Students',
+      value: usage?.studentsEnrolled || 0,
+      subtitle: '+0 from last month',
+      icon: Users,
+      color: 'green' as const,
+      limit: currentTier && hasActiveSubscription ? {
+        current: usage?.studentsEnrolled || 0,
+        max: currentTier.features.maxStudents
+      } : undefined,
+      change: {
+        value: 0,
+        type: 'neutral' as const,
+        period: 'vs last month'
+      }
+    },
+    {
+      title: 'Total Revenue',
+      value: 'MWK 0',
+      subtitle: '+MWK 0 from last month',
+      icon: DollarSign,
+      color: 'purple' as const,
+      change: {
+        value: 0,
+        type: 'neutral' as const,
+        period: 'vs last month'
+      }
+    },
+    {
+      title: 'Growth Rate',
+      value: '0%',
+      subtitle: '+0% from last month',
+      icon: TrendingUp,
+      color: 'orange' as const,
+      change: {
+        value: 0,
+        type: 'neutral' as const,
+        period: 'vs last month'
+      }
+    }
+  ];
+
   return (
-    <div className="w-full min-h-screen bg-gray-50">
-      <div className="container mx-auto py-4 md:py-6 px-4 space-y-4 md:space-y-6 max-w-7xl">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold break-words">
-              Welcome back, {profile?.first_name}!
-            </h1>
-            <p className="text-gray-600 text-sm md:text-base">Manage your courses and track your success</p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button onClick={() => setCurrentView('subscription')} variant="outline" className="w-full sm:w-auto">
+    <DesktopContainer>
+      <DesktopSection
+        title={`Welcome back, ${profile?.first_name}!`}
+        subtitle="Manage your courses and track your success"
+      >
+        {/* Header Actions */}
+        <div className="desktop-flex-between mb-8">
+          <div></div>
+          <div className="flex gap-4">
+            <Button onClick={() => setCurrentView('subscription')} variant="outline" className="desktop-button-secondary">
               <CreditCard className="h-4 w-4 mr-2" />
               Subscription
             </Button>
-            <Button onClick={() => setCurrentView('bundles')} variant="outline" className="w-full sm:w-auto">
+            <Button onClick={() => setCurrentView('bundles')} variant="outline" className="desktop-button-secondary">
               <Package className="h-4 w-4 mr-2" />
               Bundles
             </Button>
-            <Button onClick={handleCreateCourse} className="w-full sm:w-auto" disabled={!hasActiveSubscription}>
+            <Button onClick={handleCreateCourse} className="desktop-button-primary" disabled={!hasActiveSubscription}>
               <Plus className="h-4 w-4 mr-2" />
               Create Course
             </Button>
@@ -187,22 +247,24 @@ const CoachDashboard = () => {
             onUpgrade={() => setCurrentView('subscription')} 
           />
         ) : !hasActiveSubscription ? (
-          <Card className="mb-4 border-orange-200 bg-orange-50">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="h-5 w-5 text-orange-600" />
-                <div>
-                  <div className="font-semibold text-orange-800">
+          <Card className="mb-8 border-orange-200 bg-gradient-to-r from-orange-50 to-red-50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-orange-100 rounded-xl">
+                  <AlertTriangle className="h-6 w-6 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-orange-800 text-lg">
                     {subscription.status === 'expired' ? 'Trial Expired' : 'No Active Subscription'}
                   </div>
-                  <p className="text-sm text-orange-700">
+                  <p className="text-orange-700 mt-1">
                     {subscription.status === 'expired' 
                       ? 'Your trial has ended. Subscribe to continue creating courses and managing students.'
                       : 'Subscribe to a plan to start creating courses and managing students.'
                     }
                   </p>
                 </div>
-                <Button onClick={() => setCurrentView('subscription')} className="ml-auto">
+                <Button onClick={() => setCurrentView('subscription')} className="desktop-button-primary">
                   {subscription.status === 'expired' ? 'Subscribe Now' : 'View Plans'}
                 </Button>
               </div>
@@ -214,19 +276,21 @@ const CoachDashboard = () => {
             onUpgrade={() => setCurrentView('subscription')} 
           />
         ) : (
-          <Card className="mb-4">
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="h-5 w-5 text-blue-600" />
+          <Card className="mb-8 bg-gradient-to-r from-green-50 to-blue-50">
+            <CardContent className="p-6">
+              <div className="desktop-flex-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-100 rounded-xl">
+                    <CreditCard className="h-6 w-6 text-blue-600" />
+                  </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{currentTier?.name || subscription.tier} Plan</span>
-                      <Badge {...getStatusBadge(subscription.status)}>
-                        {getStatusBadge(subscription.status).label}
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-lg">{currentTier?.name || subscription.tier} Plan</span>
+                      <Badge variant="default" className="bg-green-600">
+                        Active
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600">{subscription.currency} {subscription.price}/{subscription.billing_cycle}</p>
+                    <p className="text-gray-600">{subscription.currency} {subscription.price}/{subscription.billing_cycle}</p>
                   </div>
                 </div>
                 
@@ -234,14 +298,14 @@ const CoachDashboard = () => {
                 {currentTier && usage && (
                   <div className="flex flex-wrap gap-2">
                     {isAtLimit(usage.coursesCreated, currentTier.features.maxCourses) && (
-                      <Badge variant="destructive" className="text-xs">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
+                      <Badge variant="destructive" className="text-sm">
+                        <AlertTriangle className="h-4 w-4 mr-1" />
                         Course limit reached
                       </Badge>
                     )}
                     {isAtLimit(usage.studentsEnrolled, currentTier.features.maxStudents) && (
-                      <Badge variant="destructive" className="text-xs">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
+                      <Badge variant="destructive" className="text-sm">
+                        <AlertTriangle className="h-4 w-4 mr-1" />
                         Student limit reached
                       </Badge>
                     )}
@@ -252,74 +316,8 @@ const CoachDashboard = () => {
           </Card>
         )}
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Total Courses</CardTitle>
-              <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">
-                {usage?.coursesCreated || 0}
-                {currentTier && hasActiveSubscription && currentTier.features.maxCourses !== -1 && (
-                  <span className="text-sm text-gray-500 ml-1">
-                    / {currentTier.features.maxCourses}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +0 from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Total Students</CardTitle>
-              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">
-                {usage?.studentsEnrolled || 0}
-                {currentTier && hasActiveSubscription && currentTier.features.maxStudents !== -1 && (
-                  <span className="text-sm text-gray-500 ml-1">
-                    / {currentTier.features.maxStudents}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +0 from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">MWK 0</div>
-              <p className="text-xs text-muted-foreground">
-                +MWK 0 from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Growth Rate</CardTitle>
-              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">0%</div>
-              <p className="text-xs text-muted-foreground">
-                +0% from last month
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Enhanced Stats Grid */}
+        <DesktopStatsGrid stats={statsData} className="mb-8" />
 
         {/* Courses Section */}
         <CoursesList
@@ -328,8 +326,8 @@ const CoachDashboard = () => {
           onPreviewCourse={(course) => handlePreviewCourse(course.id)}
           onManageContent={(course) => handleManageContent(course.id)}
         />
-      </div>
-    </div>
+      </DesktopSection>
+    </DesktopContainer>
   );
 };
 
