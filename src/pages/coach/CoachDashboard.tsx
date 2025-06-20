@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, BookOpen, DollarSign, Users, TrendingUp, CreditCard, AlertTriangle, Package } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { StatusBadge, getStatusBadge } from '@/components/dashboard/StatusBadge';
 import CoursesList from '@/components/courses/CoursesList';
 import CourseForm from '@/components/courses/CourseForm';
 import CourseEditor from '@/components/courses/CourseEditor';
@@ -17,6 +18,7 @@ import { useCoachSubscription, useSubscriptionUsage } from '@/hooks/useSubscript
 import { useStartTrial } from '@/hooks/useSubscriptionManagement';
 import { getTierById } from '@/config/subscriptionTiers';
 import CourseCreationWizard from '@/components/courses/CourseCreationWizard';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 type ViewType = 'dashboard' | 'create' | 'edit' | 'preview' | 'content' | 'subscription' | 'bundles';
 
@@ -25,6 +27,83 @@ const CoachDashboard = () => {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
   const [showWizard, setShowWizard] = useState(false);
+
+  const renderView = () => {
+    if (currentView === 'subscription') {
+      return (
+        <DashboardLayout>
+          <SubscriptionPage />
+        </DashboardLayout>
+      );
+    }
+
+    if (currentView === 'bundles') {
+      return (
+        <DashboardLayout>
+          <CourseBundleManager />
+        </DashboardLayout>
+      );
+    }
+
+    if (showWizard) {
+      return (
+        <DashboardLayout>
+          <CourseCreationWizard
+            onSuccess={() => { setShowWizard(false); handleBackToDashboard(); }}
+            onCancel={() => setShowWizard(false)}
+          />
+        </DashboardLayout>
+      );
+    }
+
+    if (currentView === 'create') {
+      return (
+        <DashboardLayout>
+          <CourseForm
+            onSuccess={handleBackToDashboard}
+            onCancel={handleBackToDashboard}
+          />
+        </DashboardLayout>
+      );
+    }
+
+    if (currentView === 'edit' && selectedCourseId) {
+      return (
+        <DashboardLayout>
+          <CourseEditor
+            courseId={selectedCourseId}
+            onSuccess={handleBackToDashboard}
+            onCancel={handleBackToDashboard}
+            onPreview={() => setCurrentView('preview')}
+          />
+        </DashboardLayout>
+      );
+    }
+
+    if (currentView === 'preview' && selectedCourseId) {
+      return (
+        <DashboardLayout>
+          <CoursePreview
+            courseId={selectedCourseId}
+            onBack={handleBackToDashboard}
+          />
+        </DashboardLayout>
+      );
+    }
+
+    if (currentView === 'content' && selectedCourseId) {
+      return (
+        <DashboardLayout>
+          <CourseContentManager
+            courseId={selectedCourseId}
+            onBack={handleBackToDashboard}
+          />
+        </DashboardLayout>
+      );
+    }
+
+    return null;
+  };
   
   const { data: subscription } = useCoachSubscription();
   const { data: usage } = useSubscriptionUsage();
@@ -89,96 +168,59 @@ const CoachDashboard = () => {
     return limit !== -1 && used >= limit;
   };
 
-  if (currentView === 'subscription') {
-    return <SubscriptionPage />;
-  }
-
-  if (currentView === 'bundles') {
-    return <CourseBundleManager />;
-  }
-
-  if (showWizard) {
-    return (
-      <div className="w-full">
-        <CourseCreationWizard
-          onSuccess={() => { setShowWizard(false); handleBackToDashboard(); }}
-          onCancel={() => setShowWizard(false)}
-        />
-      </div>
-    );
-  }
-
-  if (currentView === 'create') {
-    return (
-      <div className="w-full">
-        <CourseForm
-          onSuccess={handleBackToDashboard}
-          onCancel={handleBackToDashboard}
-        />
-      </div>
-    );
-  }
-
-  if (currentView === 'edit' && selectedCourseId) {
-    return (
-      <div className="w-full">
-        <CourseEditor
-          courseId={selectedCourseId}
-          onSuccess={handleBackToDashboard}
-          onCancel={handleBackToDashboard}
-          onPreview={() => setCurrentView('preview')}
-        />
-      </div>
-    );
-  }
-
-  if (currentView === 'preview' && selectedCourseId) {
-    return (
-      <div className="w-full">
-        <CoursePreview
-          courseId={selectedCourseId}
-          onBack={handleBackToDashboard}
-        />
-      </div>
-    );
-  }
-
-  if (currentView === 'content' && selectedCourseId) {
-    return (
-      <div className="w-full">
-        <CourseContentManager
-          courseId={selectedCourseId}
-          onBack={handleBackToDashboard}
-        />
-      </div>
-    );
+  const alternateView = renderView();
+  if (alternateView) {
+    return alternateView;
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50">
-      <div className="container mx-auto py-4 md:py-6 px-4 space-y-4 md:space-y-6 max-w-7xl">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6">
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold break-words">
-              Welcome back, {profile?.first_name}!
-            </h1>
-            <p className="text-gray-600 text-sm md:text-base">Manage your courses and track your success</p>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                {profile?.first_name?.[0] || 'C'}
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                  Welcome back, {profile?.first_name}!
+                </h1>
+                <p className="text-slate-600 text-sm sm:text-base mt-1">
+                  Manage your courses and track your success
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button onClick={() => setCurrentView('subscription')} variant="outline" className="w-full sm:w-auto">
-              <CreditCard className="h-4 w-4 mr-2" />
-              Subscription
-            </Button>
-            <Button onClick={() => setCurrentView('bundles')} variant="outline" className="w-full sm:w-auto">
-              <Package className="h-4 w-4 mr-2" />
-              Bundles
-            </Button>
-            <Button onClick={handleCreateCourse} className="w-full sm:w-auto" disabled={!hasActiveSubscription}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Course
-            </Button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setCurrentView('subscription')} 
+                  variant="outline" 
+                  className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-200"
+                >
+                  <CreditCard className="h-4 w-4 mr-2 text-slate-600" />
+                  Subscription
+                </Button>
+                <Button 
+                  onClick={() => setCurrentView('bundles')} 
+                  variant="outline" 
+                  className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-200"
+                >
+                  <Package className="h-4 w-4 mr-2 text-slate-600" />
+                  Bundles
+                </Button>
+              </div>
+              <Button 
+                onClick={handleCreateCourse} 
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" 
+                disabled={!hasActiveSubscription}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Course
+              </Button>
+            </div>
           </div>
-        </div>
 
         {/* Trial or Subscription Status */}
         {!subscription ? (
@@ -214,36 +256,46 @@ const CoachDashboard = () => {
             onUpgrade={() => setCurrentView('subscription')} 
           />
         ) : (
-          <Card className="mb-4">
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="h-5 w-5 text-blue-600" />
+          <Card className="mb-6 bg-gradient-to-br from-slate-50 via-white to-blue-50/50 border-slate-200/75">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                <div className="flex items-start sm:items-center gap-4">
+                  <div className="p-3 rounded-xl bg-blue-50">
+                    <CreditCard className="h-6 w-6 text-blue-600" />
+                  </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{currentTier?.name || subscription.tier} Plan</span>
-                      <Badge {...getStatusBadge(subscription.status)}>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <h3 className="text-lg font-semibold text-slate-900">
+                        {currentTier?.name || subscription.tier} Plan
+                      </h3>
+                      <StatusBadge status={subscription.status} {...getStatusBadge(subscription.status)}>
                         {getStatusBadge(subscription.status).label}
-                      </Badge>
+                      </StatusBadge>
                     </div>
-                    <p className="text-sm text-gray-600">{subscription.currency} {subscription.price}/{subscription.billing_cycle}</p>
+                    <p className="text-sm text-slate-600">
+                      {subscription.currency} {subscription.price}/{subscription.billing_cycle}
+                    </p>
                   </div>
                 </div>
                 
                 {/* Usage warnings */}
                 {currentTier && usage && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-3">
                     {isAtLimit(usage.coursesCreated, currentTier.features.maxCourses) && (
-                      <Badge variant="destructive" className="text-xs">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
+                      <StatusBadge status="limit" variant="destructive" icon>
                         Course limit reached
-                      </Badge>
+                      </StatusBadge>
                     )}
                     {isAtLimit(usage.studentsEnrolled, currentTier.features.maxStudents) && (
-                      <Badge variant="destructive" className="text-xs">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
+                      <StatusBadge status="limit" variant="destructive" icon>
                         Student limit reached
-                      </Badge>
+                      </StatusBadge>
+                    )}
+                    {!isAtLimit(usage.coursesCreated, currentTier.features.maxCourses) && 
+                     !isAtLimit(usage.studentsEnrolled, currentTier.features.maxStudents) && (
+                      <StatusBadge status="ok" variant="outline">
+                        All usage within limits
+                      </StatusBadge>
                     )}
                   </div>
                 )}
@@ -253,72 +305,37 @@ const CoachDashboard = () => {
         )}
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Total Courses</CardTitle>
-              <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">
-                {usage?.coursesCreated || 0}
-                {currentTier && hasActiveSubscription && currentTier.features.maxCourses !== -1 && (
-                  <span className="text-sm text-gray-500 ml-1">
-                    / {currentTier.features.maxCourses}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +0 from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Total Students</CardTitle>
-              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">
-                {usage?.studentsEnrolled || 0}
-                {currentTier && hasActiveSubscription && currentTier.features.maxStudents !== -1 && (
-                  <span className="text-sm text-gray-500 ml-1">
-                    / {currentTier.features.maxStudents}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +0 from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">MWK 0</div>
-              <p className="text-xs text-muted-foreground">
-                +MWK 0 from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">Growth Rate</CardTitle>
-              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="pb-2">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">0%</div>
-              <p className="text-xs text-muted-foreground">
-                +0% from last month
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            icon={BookOpen}
+            title="Total Courses"
+            value={usage?.coursesCreated || 0}
+            maxValue={currentTier && hasActiveSubscription ? currentTier.features.maxCourses : undefined}
+            trend={0}
+            color="blue"
+          />
+          <StatCard
+            icon={Users}
+            title="Total Students"
+            value={usage?.studentsEnrolled || 0}
+            maxValue={currentTier && hasActiveSubscription ? currentTier.features.maxStudents : undefined}
+            trend={0}
+            color="purple"
+          />
+          <StatCard
+            icon={DollarSign}
+            title="Total Revenue"
+            value="MWK 0"
+            trend={0}
+            color="emerald"
+          />
+          <StatCard
+            icon={TrendingUp}
+            title="Growth Rate"
+            value="0%"
+            trend={0}
+            color="rose"
+          />
         </div>
 
         {/* Courses Section */}
@@ -329,7 +346,7 @@ const CoachDashboard = () => {
           onManageContent={(course) => handleManageContent(course.id)}
         />
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

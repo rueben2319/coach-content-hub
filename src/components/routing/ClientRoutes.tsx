@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Route } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
-import ResponsiveDashboardLayout from '@/components/layout/ResponsiveDashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import ClientDashboard from '@/pages/client/ClientDashboard';
 import BrowseContent from '@/pages/client/BrowseContent';
 import CourseView from '@/pages/client/CourseView';
@@ -19,86 +18,86 @@ export const ClientRoutes = () => (
   <>
     <Route path="/client" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <ClientDashboard />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/browse" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <BrowseContent />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/content" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <BrowseContent />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/courses/:courseId" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <CourseView />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/progress" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <Progress />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/goals" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <Goals />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/achievements" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <Achievements />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/sessions" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <Sessions />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/messages" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <Messages />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/coaches" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <Coaches />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/profile" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <ClientProfile />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
     <Route path="/client/subscription" element={
       <ProtectedRoute>
-        <ResponsiveDashboardLayout>
+        <DashboardLayout>
           <SubscriptionPage />
-        </ResponsiveDashboardLayout>
+        </DashboardLayout>
       </ProtectedRoute>
     } />
   </>
