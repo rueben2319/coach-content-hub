@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -135,7 +134,7 @@ const ClientDashboard = () => {
       color: 'text-warning-600',
       bgColor: 'bg-warning-50'
     },
-    { 
+    {
       title: 'Courses Completed', 
       value: progressData.filter(p => p.progress_percentage === 100).length.toString(), 
       change: 'Fully completed', 
@@ -162,16 +161,16 @@ const ClientDashboard = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in">
+    <div className="space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">My Learning Dashboard</h1>
         <p className="text-lg text-muted-foreground">Continue your personal development journey</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="cards-grid mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
         {stats.map((stat) => (
-          <Card key={stat.title} className="card-soft">
+          <Card key={stat.title} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
@@ -188,9 +187,9 @@ const ClientDashboard = () => {
         ))}
       </div>
 
-      <div className="two-column-grid">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* My Courses */}
-        <Card className="card-soft">
+        <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <CardTitle className="text-xl font-semibold">My Courses</CardTitle>
             <Button variant="outline" size="sm" className="w-full sm:w-auto border-primary-200 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 transition-all duration-200">
@@ -203,7 +202,7 @@ const ClientDashboard = () => {
                 {enrollments.slice(0, 4).map((enrollment) => {
                   const progress = getCourseProgress(enrollment.id);
                   return (
-                    <div key={enrollment.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg hover:shadow-medium transition-all duration-200 space-y-3 sm:space-y-0 group">
+                    <div key={enrollment.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg hover:shadow-md transition-all duration-200 space-y-3 sm:space-y-0 group">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-3">
                           <h3 className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
@@ -229,7 +228,7 @@ const ClientDashboard = () => {
                           </div>
                         </div>
                       </div>
-                      <Button size="sm" className="w-full sm:w-auto sm:ml-4 touch-target bg-primary hover:bg-primary-600 transition-colors" asChild>
+                      <Button size="sm" className="w-full sm:w-auto sm:ml-4 bg-primary hover:bg-primary-600 transition-colors" asChild>
                         <Link to={`/client/courses/${enrollment.course.id}`}>
                           <Play className="w-4 h-4 mr-2 sm:mr-0" />
                           <span className="sm:hidden">Continue</span>
@@ -248,7 +247,7 @@ const ClientDashboard = () => {
                 <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                   Start your learning journey by browsing our course catalog and finding something that interests you.
                 </p>
-                <Button asChild className="touch-target bg-primary hover:bg-primary-600 transition-colors">
+                <Button asChild className="bg-primary hover:bg-primary-600 transition-colors">
                   <Link to="/client/content">Browse Courses</Link>
                 </Button>
               </div>
@@ -257,7 +256,7 @@ const ClientDashboard = () => {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="card-soft">
+        <Card className="hover:shadow-md transition-shadow">
           <CardHeader>
             <CardTitle className="text-xl font-semibold">Recent Activity</CardTitle>
           </CardHeader>
@@ -267,7 +266,7 @@ const ClientDashboard = () => {
                 {enrollments.slice(0, 3).map((enrollment) => {
                   const progress = getCourseProgress(enrollment.id);
                   return (
-                    <div key={enrollment.id} className="p-4 border border-border rounded-lg hover:shadow-medium transition-all duration-200 group">
+                    <div key={enrollment.id} className="p-4 border border-border rounded-lg hover:shadow-md transition-all duration-200 group">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
                           <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-lg flex-shrink-0 group-hover:from-primary-600 group-hover:to-primary-700 transition-all duration-300">

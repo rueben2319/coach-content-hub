@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +14,7 @@ const AdminDashboard = () => {
 
   if (revenueLoading || tierLoading || monthlyLoading) {
     return (
-      <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="flex items-center justify-center h-64">
         <div className="text-center">Loading admin dashboard...</div>
       </div>
     );
@@ -82,7 +81,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="space-y-6">
       <div className="mb-6 md:mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Revenue Dashboard</h1>
         <p className="text-gray-600 mt-2">Real-time insights into your coaching platform revenue</p>
