@@ -11,25 +11,28 @@ import {
   FileText,
   UserCheck,
   TrendingUp,
-  LogOut,
-  Bell,
-  MessageSquare,
-  Calendar,
-  Target,
-  Award,
-  X
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarSeparator,
+  useSidebar
+} from '@/components/ui/sidebar';
 
-interface MobileSidebarProps {
-  onClose?: () => void;
-}
-
-const MobileSidebar: React.FC<MobileSidebarProps> = ({ onClose }) => {
+const MobileSidebar = () => {
   const { profile, signOut } = useAuth();
   const location = useLocation();
+  const { setOpenMobile } = useSidebar();
 
   if (!profile) return null;
 
@@ -47,12 +50,9 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ onClose }) => {
       case 'coach':
         return [
           { icon: LayoutDashboard, label: 'Dashboard', path: '/coach' },
-          { icon: BookOpen, label: 'My Content', path: '/coach/content', badge: 'New' },
+          { icon: BookOpen, label: 'My Content', path: '/coach/content' },
           { icon: Users, label: 'My Clients', path: '/coach/clients' },
-          { icon: Calendar, label: 'Schedule', path: '/coach/schedule' },
-          { icon: MessageSquare, label: 'Messages', path: '/coach/messages' },
           { icon: TrendingUp, label: 'Analytics', path: '/coach/analytics' },
-          { icon: Award, label: 'Achievements', path: '/coach/achievements' },
           { icon: User, label: 'Profile', path: '/coach/profile' },
           { icon: CreditCard, label: 'Subscription', path: '/coach/subscription' },
         ];
@@ -60,12 +60,8 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ onClose }) => {
         return [
           { icon: LayoutDashboard, label: 'Dashboard', path: '/client' },
           { icon: BookOpen, label: 'Browse Content', path: '/client/content' },
-          { icon: Target, label: 'My Goals', path: '/client/goals' },
-          { icon: FileText, label: 'My Progress', path: '/client/progress' },
           { icon: Users, label: 'My Coaches', path: '/client/coaches' },
-          { icon: Calendar, label: 'Sessions', path: '/client/sessions' },
-          { icon: MessageSquare, label: 'Messages', path: '/client/messages' },
-          { icon: Award, label: 'Achievements', path: '/client/achievements', badge: 'New' },
+          { icon: FileText, label: 'My Progress', path: '/client/progress' },
           { icon: User, label: 'Profile', path: '/client/profile' },
           { icon: CreditCard, label: 'Subscription', path: '/client/subscription' },
         ];
@@ -88,88 +84,66 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+    <Sidebar>
+      <SidebarHeader className="p-4">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 via-purple-600 to-green-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">E</span>
-          </div>
-          <span className="font-semibold text-gray-900">Experts Coach Hub</span>
-        </div>
-        {onClose && (
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-5 w-5" />
-          </Button>
-        )}
-      </div>
-
-      {/* User Info */}
-      <div className="p-4 border-b">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
-            <div className="flex items-center space-x-2">
-              <Badge variant="secondary" className="text-xs capitalize">
-                {profile.role}
-              </Badge>
-              {profile.role !== 'admin' && (
-                <Bell className="w-4 h-4 text-gray-400" />
-              )}
-            </div>
+            <Badge variant="secondary" className="text-xs capitalize">
+              {profile.role}
+            </Badge>
           </div>
         </div>
-      </div>
+      </SidebarHeader>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-2">
-        <div className="space-y-1">
-          {menuItems.map((item) => {
-            const isActive = isActiveMenuItem(item.path);
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={onClose}
-                className={`flex items-center justify-between px-3 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <item.icon className="w-5 h-5" />
-                  <span className="font-medium text-sm">{item.label}</span>
-                </div>
-                {item.badge && (
-                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                    {item.badge}
-                  </Badge>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      <SidebarSeparator />
 
-      {/* Sign Out */}
-      <div className="p-4 border-t">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-          onClick={() => {
-            signOut();
-            onClose?.();
-          }}
-        >
-          <LogOut className="w-5 h-5 mr-3" />
-          Sign Out
-        </Button>
-      </div>
-    </div>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {menuItems.map((item) => {
+                const isActive = isActiveMenuItem(item.path);
+                return (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive}
+                      className="w-full"
+                    >
+                      <Link 
+                        to={item.path}
+                        onClick={() => setOpenMobile(false)}
+                        className="flex items-center space-x-3"
+                      >
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarSeparator />
+
+      <SidebarFooter className="p-4">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={signOut} className="w-full">
+              <LogOut className="w-5 h-5 mr-3" />
+              Sign Out
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 };
 
