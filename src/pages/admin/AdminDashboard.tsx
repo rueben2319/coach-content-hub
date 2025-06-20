@@ -2,7 +2,8 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserCheck, CreditCard, TrendingUp, DollarSign, BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, UserCheck, CreditCard, TrendingUp, DollarSign, BookOpen, Settings, Eye } from 'lucide-react';
 import RevenueChart from '@/components/admin/RevenueChart';
 import TierAnalytics from '@/components/admin/TierAnalytics';
 import SubscriptionStatusCard from '@/components/admin/SubscriptionStatusCard';
@@ -15,8 +16,13 @@ const AdminDashboard = () => {
 
   if (revenueLoading || tierLoading || monthlyLoading) {
     return (
-      <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
-        <div className="text-center">Loading admin dashboard...</div>
+      <div className="desktop-container">
+        <div className="desktop-flex-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading admin dashboard...</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -82,25 +88,44 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Revenue Dashboard</h1>
-        <p className="text-gray-600 mt-2">Real-time insights into your coaching platform revenue</p>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="desktop-section-header">
+        <div className="desktop-flex-between">
+          <div>
+            <h1 className="desktop-heading-primary">Revenue Dashboard</h1>
+            <p className="desktop-text-body mt-2">
+              Real-time insights into your coaching platform revenue
+            </p>
+          </div>
+          <div className="flex space-x-3">
+            <Button variant="outline" className="desktop-button-secondary">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Analytics
+            </Button>
+            <Button className="desktop-button-primary">
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+      <div className="desktop-grid-auto-fit">
         {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardContent className="p-4 md:p-6">
+          <Card key={stat.title} className="desktop-stat-card">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-600 truncate">{stat.title}</p>
-                  <p className="text-xl md:text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                  <p className="text-xs md:text-sm text-green-600 mt-1">{stat.change} from last month</p>
+                  <p className="desktop-stat-label">{stat.title}</p>
+                  <p className="desktop-stat-value">{stat.value}</p>
+                  <p className={`desktop-stat-change positive`}>
+                    {stat.change} from last month
+                  </p>
                 </div>
                 <div className={`${stat.color} ml-3`}>
-                  <stat.icon className="w-6 h-6 md:w-8 md:h-8" />
+                  <stat.icon className="w-8 h-8" />
                 </div>
               </div>
             </CardContent>
@@ -110,12 +135,17 @@ const AdminDashboard = () => {
 
       {/* Revenue Chart */}
       {revenueByMonth && (
-        <div className="mb-6 md:mb-8">
-          <RevenueChart data={revenueByMonth} />
-        </div>
+        <Card className="desktop-card">
+          <CardHeader>
+            <CardTitle className="desktop-heading-secondary">Revenue Trends</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RevenueChart data={revenueByMonth} />
+          </CardContent>
+        </Card>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8 mb-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {/* Subscription Status Overview */}
         {revenueStats && (
           <SubscriptionStatusCard
@@ -127,28 +157,34 @@ const AdminDashboard = () => {
         )}
 
         {/* Recent Activities */}
-        <Card>
+        <Card className="desktop-card">
           <CardHeader>
-            <CardTitle className="text-lg md:text-xl">Recent Activities</CardTitle>
+            <div className="desktop-flex-between">
+              <CardTitle className="desktop-heading-secondary">Recent Activities</CardTitle>
+              <Button variant="ghost" size="sm">
+                <Eye className="w-4 h-4 mr-2" />
+                View All
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 md:space-y-4">
+            <div className="space-y-4">
               {recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                <div key={index} className="flex items-center justify-between p-4 border rounded-xl hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center space-x-4 flex-1 min-w-0">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
                       {activity.user.charAt(0)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900 truncate">{activity.user}</p>
-                      <p className="text-xs md:text-sm text-gray-600 truncate">{activity.action}</p>
+                      <p className="font-medium text-gray-900 truncate">{activity.user}</p>
+                      <p className="text-sm text-gray-600 truncate">{activity.action}</p>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0 ml-2">
-                    <Badge variant={activity.type === 'upgrade' ? 'default' : 'secondary'} className="text-xs">
+                  <div className="text-right flex-shrink-0 ml-4">
+                    <Badge variant={activity.type === 'upgrade' ? 'default' : 'secondary'} className="text-xs mb-1">
                       {activity.type}
                     </Badge>
-                    <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                    <p className="text-xs text-gray-500">{activity.time}</p>
                   </div>
                 </div>
               ))}
