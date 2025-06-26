@@ -4,23 +4,28 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const DashboardRoute: React.FC = () => {
-  const { profile, loading } = useAuth();
+  const { profile, loading, user } = useAuth();
 
-  console.log('DashboardRoute - profile:', profile?.role, 'loading:', loading);
+  console.log('DashboardRoute - Auth state:', { 
+    hasUser: !!user,
+    hasProfile: !!profile, 
+    profileRole: profile?.role, 
+    loading 
+  });
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
-  if (!profile) {
-    console.log('DashboardRoute - No profile, redirecting to /auth');
+  if (!user || !profile) {
+    console.log('DashboardRoute - No user or profile, redirecting to /auth');
     return <Navigate to="/auth" replace />;
   }
 

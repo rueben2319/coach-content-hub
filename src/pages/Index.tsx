@@ -29,6 +29,7 @@ const Index = () => {
     );
   }
 
+  // If user is authenticated and has a profile, redirect to appropriate dashboard
   if (user && profile) {
     const redirectMap = {
       admin: '/admin',
@@ -43,12 +44,12 @@ const Index = () => {
     }
   }
 
+  // If user exists but no profile, show loading state
   if (user && !profile) {
-    // User exists but no profile - this shouldn't happen with the trigger
-    // but handle it gracefully by showing a message and retry option
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Setting up your profile...</h2>
           <p className="text-gray-600 mb-4">We're preparing your account. This should only take a moment.</p>
           <Button onClick={() => window.location.reload()} variant="outline">
@@ -59,6 +60,7 @@ const Index = () => {
     );
   }
 
+  // Show landing page for non-authenticated users
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="container mx-auto px-4 py-16">
