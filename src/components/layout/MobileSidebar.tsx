@@ -87,81 +87,66 @@ const MobileSidebar = () => {
   };
 
   return (
-    <>
-      {/* Mobile Sidebar Trigger - visible on mobile */}
-      <div className="flex items-center justify-between p-4 bg-white border-b md:hidden">
+    <Sidebar>
+      <SidebarHeader className="p-4">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
             {initials}
           </div>
-          <Badge variant="secondary" className="text-xs capitalize">
-            {profile.role}
-          </Badge>
-        </div>
-        <SidebarTrigger />
-      </div>
-
-      <Sidebar>
-        <SidebarHeader className="p-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
-              <Badge variant="secondary" className="text-xs capitalize">
-                {profile.role}
-              </Badge>
-            </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
+            <Badge variant="secondary" className="text-xs capitalize">
+              {profile.role}
+            </Badge>
           </div>
-        </SidebarHeader>
+        </div>
+      </SidebarHeader>
 
-        <SidebarSeparator />
+      <SidebarSeparator />
 
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {menuItems.map((item) => {
-                  const isActive = isActiveMenuItem(item.path);
-                  return (
-                    <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton 
-                        asChild 
-                        isActive={isActive}
-                        className="w-full"
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {menuItems.map((item) => {
+                const isActive = isActiveMenuItem(item.path);
+                return (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive}
+                      className="w-full"
+                    >
+                      <Link 
+                        to={item.path}
+                        onClick={() => setOpenMobile(false)}
+                        className="flex items-center space-x-3"
                       >
-                        <Link 
-                          to={item.path}
-                          onClick={() => setOpenMobile(false)}
-                          className="flex items-center space-x-3"
-                        >
-                          <item.icon className="w-5 h-5" />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
 
-        <SidebarSeparator />
+      <SidebarSeparator />
 
-        <SidebarFooter className="p-4">
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={signOut} className="w-full">
-                <LogOut className="w-5 h-5 mr-3" />
-                Sign Out
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-    </>
+      <SidebarFooter className="p-4">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={signOut} className="w-full">
+              <LogOut className="w-5 h-5 mr-3" />
+              Sign Out
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 };
 
