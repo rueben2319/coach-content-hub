@@ -67,7 +67,7 @@ export function MobileNavigation() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-1 z-50 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 z-50 md:hidden safe-area-pb">
       <div className="flex justify-around items-center max-w-md mx-auto">
         {navItems.map((item) => {
           const active = isActive(item.path);
@@ -76,19 +76,19 @@ export function MobileNavigation() {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-all duration-200 min-w-[60px] min-h-[48px]",
+                "flex flex-col items-center justify-center py-2 px-2 rounded-lg transition-all duration-200 min-w-[60px] min-h-[52px]",
                 "touch-manipulation active:scale-95",
                 active 
-                  ? "text-primary bg-primary-50" 
+                  ? "text-primary bg-primary/10" 
                   : "text-gray-600 hover:text-gray-900 active:bg-gray-100"
               )}
             >
               <item.icon className={cn("w-5 h-5 mb-1", active ? "text-primary" : "text-gray-600")} />
-              <span className={cn("text-xs font-medium", active ? "text-primary" : "text-gray-600")}>
+              <span className={cn("text-xs font-medium leading-tight", active ? "text-primary" : "text-gray-600")}>
                 {item.label}
               </span>
               {item.badge && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
                   {item.badge}
                 </span>
               )}

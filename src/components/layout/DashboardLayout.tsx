@@ -23,8 +23,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     return (
       <SidebarProvider>
         <div className="min-h-screen bg-gray-50 flex flex-col w-full">
-          {/* Mobile Header with Sidebar Trigger */}
-          <header className="flex items-center justify-between p-4 bg-white border-b md:hidden">
+          {/* Fixed Mobile Header with Sidebar Trigger */}
+          <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-white border-b shadow-sm md:hidden">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-xs">
                 {initials}
@@ -35,14 +35,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </Badge>
               )}
             </div>
-            <SidebarTrigger />
+            <SidebarTrigger className="h-8 w-8" />
           </header>
 
           {/* Mobile Sidebar */}
           <MobileSidebar />
 
-          {/* Main Content Area with bottom padding for navigation */}
-          <main className="flex-1 overflow-hidden pb-16">
+          {/* Main Content Area with top padding for fixed header and bottom padding for navigation */}
+          <main className="flex-1 overflow-hidden pt-20 pb-16">
             <div className="h-full overflow-y-auto">
               <div className="max-w-7xl mx-auto p-4">
                 {children}
@@ -50,7 +50,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </div>
           </main>
 
-          {/* Bottom Navigation */}
+          {/* Fixed Bottom Navigation */}
           <MobileNavigation />
         </div>
       </SidebarProvider>
