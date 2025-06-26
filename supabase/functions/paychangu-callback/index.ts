@@ -89,16 +89,86 @@ serve(async (req) => {
 async function handleSuccessfulPayment(supabaseClient: any, txRef: string, payChanguData: any) {
   console.log('Payment confirmed, updating subscription and billing status');
 
-  // Find billing record
-  const { data: billing, error: billingError } = await supabaseClient
+  // First try to find billing record by paychangu_reference
+  let { data: billing, error: billingError } = await supabaseClient
     .from('billing_history')
     .select('*, coach_subscriptions!inner(*)')
     .eq('paychangu_reference', txRef)
-    .single();
+    .maybeSingle();
+
+  // If not found by reference, try to find by subscription ID (extract from tx_ref if it follows pattern)
+  if (!billing && txRef.startsWith('sub_')) {
+    const subscriptionIdMatch = txRef.match(/^sub_([a-f0-9-]+)_/);
+    if (subscriptionIdMatch) {
+      const subscriptionId = subscriptionIdMatch[1];
+      console.log('Trying to find billing by subscription ID:', subscriptionId);
+      
+      const { data: billingBySub, error: billingBySubError } = await supabaseClient
+        .from('billing_history')
+        .select('*, coach_subscriptions!inner(*)')
+        .eq('subscription_id', subscriptionId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!billingBySubError && billingBySub) {
+        billing = billingBySub;
+        // Update the billing record with the correct paychangu_reference
+        await supabaseClient
+          .from('billing_history')
+          .update({ paychangu_reference: txRef })
+          .eq('id', billing.id);
+      }
+    }
+  }
 
   if (billingError || !billing) {
     console.error('Billing record not found:', billingError);
-    throw new Error('Billing record not found');
+    
+    // Try to find any pending billing for this tx_ref pattern
+    if (txRef.startsWith('sub_')) {
+      const subscriptionIdMatch = txRef.match(/^sub_([a-f0-9-]+)_/);
+      if (subscriptionIdMatch) {
+        const subscriptionId = subscriptionIdMatch[1];
+        
+        // Find the subscription and create a billing record if needed
+        const { data: subscription, error: subError } = await supabaseClient
+          .from('coach_subscriptions')
+          .select('*')
+          .eq('id', subscriptionId)
+          .single();
+
+        if (!subError && subscription) {
+          console.log('Found subscription, creating billing record');
+          
+          // Create billing record
+          const { data: newBilling, error: createBillingError } = await supabaseClient
+            .from('billing_history')
+            .insert({
+              subscription_id: subscription.id,
+              coach_id: subscription.coach_id,
+              amount: subscription.price,
+              currency: subscription.currency,
+              status: 'paid',
+              paychangu_reference: txRef,
+              paid_at: new Date().toISOString(),
+              billing_period_start: new Date().toISOString(),
+              billing_period_end: new Date(Date.now() + (subscription.billing_cycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString(),
+            })
+            .select()
+            .single();
+
+          if (!createBillingError) {
+            billing = { ...newBilling, coach_subscriptions: subscription };
+          }
+        }
+      }
+    }
+
+    if (!billing) {
+      throw new Error('Billing record not found and could not be created');
+    }
   }
 
   const subscription = billing.coach_subscriptions;
@@ -145,7 +215,7 @@ async function handleSuccessfulPayment(supabaseClient: any, txRef: string, payCh
     throw billingUpdateError;
   }
 
-  // Generate invoice and receipt (simplified - in real implementation, you'd call an invoice service)
+  // Generate invoice and receipt data
   const invoiceData = {
     invoice_number: `INV-${billing.id.substring(0, 8)}-${Date.now()}`,
     amount: billing.amount,
@@ -198,7 +268,7 @@ async function handleFailedPayment(supabaseClient: any, txRef: string, payChangu
     .from('billing_history')
     .select('*')
     .eq('paychangu_reference', txRef)
-    .single();
+    .maybeSingle();
 
   if (billingError || !billing) {
     console.error('Billing record not found for failed payment:', billingError);
