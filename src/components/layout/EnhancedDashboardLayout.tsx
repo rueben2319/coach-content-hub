@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import ResponsiveDashboardLayout from './ResponsiveDashboardLayout';
+import DashboardLayout from './DashboardLayout';
 import { UserFeedbackWidget } from '@/components/feedback/UserFeedbackWidget';
 import { AccessibilityOverlay } from '@/components/testing/AccessibilityOverlay';
 import { useCoreWebVitals } from '@/hooks/usePerformanceMonitoring';
@@ -33,9 +33,9 @@ const EnhancedDashboardLayout: React.FC<EnhancedDashboardLayoutProps> = ({ child
 
   return (
     <>
-      <ResponsiveDashboardLayout>
+      <DashboardLayout>
         {children}
-      </ResponsiveDashboardLayout>
+      </DashboardLayout>
       
       <UserFeedbackWidget />
       <AccessibilityOverlay />
