@@ -44,7 +44,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           {/* Main Content Area with top padding for fixed header and bottom padding for navigation */}
           <main className="flex-1 overflow-hidden pt-20 pb-16">
             <div className="h-full overflow-y-auto">
-              <div className="max-w-7xl mx-auto p-4">
+              <div className="max-w-7xl mx-auto">
                 {children}
               </div>
             </div>
@@ -68,7 +68,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         {/* Main Content Area */}
         <main className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto">
-            <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto">
               {children}
             </div>
           </div>

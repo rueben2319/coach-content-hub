@@ -31,6 +31,7 @@ const Index = () => {
 
   // If user is authenticated and has a profile, redirect to appropriate dashboard
   if (user && profile) {
+    console.log('Index - User authenticated with profile, redirecting to dashboard');
     const redirectMap = {
       admin: '/admin',
       coach: '/coach',
@@ -46,6 +47,7 @@ const Index = () => {
 
   // If user exists but no profile, show loading state
   if (user && !profile) {
+    console.log('Index - User exists but no profile found');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
@@ -61,6 +63,7 @@ const Index = () => {
   }
 
   // Show landing page for non-authenticated users
+  console.log('Index - No user found, showing landing page');
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="container mx-auto px-4 py-16">
