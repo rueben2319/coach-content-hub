@@ -5,7 +5,8 @@ import { RoleProtectedRoute } from './RoleProtectedRoute';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import CoachDashboard from '@/pages/coach/CoachDashboard';
 import CoachProfile from '@/pages/coach/CoachProfile';
-import SubscriptionPage from '@/pages/coach/SubscriptionPage';
+import ContentManagement from '@/pages/coach/ContentManagement';
+import SubscriptionManagement from '@/pages/coach/SubscriptionManagement';
 
 export const CoachRoutes = () => (
   <>
@@ -23,10 +24,17 @@ export const CoachRoutes = () => (
         </DashboardLayout>
       </RoleProtectedRoute>
     } />
+    <Route path="/coach/content" element={
+      <RoleProtectedRoute allowedRoles={['coach']}>
+        <DashboardLayout>
+          <ContentManagement />
+        </DashboardLayout>
+      </RoleProtectedRoute>
+    } />
     <Route path="/coach/subscription" element={
       <RoleProtectedRoute allowedRoles={['coach']}>
         <DashboardLayout>
-          <SubscriptionPage />
+          <SubscriptionManagement />
         </DashboardLayout>
       </RoleProtectedRoute>
     } />

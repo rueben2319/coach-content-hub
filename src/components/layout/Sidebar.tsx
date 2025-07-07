@@ -47,14 +47,14 @@ const Sidebar = () => {
       case 'coach':
         return [
           { icon: LayoutDashboard, label: 'Dashboard', path: '/coach', section: 'main' },
-          { icon: BookOpen, label: 'My Content', path: '/coach/content', section: 'content', badge: 'New' },
+          { icon: BookOpen, label: 'Content Hub', path: '/coach/content', section: 'content', badge: 'New' },
           { icon: Users, label: 'My Clients', path: '/coach/clients', section: 'clients' },
           { icon: Calendar, label: 'Schedule', path: '/coach/schedule', section: 'planning' },
           { icon: MessageSquare, label: 'Messages', path: '/coach/messages', section: 'communication' },
           { icon: TrendingUp, label: 'Analytics', path: '/coach/analytics', section: 'insights' },
           { icon: Award, label: 'Achievements', path: '/coach/achievements', section: 'progress' },
           { icon: User, label: 'Profile', path: '/coach/profile', section: 'account' },
-          { icon: CreditCard, label: 'Subscription', path: '/coach/subscription', section: 'account' },
+          { icon: CreditCard, label: 'Subscription Hub', path: '/coach/subscription', section: 'account', badge: 'Updated' },
         ];
       case 'client':
         return [

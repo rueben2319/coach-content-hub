@@ -166,20 +166,20 @@ const CoachDashboard = () => {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="flex gap-2">
             <Button 
-              onClick={() => setCurrentView('subscription')} 
+              onClick={() => window.location.href = '/coach/content'} 
+              variant="outline" 
+              className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-200"
+            >
+              <BookOpen className="h-4 w-4 mr-2 text-slate-600" />
+              Content Hub
+            </Button>
+            <Button 
+              onClick={() => window.location.href = '/coach/subscription'} 
               variant="outline" 
               className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-200"
             >
               <CreditCard className="h-4 w-4 mr-2 text-slate-600" />
               Subscription
-            </Button>
-            <Button 
-              onClick={() => setCurrentView('bundles')} 
-              variant="outline" 
-              className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-200"
-            >
-              <Package className="h-4 w-4 mr-2 text-slate-600" />
-              Bundles
             </Button>
           </div>
           <Button 
