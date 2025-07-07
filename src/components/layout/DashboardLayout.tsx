@@ -22,7 +22,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
     return (
       <SidebarProvider>
-        <div className="min-h-screen bg-gray-50 flex flex-col w-full">
+        <div className="min-h-screen bg-white flex flex-col w-full">
           {/* Fixed Mobile Header with Sidebar Trigger */}
           <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-white border-b shadow-sm md:hidden">
             <div className="flex items-center space-x-3">
@@ -44,7 +44,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           {/* Main Content Area with top padding for fixed header and bottom padding for navigation */}
           <main className="flex-1 overflow-hidden pt-20 pb-16">
             <div className="h-full overflow-y-auto">
-              <div className="max-w-7xl mx-auto">
+              <div className="w-full">
                 {children}
               </div>
             </div>
@@ -59,7 +59,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-gray-50 flex w-full">
+      <div className="min-h-screen bg-white flex w-full">
         {/* Desktop Sidebar */}
         <aside className="w-72 flex-shrink-0">
           <Sidebar />
@@ -68,7 +68,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         {/* Main Content Area */}
         <main className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto">
-            <div className="max-w-7xl mx-auto">
+            <div className="w-full">
               {children}
             </div>
           </div>

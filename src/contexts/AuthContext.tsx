@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Profile } from '@/types/profile';
 import { profileService } from '@/services/profileService';
 import { authService } from '@/services/authService';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -87,7 +87,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(newSession?.user ?? null);
           
           if (newSession?.user) {
-            await fetchUserProfile(newSession.user.id);
+            const profileData = await fetchUserProfile(newSession.user.id);
+            
+            // Redirect after successful login and profile fetch
+            if (event === 'SIGNED_IN' && profileData) {
+              const redirectMap = {
+                admin: '/admin',
+                coach: '/coach',
+                client: '/client'
+              };
+              
+              const redirectTo = redirectMap[profileData.role];
+              if (redirectTo) {
+                console.log('Redirecting to:', redirectTo);
+                window.location.href = redirectTo;
+              }
+            }
           } else {
             setProfile(null);
           }

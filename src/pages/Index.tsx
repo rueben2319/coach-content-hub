@@ -20,7 +20,7 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
@@ -49,7 +49,7 @@ const Index = () => {
   if (user && !profile) {
     console.log('Index - User exists but no profile found');
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Setting up your profile...</h2>
@@ -105,7 +105,7 @@ const Index = () => {
             <div className="w-12 h-12 bg-purple-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
               <span className="text-purple-600 text-xl">🚀</span>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Track Progress</h3>
+            <h3 className="text-xl font-semibolf mb-2">Track Progress</h3>
             <p className="text-gray-600">Monitor your learning journey and achievements</p>
           </div>
         </div>
