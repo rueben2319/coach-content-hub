@@ -1,35 +1,56 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { DashboardRoute } from './DashboardRoute';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { ProtectedRoute } from './ProtectedRoute';
 import { AdminRoutes } from './AdminRoutes';
 import { CoachRoutes } from './CoachRoutes';
 import { ClientRoutes } from './ClientRoutes';
 
-// Public pages
+// Page imports
 import Index from '@/pages/Index';
 import AuthPage from '@/pages/AuthPage';
 import NotFound from '@/pages/NotFound';
+import PaymentSuccess from '@/pages/PaymentSuccess';
+import PaymentFailed from '@/pages/PaymentFailed';
 
-export const AppRoutes = () => {
+export default function AppRoutes() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Index />} />
-        <Route path="/auth" element={<AuthPage />} />
-        
-        {/* Dashboard redirect route */}
-        <Route path="/dashboard" element={<DashboardRoute />} />
-        
-        {/* Role-based routes */}
-        {AdminRoutes()}
-        {CoachRoutes()}
-        {ClientRoutes()}
-        
-        {/* Catch all route */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </div>
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<Index />} />
+      <Route path="/auth" element={<AuthPage />} />
+      
+      {/* Payment result pages */}
+      <Route path="/payment-success" element={
+        <ProtectedRoute>
+          <PaymentSuccess />
+        </ProtectedRoute>
+      } />
+      <Route path="/payment-failed" element={
+        <ProtectedRoute>
+          <PaymentFailed />
+        </ProtectedRoute>
+      } />
+
+      {/* Role-based routes */}
+      {AdminRoutes()}
+      {CoachRoutes()}
+      {ClientRoutes()}
+
+      {/* Fallback routes */}
+      <Route path="/404" element={<NotFound />} />
+      <Route path="*" element={<Navigate to="/404" replace />} />
+    </Routes>
   );
-};
+}

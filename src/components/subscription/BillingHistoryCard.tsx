@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,8 @@ import {
   Clock,
   CreditCard,
   Smartphone,
-  Building2
+  Building2,
+  Loader2
 } from 'lucide-react';
 
 const BillingHistoryCard: React.FC = () => {
@@ -27,8 +28,8 @@ const BillingHistoryCard: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
 
-  const { data: billingHistory, isLoading: billingLoading } = useBillingHistory();
-  const { data: notifications } = usePaymentNotifications();
+  const { data: billingHistory, isLoading: billingLoading, refetch: refetchBilling } = useBillingHistory();
+  const { data: notifications, refetch: refetchNotifications } = usePaymentNotifications();
   const retryPayment = useRetryPayment();
 
   const handleRetryPayment = () => {
@@ -43,6 +44,8 @@ const BillingHistoryCard: React.FC = () => {
       onSuccess: () => {
         setRetryDialogOpen(false);
         setSelectedBilling(null);
+        refetchBilling();
+        refetchNotifications();
       }
     });
   };
@@ -88,14 +91,29 @@ const BillingHistoryCard: React.FC = () => {
     }
   };
 
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-MW', {
+      style: 'currency',
+      currency: currency === 'MWK' ? 'MWK' : 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   if (billingLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Billing History</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Receipt className="w-5 h-5" />
+            Billing History & Payments
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4">Loading billing history...</div>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+            <span className="ml-2 text-gray-600">Loading billing history...</span>
+          </div>
         </CardContent>
       </Card>
     );
@@ -123,7 +141,7 @@ const BillingHistoryCard: React.FC = () => {
           </div>
         )}
 
-        {/* Billing History Table */}
+        {/* Billing History */}
         <div className="space-y-4">
           {billingHistory && billingHistory.length > 0 ? (
             billingHistory.map((billing: any) => (
@@ -132,12 +150,12 @@ const BillingHistoryCard: React.FC = () => {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
-                        {billing.coach_subscriptions?.tier || 'Subscription'} Plan
+                        {billing.coach_subscriptions?.tier?.toUpperCase() || 'Subscription'} Plan
                       </span>
                       {getStatusBadge(billing.status, billing.retry_count)}
                     </div>
                     <p className="text-sm text-gray-600">
-                      {billing.currency} {billing.amount} • {billing.coach_subscriptions?.billing_cycle || 'monthly'}
+                      {formatCurrency(billing.amount, billing.currency)} • {billing.coach_subscriptions?.billing_cycle || 'monthly'}
                     </p>
                     <p className="text-xs text-gray-500">
                       {new Date(billing.created_at).toLocaleDateString()} • 
@@ -161,8 +179,13 @@ const BillingHistoryCard: React.FC = () => {
                           setSelectedBilling(billing);
                           setRetryDialogOpen(true);
                         }}
+                        disabled={retryPayment.isPending}
                       >
-                        <RefreshCw className="w-4 h-4 mr-1" />
+                        {retryPayment.isPending ? (
+                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-4 h-4 mr-1" />
+                        )}
                         Retry
                       </Button>
                     )}
@@ -170,7 +193,7 @@ const BillingHistoryCard: React.FC = () => {
                 </div>
 
                 {billing.status === 'failed' && (
-                  <div className="text-sm text-red-600">
+                  <div className="text-sm text-red-600 bg-red-50 p-3 rounded">
                     Payment failed after {billing.retry_count} attempt(s).
                     {billing.retry_count >= 3 
                       ? ' Maximum retries exceeded. Please contact support.'
@@ -180,15 +203,17 @@ const BillingHistoryCard: React.FC = () => {
                 )}
 
                 {billing.paid_at && (
-                  <div className="text-sm text-green-600">
+                  <div className="text-sm text-green-600 bg-green-50 p-3 rounded">
                     ✓ Paid on {new Date(billing.paid_at).toLocaleString()}
                   </div>
                 )}
               </div>
             ))
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              No billing history found
+            <div className="text-center py-8">
+              <Receipt className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 font-medium">No billing history found</p>
+              <p className="text-gray-400 text-sm">Your payment history will appear here once you make a purchase.</p>
             </div>
           )}
         </div>
@@ -202,9 +227,10 @@ const BillingHistoryCard: React.FC = () => {
             <div className="space-y-4">
               {selectedBilling && (
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="font-medium">{selectedBilling.coach_subscriptions?.tier} Plan</p>
+                  <p className="font-medium">{selectedBilling.coach_subscriptions?.tier?.toUpperCase()} Plan</p>
                   <p className="text-sm text-gray-600">
-                    {selectedBilling.currency} {selectedBilling.amount} • Attempt {(selectedBilling.retry_count || 0) + 1}/3
+                    {formatCurrency(selectedBilling.amount, selectedBilling.currency)} • 
+                    Attempt {(selectedBilling.retry_count || 0) + 1}/3
                   </p>
                 </div>
               )}
@@ -266,9 +292,20 @@ const BillingHistoryCard: React.FC = () => {
                   disabled={retryPayment.isPending}
                   className="flex-1"
                 >
-                  {retryPayment.isPending ? 'Processing...' : 'Retry Payment'}
+                  {retryPayment.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Retry Payment'
+                  )}
                 </Button>
-                <Button variant="outline" onClick={() => setRetryDialogOpen(false)}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setRetryDialogOpen(false)}
+                  disabled={retryPayment.isPending}
+                >
                   Cancel
                 </Button>
               </div>
