@@ -149,7 +149,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Price determined: ${price} MWK`);
 
-    // Check for existing subscription - improved logic
+    // Check for existing subscription - FIXED LOGIC
     console.log('Checking for existing subscriptions...');
     const { data: existingSubscriptions, error: existingSubError } = await supabaseClient
       .from('coach_subscriptions')
@@ -170,39 +170,66 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Found existing subscriptions:', existingSubscriptions?.length || 0);
     
-    // Check if there's a truly active subscription (not just trial or inactive)
+    // FIXED: More accurate active subscription detection
+    const now = new Date();
     const activeSubscription = existingSubscriptions?.find(sub => {
-      const isActive = sub.status === 'active';
-      const isValidTrial = sub.status === 'trial' && sub.is_trial && 
-                          sub.trial_ends_at && new Date(sub.trial_ends_at) > new Date();
-      const isValidExpiry = sub.expires_at && new Date(sub.expires_at) > new Date();
+      console.log(`Checking subscription ${sub.id}: status=${sub.status}, trial=${sub.is_trial}`);
       
-      console.log(`Subscription ${sub.id}: status=${sub.status}, isActive=${isActive}, isValidTrial=${isValidTrial}, isValidExpiry=${isValidExpiry}`);
+      // For active subscriptions, check if they have a valid expiry
+      if (sub.status === 'active') {
+        const hasValidExpiry = sub.expires_at && new Date(sub.expires_at) > now;
+        console.log(`Active sub ${sub.id}: expires_at=${sub.expires_at}, hasValidExpiry=${hasValidExpiry}`);
+        return hasValidExpiry;
+      }
       
-      return (isActive && isValidExpiry) || isValidTrial;
+      // For trial subscriptions, check if trial is still valid
+      if (sub.status === 'trial' && sub.is_trial) {
+        const trialValid = sub.trial_ends_at && new Date(sub.trial_ends_at) > now;
+        console.log(`Trial sub ${sub.id}: trial_ends_at=${sub.trial_ends_at}, trialValid=${trialValid}`);
+        return trialValid;
+      }
+      
+      console.log(`Subscription ${sub.id} is not active - status=${sub.status}`);
+      return false;
     });
 
     if (activeSubscription) {
-      console.log('Found truly active subscription:', activeSubscription.id);
+      console.log('Found truly active subscription:', activeSubscription.id, 'Status:', activeSubscription.status);
+      
+      // Clean up any old inactive subscriptions
+      const inactiveIds = existingSubscriptions
+        ?.filter(sub => sub.id !== activeSubscription.id && 
+                       (sub.status === 'expired' || sub.status === 'inactive'))
+        ?.map(sub => sub.id) || [];
+      
+      if (inactiveIds.length > 0) {
+        console.log(`Cleaning up ${inactiveIds.length} inactive subscriptions`);
+        await supabaseClient
+          .from('coach_subscriptions')
+          .delete()
+          .in('id', inactiveIds);
+      }
+
       return new Response(JSON.stringify({ 
         success: false,
         error: 'You already have an active subscription. Please manage your existing subscription instead.',
-        subscription_id: activeSubscription.id
+        subscription_id: activeSubscription.id,
+        current_status: activeSubscription.status,
+        expires_at: activeSubscription.expires_at || activeSubscription.trial_ends_at
       }), {
         status: 409,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
-    // Clean up any old inactive subscriptions if needed
+    // Clean up ALL inactive/expired subscriptions before creating new one
     if (existingSubscriptions && existingSubscriptions.length > 0) {
-      const inactiveSubscriptions = existingSubscriptions.filter(sub => 
-        sub.status !== 'active' && 
-        (sub.status !== 'trial' || !sub.is_trial || 
-         !sub.trial_ends_at || new Date(sub.trial_ends_at) <= new Date())
-      );
-      
-      console.log(`Found ${inactiveSubscriptions.length} inactive subscriptions to potentially clean up`);
+      console.log('Cleaning up all old subscriptions before creating new one');
+      const allOldIds = existingSubscriptions.map(sub => sub.id);
+      await supabaseClient
+        .from('coach_subscriptions')
+        .delete()
+        .in('id', allOldIds);
     }
 
     // Create new subscription
