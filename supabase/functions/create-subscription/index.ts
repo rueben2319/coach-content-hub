@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -150,14 +149,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Price determined: ${price} MWK`);
 
-    // Check for existing subscription
+    // Check for existing subscription - improved logic
     console.log('Checking for existing subscriptions...');
-    const { data: existingSubscription, error: existingSubError } = await supabaseClient
+    const { data: existingSubscriptions, error: existingSubError } = await supabaseClient
       .from('coach_subscriptions')
       .select('*')
       .eq('coach_id', user.id)
-      .in('status', ['active', 'trial'])
-      .maybeSingle();
+      .order('created_at', { ascending: false });
 
     if (existingSubError) {
       console.error('Error checking existing subscription:', existingSubError);
@@ -170,15 +168,41 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    if (existingSubscription) {
-      console.error('User already has active subscription:', existingSubscription.id);
+    console.log('Found existing subscriptions:', existingSubscriptions?.length || 0);
+    
+    // Check if there's a truly active subscription (not just trial or inactive)
+    const activeSubscription = existingSubscriptions?.find(sub => {
+      const isActive = sub.status === 'active';
+      const isValidTrial = sub.status === 'trial' && sub.is_trial && 
+                          sub.trial_ends_at && new Date(sub.trial_ends_at) > new Date();
+      const isValidExpiry = sub.expires_at && new Date(sub.expires_at) > new Date();
+      
+      console.log(`Subscription ${sub.id}: status=${sub.status}, isActive=${isActive}, isValidTrial=${isValidTrial}, isValidExpiry=${isValidExpiry}`);
+      
+      return (isActive && isValidExpiry) || isValidTrial;
+    });
+
+    if (activeSubscription) {
+      console.log('Found truly active subscription:', activeSubscription.id);
       return new Response(JSON.stringify({ 
         success: false,
-        error: 'You already have an active subscription'
+        error: 'You already have an active subscription. Please manage your existing subscription instead.',
+        subscription_id: activeSubscription.id
       }), {
         status: 409,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
+    }
+
+    // Clean up any old inactive subscriptions if needed
+    if (existingSubscriptions && existingSubscriptions.length > 0) {
+      const inactiveSubscriptions = existingSubscriptions.filter(sub => 
+        sub.status !== 'active' && 
+        (sub.status !== 'trial' || !sub.is_trial || 
+         !sub.trial_ends_at || new Date(sub.trial_ends_at) <= new Date())
+      );
+      
+      console.log(`Found ${inactiveSubscriptions.length} inactive subscriptions to potentially clean up`);
     }
 
     // Create new subscription
