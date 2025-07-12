@@ -6,3 +6,15 @@ verify_jwt = true
 
 [functions.paychangu-callback]
 verify_jwt = false
+
+[functions.initiate-payment]
+verify_jwt = true
+
+[functions.retry-payment]
+verify_jwt = true
+
+[functions.manage-subscription]
+verify_jwt = true
+
+[functions.start-trial]
+verify_jwt = true

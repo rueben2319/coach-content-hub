@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -122,6 +123,7 @@ export const useCreateSubscription = () => {
         throw new Error('No active session found');
       }
 
+      console.log('Calling create-subscription function...');
       const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: subscriptionData,
         headers: {
@@ -131,7 +133,12 @@ export const useCreateSubscription = () => {
 
       if (error) {
         console.error('Subscription creation error:', error);
-        throw error;
+        throw new Error(error.message || 'Failed to create subscription');
+      }
+      
+      if (!data.success) {
+        console.error('Subscription creation failed:', data);
+        throw new Error(data.error || 'Failed to create subscription');
       }
       
       console.log('Subscription creation response:', data);
@@ -142,12 +149,14 @@ export const useCreateSubscription = () => {
       queryClient.invalidateQueries({ queryKey: ['coach-subscription'] });
       
       if (data.payment_url) {
+        console.log('Redirecting to payment URL:', data.payment_url);
         window.open(data.payment_url, '_blank');
         toast({
           title: 'Payment initiated',
           description: 'Please complete your payment in the new tab. Your subscription will be activated automatically.',
         });
       } else {
+        console.error('No payment URL received:', data);
         toast({
           title: 'Error',
           description: 'Payment URL not received. Please try again.',
@@ -157,9 +166,15 @@ export const useCreateSubscription = () => {
     },
     onError: (error: any) => {
       console.error('Subscription creation failed:', error);
+      
+      let errorMessage = 'Failed to create subscription';
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: 'Subscription failed',
-        description: error.message || 'Failed to create subscription',
+        description: errorMessage,
         variant: 'destructive',
       });
     },

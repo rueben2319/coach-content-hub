@@ -18,20 +18,65 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log('=== CREATE SUBSCRIPTION FUNCTION STARTED ===');
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
+    // Verify environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const payChanguSecret = Deno.env.get('PAYCHANGU_SECRET_KEY');
     
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    if (authError || !user) {
-      throw new Error('Unauthorized');
+    if (!supabaseUrl || !serviceKey || !payChanguSecret) {
+      console.error('Missing environment variables:', {
+        hasSupabaseUrl: !!supabaseUrl,
+        hasServiceKey: !!serviceKey,
+        hasPayChanguSecret: !!payChanguSecret
+      });
+      throw new Error('Missing required environment variables');
     }
 
-    const { tier, billingCycle }: CreateSubscriptionRequest = await req.json();
+    console.log('Environment variables verified');
+
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('No authorization header provided');
+      throw new Error('Authorization header required');
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    console.log('Authenticating user...');
+    
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError) {
+      console.error('Auth error:', authError);
+      throw new Error(`Authentication failed: ${authError.message}`);
+    }
+    
+    if (!user) {
+      console.error('No user found');
+      throw new Error('User not found');
+    }
+
+    console.log(`User authenticated: ${user.id}`);
+
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError);
+      throw new Error('Invalid request body');
+    }
+
+    const { tier, billingCycle }: CreateSubscriptionRequest = requestBody;
+
+    if (!tier || !billingCycle) {
+      console.error('Missing required fields:', { tier, billingCycle });
+      throw new Error('Missing tier or billingCycle');
+    }
 
     console.log(`Creating subscription for user ${user.id}, tier: ${tier}, cycle: ${billingCycle}`);
 
@@ -44,22 +89,35 @@ const handler = async (req: Request): Promise<Response> => {
 
     const price = pricing[tier]?.[billingCycle];
     if (!price) {
+      console.error(`Invalid pricing configuration: ${tier}, ${billingCycle}`);
       throw new Error(`Invalid tier or billing cycle: ${tier}, ${billingCycle}`);
     }
 
+    console.log(`Price determined: ${price} MWK`);
+
     // Check if user already has an active subscription
-    const { data: existingSubscription } = await supabaseClient
+    console.log('Checking for existing subscription...');
+    const { data: existingSubscription, error: existingSubError } = await supabaseClient
       .from('coach_subscriptions')
       .select('*')
       .eq('coach_id', user.id)
       .in('status', ['active', 'trial'])
-      .single();
+      .maybeSingle();
+
+    if (existingSubError) {
+      console.error('Error checking existing subscription:', existingSubError);
+      throw new Error('Failed to check existing subscription');
+    }
 
     if (existingSubscription) {
+      console.error('User already has active subscription:', existingSubscription.id);
       throw new Error('User already has an active subscription');
     }
 
+    console.log('No existing subscription found, proceeding...');
+
     // Create new subscription
+    console.log('Creating new subscription...');
     const { data: subscription, error: subscriptionError } = await supabaseClient
       .from('coach_subscriptions')
       .insert({
@@ -79,13 +137,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (subscriptionError) {
       console.error('Error creating subscription:', subscriptionError);
-      throw new Error('Failed to create subscription');
+      throw new Error(`Failed to create subscription: ${subscriptionError.message}`);
     }
 
     console.log('Subscription created:', subscription.id);
 
     // Generate unique transaction reference
     const txRef = `sub_${subscription.id}_${Date.now()}`;
+    console.log('Transaction reference:', txRef);
 
     // Create billing record immediately
     const billingPeriodStart = new Date();
@@ -96,6 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
       billingPeriodEnd.setMonth(billingPeriodEnd.getMonth() + 1);
     }
 
+    console.log('Creating billing record...');
     const { data: billing, error: billingError } = await supabaseClient
       .from('billing_history')
       .insert({
@@ -114,15 +174,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (billingError) {
       console.error('Error creating billing record:', billingError);
-      // Don't fail the whole process, but log the error
+      // Don't fail completely, but log the error
+      console.log('Continuing without billing record...');
+    } else {
+      console.log('Billing record created:', billing.id);
     }
-
-    console.log('Billing record created:', billing?.id);
 
     // Get the origin from the request to build proper redirect URLs
     const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 'https://awmszxrtommgxjnivddq.supabase.co';
+    console.log('Origin for redirects:', origin);
 
-    // Prepare PayChangu payment request
+    // Prepare PayChangu payment request with simplified structure
     const payChanguPayload = {
       tx_ref: txRef,
       amount: price,
@@ -134,31 +196,56 @@ const handler = async (req: Request): Promise<Response> => {
       customizations: {
         title: `${tier.toUpperCase()} Plan Subscription`,
         description: `${billingCycle} subscription for ${tier} plan`,
-        logo: "https://your-logo-url.com/logo.png"
       },
       redirect_url: `${origin}/payment-success?tx_ref=${txRef}`,
-      cancel_url: `${origin}/payment-failed?tx_ref=${txRef}&reason=Payment cancelled by user`,
+      cancel_url: `${origin}/payment-failed?tx_ref=${txRef}`,
     };
 
-    console.log('PayChangu payload:', payChanguPayload);
-
-    // Call PayChangu API
-    const payChanguResponse = await fetch('https://api.paychangu.com/payment', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('PAYCHANGU_SECRET_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payChanguPayload),
+    console.log('PayChangu payload prepared:', {
+      tx_ref: payChanguPayload.tx_ref,
+      amount: payChanguPayload.amount,
+      currency: payChanguPayload.currency,
+      customer_email: payChanguPayload.customer.email
     });
 
-    const payChanguData = await payChanguResponse.json();
-    console.log('PayChangu response:', payChanguData);
+    // Call PayChangu API with better error handling
+    console.log('Calling PayChangu API...');
+    let payChanguResponse;
+    try {
+      payChanguResponse = await fetch('https://api.paychangu.com/payment', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${payChanguSecret}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(payChanguPayload),
+      });
+    } catch (fetchError) {
+      console.error('Network error calling PayChangu:', fetchError);
+      throw new Error(`Network error: ${fetchError.message}`);
+    }
+
+    console.log('PayChangu response status:', payChanguResponse.status);
+
+    let payChanguData;
+    try {
+      payChanguData = await payChanguResponse.json();
+    } catch (parseError) {
+      console.error('Failed to parse PayChangu response:', parseError);
+      throw new Error('Invalid response from payment provider');
+    }
+
+    console.log('PayChangu response data:', payChanguData);
 
     if (!payChanguResponse.ok) {
-      console.error('PayChangu API error:', payChanguData);
+      console.error('PayChangu API error:', {
+        status: payChanguResponse.status,
+        statusText: payChanguResponse.statusText,
+        data: payChanguData
+      });
       
-      // Update billing record as failed
+      // Update billing record as failed if it exists
       if (billing) {
         await supabaseClient
           .from('billing_history')
@@ -169,16 +256,19 @@ const handler = async (req: Request): Promise<Response> => {
           .eq('id', billing.id);
       }
 
-      throw new Error(`Payment initiation failed: ${payChanguData.message || 'Unknown error'}`);
+      const errorMessage = payChanguData?.message || payChanguData?.error || `PayChangu API returned ${payChanguResponse.status}`;
+      throw new Error(`Payment initiation failed: ${errorMessage}`);
     }
 
     // Update subscription with PayChangu reference
+    console.log('Updating subscription with PayChangu reference...');
     await supabaseClient
       .from('coach_subscriptions')
       .update({ paychangu_subscription_id: txRef })
       .eq('id', subscription.id);
 
     // Log subscription creation
+    console.log('Logging subscription change...');
     await supabaseClient
       .from('subscription_changes')
       .insert({
@@ -193,24 +283,37 @@ const handler = async (req: Request): Promise<Response> => {
         }
       });
 
-    return new Response(JSON.stringify({
+    const response = {
       success: true,
-      payment_url: payChanguData.data?.authorization_url || payChanguData.data?.link,
+      payment_url: payChanguData.data?.authorization_url || payChanguData.data?.link || payChanguData.authorization_url || payChanguData.link,
       tx_ref: txRef,
       subscription_id: subscription.id,
       billing_id: billing?.id,
       message: 'Subscription created and payment initiated successfully'
-    }), {
+    };
+
+    console.log('Success response:', response);
+    console.log('=== CREATE SUBSCRIPTION FUNCTION COMPLETED ===');
+
+    return new Response(JSON.stringify(response), {
       status: 200,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
 
   } catch (error: any) {
-    console.error('Error in create-subscription:', error);
+    console.error('=== CREATE SUBSCRIPTION FUNCTION ERROR ===');
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    console.error('=== END ERROR DETAILS ===');
+    
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error.message 
+        error: error.message || 'An unexpected error occurred',
+        details: error.stack
       }),
       {
         status: 400,
