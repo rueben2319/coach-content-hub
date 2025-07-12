@@ -19,6 +19,8 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     console.log('=== CREATE SUBSCRIPTION FUNCTION STARTED ===');
+    console.log('Request method:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
     // Check environment variables first
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -27,52 +29,102 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log('Environment check:', {
       hasSupabaseUrl: !!supabaseUrl,
-      hasServiceKey: !!serviceKey,
-      hasPayChanguSecret: !!payChanguSecret
+      hasServiceKey: !!serviceKey?.substring(0, 20) + '...',
+      hasPayChanguSecret: !!payChanguSecret?.substring(0, 10) + '...'
     });
     
     if (!supabaseUrl || !serviceKey) {
-      throw new Error('Missing Supabase environment variables');
+      console.error('Missing Supabase environment variables');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Server configuration error: Missing Supabase credentials'
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
     
     if (!payChanguSecret) {
-      throw new Error('PAYCHANGU_SECRET_KEY is not configured. Please add it in the Supabase Edge Function secrets.');
+      console.error('PAYCHANGU_SECRET_KEY not found');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Payment service not configured. Please contact support.'
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     const supabaseClient = createClient(supabaseUrl, serviceKey);
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('Authorization header required');
+      console.error('No authorization header');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Authorization required'
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     const token = authHeader.replace('Bearer ', '');
-    console.log('Authenticating user...');
+    console.log('Authenticating user with token length:', token.length);
     
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     if (authError) {
       console.error('Auth error:', authError);
-      throw new Error(`Authentication failed: ${authError.message}`);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: `Authentication failed: ${authError.message}`
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
     
     if (!user) {
-      throw new Error('User not found');
+      console.error('No user found after auth');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'User not found'
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
-    console.log(`User authenticated: ${user.id}`);
+    console.log(`User authenticated: ${user.id}, email: ${user.email}`);
 
     let requestBody;
     try {
-      requestBody = await req.json();
+      const bodyText = await req.text();
+      console.log('Raw request body:', bodyText);
+      requestBody = JSON.parse(bodyText);
+      console.log('Parsed request body:', requestBody);
     } catch (parseError) {
       console.error('Failed to parse request body:', parseError);
-      throw new Error('Invalid request body');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Invalid request format'
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     const { tier, billingCycle }: CreateSubscriptionRequest = requestBody;
 
     if (!tier || !billingCycle) {
-      throw new Error('Missing tier or billingCycle');
+      console.error('Missing required fields:', { tier, billingCycle });
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Missing tier or billing cycle'
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     console.log(`Creating subscription: tier=${tier}, cycle=${billingCycle}`);
@@ -86,12 +138,20 @@ const handler = async (req: Request): Promise<Response> => {
 
     const price = pricing[tier]?.[billingCycle];
     if (!price) {
-      throw new Error(`Invalid tier or billing cycle: ${tier}, ${billingCycle}`);
+      console.error('Invalid pricing configuration:', { tier, billingCycle });
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: `Invalid subscription plan: ${tier} ${billingCycle}`
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     console.log(`Price determined: ${price} MWK`);
 
     // Check for existing subscription
+    console.log('Checking for existing subscriptions...');
     const { data: existingSubscription, error: existingSubError } = await supabaseClient
       .from('coach_subscriptions')
       .select('*')
@@ -101,14 +161,28 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (existingSubError) {
       console.error('Error checking existing subscription:', existingSubError);
-      throw new Error('Failed to check existing subscription');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Database error while checking subscription status'
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     if (existingSubscription) {
-      throw new Error('User already has an active subscription');
+      console.error('User already has active subscription:', existingSubscription.id);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'You already have an active subscription'
+      }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     // Create new subscription
+    console.log('Creating new subscription...');
     const { data: subscription, error: subscriptionError } = await supabaseClient
       .from('coach_subscriptions')
       .insert({
@@ -128,16 +202,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (subscriptionError) {
       console.error('Error creating subscription:', subscriptionError);
-      throw new Error(`Failed to create subscription: ${subscriptionError.message}`);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: `Failed to create subscription: ${subscriptionError.message}`
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
-    console.log('Subscription created:', subscription.id);
+    console.log('Subscription created successfully:', subscription.id);
 
     // Generate transaction reference
     const txRef = `sub_${subscription.id}_${Date.now()}`;
-    console.log('Transaction reference:', txRef);
+    console.log('Transaction reference generated:', txRef);
 
     // Create billing record
+    console.log('Creating billing record...');
     const billingPeriodStart = new Date();
     const billingPeriodEnd = new Date(billingPeriodStart);
     if (billingCycle === 'yearly') {
@@ -164,22 +245,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (billingError) {
       console.error('Error creating billing record:', billingError);
+      // Continue without billing record for now
     } else {
-      console.log('Billing record created:', billing.id);
+      console.log('Billing record created successfully:', billing.id);
     }
 
     // Get origin for redirects
-    const origin = req.headers.get('origin') || 'https://awmszxrtommgxjnivddq.supabase.co';
+    const origin = req.headers.get('origin') || req.headers.get('referer') || 'https://awmszxrtommgxjnivddq.supabase.co';
     console.log('Origin for redirects:', origin);
 
-    // Simplified PayChangu payload
+    // Prepare PayChangu payload
+    const customerName = `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim() || user.email?.split('@')[0] || 'Customer';
+    
     const payChanguPayload = {
       tx_ref: txRef,
       amount: price,
       currency: 'MWK',
       customer: {
         email: user.email,
-        name: `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim() || user.email,
+        name: customerName,
       },
       customizations: {
         title: `${tier.toUpperCase()} Plan Subscription`,
@@ -189,7 +273,7 @@ const handler = async (req: Request): Promise<Response> => {
       cancel_url: `${origin}/payment-failed?tx_ref=${txRef}`,
     };
 
-    console.log('PayChangu payload:', JSON.stringify(payChanguPayload, null, 2));
+    console.log('PayChangu payload prepared:', JSON.stringify(payChanguPayload, null, 2));
 
     // Call PayChangu API
     console.log('Calling PayChangu API...');
@@ -204,27 +288,47 @@ const handler = async (req: Request): Promise<Response> => {
         },
         body: JSON.stringify(payChanguPayload),
       });
+      
+      console.log('PayChangu response status:', payChanguResponse.status);
+      console.log('PayChangu response headers:', Object.fromEntries(payChanguResponse.headers.entries()));
     } catch (fetchError) {
       console.error('Network error calling PayChangu:', fetchError);
-      throw new Error(`Network error: ${fetchError.message}`);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: `Payment service unavailable: ${fetchError.message}`
+      }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
-    console.log('PayChangu response status:', payChanguResponse.status);
-    console.log('PayChangu response headers:', Object.fromEntries(payChanguResponse.headers.entries()));
-
-    let payChanguData;
     const responseText = await payChanguResponse.text();
     console.log('PayChangu raw response:', responseText);
 
+    let payChanguData;
     try {
       payChanguData = JSON.parse(responseText);
+      console.log('PayChangu parsed response:', JSON.stringify(payChanguData, null, 2));
     } catch (parseError) {
       console.error('Failed to parse PayChangu response:', parseError);
       console.error('Raw response was:', responseText);
-      throw new Error('Invalid response from payment provider');
+      
+      // Update billing as failed
+      if (billing) {
+        await supabaseClient
+          .from('billing_history')
+          .update({ status: 'failed', retry_count: 1 })
+          .eq('id', billing.id);
+      }
+      
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Invalid response from payment provider'
+      }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
-
-    console.log('PayChangu parsed response:', JSON.stringify(payChanguData, null, 2));
 
     if (!payChanguResponse.ok) {
       console.error('PayChangu API error:', {
@@ -244,17 +348,25 @@ const handler = async (req: Request): Promise<Response> => {
           .eq('id', billing.id);
       }
 
-      const errorMessage = payChanguData?.message || payChanguData?.error || `PayChangu API returned ${payChanguResponse.status}: ${responseText}`;
-      throw new Error(`Payment initiation failed: ${errorMessage}`);
+      const errorMessage = payChanguData?.message || payChanguData?.error || payChanguData?.msg || `PayChangu API returned ${payChanguResponse.status}`;
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: `Payment initiation failed: ${errorMessage}`
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     // Update subscription with PayChangu reference
+    console.log('Updating subscription with PayChangu reference...');
     await supabaseClient
       .from('coach_subscriptions')
       .update({ paychangu_subscription_id: txRef })
       .eq('id', subscription.id);
 
     // Log subscription creation
+    console.log('Logging subscription creation...');
     await supabaseClient
       .from('subscription_changes')
       .insert({
@@ -274,11 +386,26 @@ const handler = async (req: Request): Promise<Response> => {
                       payChanguData.data?.link || 
                       payChanguData.authorization_url || 
                       payChanguData.link ||
-                      payChanguData.url;
+                      payChanguData.url ||
+                      payChanguData.payment_url;
+
+    console.log('Extracted payment URL:', paymentUrl);
 
     if (!paymentUrl) {
-      console.error('No payment URL found in response:', payChanguData);
-      throw new Error('No payment URL received from PayChangu');
+      console.error('No payment URL found in PayChangu response');
+      console.error('Available response keys:', Object.keys(payChanguData));
+      
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Payment URL not received from payment provider',
+        debug: {
+          responseKeys: Object.keys(payChanguData),
+          response: payChanguData
+        }
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     const response = {
@@ -291,7 +418,7 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     console.log('Success response:', response);
-    console.log('=== CREATE SUBSCRIPTION FUNCTION COMPLETED ===');
+    console.log('=== CREATE SUBSCRIPTION FUNCTION COMPLETED SUCCESSFULLY ===');
 
     return new Response(JSON.stringify(response), {
       status: 200,
@@ -300,21 +427,19 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('=== CREATE SUBSCRIPTION FUNCTION ERROR ===');
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    });
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     console.error('=== END ERROR DETAILS ===');
     
     return new Response(
       JSON.stringify({ 
         success: false,
         error: error.message || 'An unexpected error occurred',
-        details: error.stack
+        type: error.name || 'UnknownError'
       }),
       {
-        status: 400,
+        status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
