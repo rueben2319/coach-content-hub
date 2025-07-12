@@ -131,9 +131,24 @@ export const useCreateSubscription = () => {
         },
       });
 
+      console.log('Function response:', { data, error });
+
       if (error) {
         console.error('Subscription creation error:', error);
-        throw new Error(error.message || 'Failed to create subscription');
+        
+        // Handle different types of errors
+        let errorMessage = 'Failed to create subscription';
+        if (error.message) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      if (!data) {
+        throw new Error('No response data received');
       }
       
       if (!data.success) {
@@ -169,7 +184,13 @@ export const useCreateSubscription = () => {
       
       let errorMessage = 'Failed to create subscription';
       if (error.message) {
-        errorMessage = error.message;
+        if (error.message.includes('PAYCHANGU_SECRET_KEY')) {
+          errorMessage = 'Payment system not configured. Please contact support.';
+        } else if (error.message.includes('already has an active subscription')) {
+          errorMessage = 'You already have an active subscription.';
+        } else {
+          errorMessage = error.message;
+        }
       }
       
       toast({
