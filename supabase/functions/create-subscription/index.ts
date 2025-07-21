@@ -323,6 +323,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       redirect_url: `${origin}/payment-success?tx_ref=${txRef}`,
       cancel_url: `${origin}/payment-failed?tx_ref=${txRef}`,
+      callback_url: `https://awmszxrtommgxjnivddq.supabase.co/functions/v1/paychangu-callback`,
     };
 
     console.log('PayChangu payload prepared:', JSON.stringify(payChanguPayload, null, 2));
