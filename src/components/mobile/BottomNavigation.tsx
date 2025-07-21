@@ -21,19 +21,19 @@ const BottomNavigation: React.FC = () => {
     switch (profile.role) {
       case 'coach':
         return [
-          { icon: LayoutDashboard, label: 'Dashboard', path: '/coach' },
-          { icon: BookOpen, label: 'Content', path: '/coach/content' },
-          { icon: Users, label: 'Clients', path: '/coach/clients' },
-          { icon: TrendingUp, label: 'Analytics', path: '/coach/analytics' },
           { icon: User, label: 'Profile', path: '/coach/profile' },
+          { icon: TrendingUp, label: 'Analytics', path: '/coach/analytics' },
+          { icon: Users, label: 'Clients', path: '/coach/clients' },
+          { icon: BookOpen, label: 'Content', path: '/coach/content' },
+          { icon: LayoutDashboard, label: 'Dashboard', path: '/coach' },
         ];
       case 'client':
         return [
-          { icon: LayoutDashboard, label: 'Dashboard', path: '/client' },
-          { icon: BookOpen, label: 'Content', path: '/client/content' },
-          { icon: Users, label: 'Coaches', path: '/client/coaches' },
-          { icon: TrendingUp, label: 'Progress', path: '/client/progress' },
           { icon: User, label: 'Profile', path: '/client/profile' },
+          { icon: TrendingUp, label: 'Progress', path: '/client/progress' },
+          { icon: Users, label: 'Coaches', path: '/client/coaches' },
+          { icon: BookOpen, label: 'Content', path: '/client/content' },
+          { icon: LayoutDashboard, label: 'Dashboard', path: '/client' },
         ];
       default:
         return [];
@@ -50,24 +50,24 @@ const BottomNavigation: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-pb">
-      <nav className="flex items-center justify-around px-2 py-1">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900 border-t border-gray-800">
+      <nav className="flex items-center justify-around px-4 py-2">
         {navItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
             className={cn(
-              'flex flex-col items-center justify-center min-w-0 flex-1 px-1 py-2 text-xs transition-colors touch-manipulation',
+              'flex flex-col items-center justify-center min-w-0 flex-1 px-2 py-1 text-xs transition-colors',
               isActive(item.path)
-                ? 'text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'text-white'
+                : 'text-gray-400 hover:text-gray-300'
             )}
           >
             <item.icon className={cn(
-              'h-5 w-5 mb-1',
-              isActive(item.path) ? 'text-blue-600' : 'text-gray-500'
+              'h-6 w-6 mb-1',
+              isActive(item.path) ? 'text-white' : 'text-gray-400'
             )} />
-            <span className="truncate font-medium">{item.label}</span>
+            <span className="truncate">{item.label}</span>
           </Link>
         ))}
       </nav>
