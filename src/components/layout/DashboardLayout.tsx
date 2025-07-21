@@ -4,7 +4,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Sidebar from './Sidebar';
 import MobileSidebar from './MobileSidebar';
-import BottomNavigation from '@/components/mobile/BottomNavigation';
+import { MobileNavigation } from '@/components/mobile/MobileNavigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 
@@ -51,7 +51,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </main>
 
           {/* Fixed Bottom Navigation */}
-          <BottomNavigation />
+          <MobileNavigation />
         </div>
       </SidebarProvider>
     );

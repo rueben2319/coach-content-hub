@@ -1,6 +1,6 @@
 
 import React from 'react';
-import BottomNavigation from './BottomNavigation';
+import { MobileNavigation } from './MobileNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
@@ -26,7 +26,7 @@ export function MobileLayout({ children, showBottomNav = true }: MobileLayoutPro
       </main>
       
       {/* Bottom navigation */}
-      {showBottomNav && <BottomNavigation />}
+      {showBottomNav && <MobileNavigation />}
     </div>
   );
 }
