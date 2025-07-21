@@ -98,21 +98,21 @@ const ContentManagement = () => {
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 break-words">Content Management</h1>
-          <p className="text-slate-600 text-sm sm:text-base mt-1 break-words">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Content Management</h1>
+          <p className="text-slate-600 text-sm sm:text-base mt-1">
             Manage your courses, content, and bundles all in one place
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full">
-          <Button onClick={handleBackToDashboard} variant="outline" className="w-full sm:w-auto order-2 sm:order-1">
+        <div className="flex gap-2">
+          <Button onClick={handleBackToDashboard} variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            <span className="truncate">Back to Dashboard</span>
+            Back to Dashboard
           </Button>
-          <Button onClick={handleCreateCourse} className="w-full sm:w-auto order-1 sm:order-2">
+          <Button onClick={handleCreateCourse}>
             <Plus className="h-4 w-4 mr-2" />
-            <span className="truncate">Create Course</span>
+            Create Course
           </Button>
         </div>
       </div>
@@ -131,36 +131,36 @@ const ContentManagement = () => {
           </TabsList>
 
           <TabsContent value="courses" className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow touch-manipulation" onClick={handleCreateCourse}>
-                <CardContent className="p-3 sm:p-4 text-center">
-                  <Plus className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-blue-600" />
-                  <h3 className="font-semibold text-sm sm:text-base break-words">Create Course</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 break-words">Start a new course</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleCreateCourse}>
+                <CardContent className="p-4 text-center">
+                  <Plus className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                  <h3 className="font-semibold">Create Course</h3>
+                  <p className="text-sm text-gray-600">Start a new course</p>
                 </CardContent>
               </Card>
               
-              <Card className="cursor-pointer hover:shadow-md transition-shadow touch-manipulation">
-                <CardContent className="p-3 sm:p-4 text-center">
-                  <Edit className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-green-600" />
-                  <h3 className="font-semibold text-sm sm:text-base break-words">Edit Content</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 break-words">Modify existing content</p>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardContent className="p-4 text-center">
+                  <Edit className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                  <h3 className="font-semibold">Edit Content</h3>
+                  <p className="text-sm text-gray-600">Modify existing content</p>
                 </CardContent>
               </Card>
               
-              <Card className="cursor-pointer hover:shadow-md transition-shadow touch-manipulation">
-                <CardContent className="p-3 sm:p-4 text-center">
-                  <Eye className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-purple-600" />
-                  <h3 className="font-semibold text-sm sm:text-base break-words">Preview</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 break-words">See how courses look</p>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardContent className="p-4 text-center">
+                  <Eye className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                  <h3 className="font-semibold">Preview</h3>
+                  <p className="text-sm text-gray-600">See how courses look</p>
                 </CardContent>
               </Card>
               
-              <Card className="cursor-pointer hover:shadow-md transition-shadow touch-manipulation">
-                <CardContent className="p-3 sm:p-4 text-center">
-                  <Settings className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-orange-600" />
-                  <h3 className="font-semibold text-sm sm:text-base break-words">Manage</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 break-words">Advanced management</p>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardContent className="p-4 text-center">
+                  <Settings className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+                  <h3 className="font-semibold">Manage</h3>
+                  <p className="text-sm text-gray-600">Advanced management</p>
                 </CardContent>
               </Card>
             </div>
