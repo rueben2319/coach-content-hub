@@ -146,50 +146,55 @@ const CoachDashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6">
-        <div className="min-w-0">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+    <div className="space-y-8">
+      {/* Header Section */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-soft">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg flex-shrink-0">
               {profile?.first_name?.[0] || 'C'}
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
                 Welcome back, {profile?.first_name}!
               </h1>
-              <p className="text-slate-600 text-sm sm:text-base mt-1">
+              <p className="text-slate-600 text-base mt-1">
                 Manage your courses and track your success
               </p>
             </div>
           </div>
-        </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex gap-2">
+          
+          <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => window.location.href = '/coach/content'} 
+                variant="outline" 
+                size="sm"
+                className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-700 font-medium"
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Content Hub
+              </Button>
+              <Button 
+                onClick={() => window.location.href = '/coach/subscription'} 
+                variant="outline" 
+                size="sm"
+                className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-700 font-medium"
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                Subscription
+              </Button>
+            </div>
             <Button 
-              onClick={() => window.location.href = '/coach/content'} 
-              variant="outline" 
-              className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-200"
+              onClick={handleCreateCourse} 
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-medium px-6" 
+              disabled={!hasActiveSubscription}
             >
-              <BookOpen className="h-4 w-4 mr-2 text-slate-600" />
-              Content Hub
-            </Button>
-            <Button 
-              onClick={() => window.location.href = '/coach/subscription'} 
-              variant="outline" 
-              className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-200"
-            >
-              <CreditCard className="h-4 w-4 mr-2 text-slate-600" />
-              Subscription
+              <Plus className="h-4 w-4 mr-2" />
+              Create Course
             </Button>
           </div>
-          <Button 
-            onClick={handleCreateCourse} 
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" 
-            disabled={!hasActiveSubscription}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create Course
-          </Button>
         </div>
       </div>
 

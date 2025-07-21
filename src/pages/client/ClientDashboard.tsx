@@ -161,25 +161,32 @@ const ClientDashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">My Learning Dashboard</h1>
-        <p className="text-lg text-muted-foreground">Continue your personal development journey</p>
+    <div className="space-y-8">
+      {/* Header Section */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-soft">
+        <div className="text-center lg:text-left">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3 leading-tight">
+            My Learning Dashboard
+          </h1>
+          <p className="text-base sm:text-lg text-slate-600">
+            Continue your personal development journey
+          </p>
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {stats.map((stat) => (
-          <Card key={stat.title} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4 md:p-6">
+          <Card key={stat.title} className="bg-white border-slate-200 hover:shadow-medium transition-all duration-200 card-elevated">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground truncate">{stat.title}</p>
-                  <p className="text-2xl md:text-3xl font-bold text-foreground mt-1">{stat.value}</p>
-                  <p className="text-sm text-success-600 mt-1">{stat.change}</p>
+                  <p className="text-sm font-medium text-slate-600 truncate mb-2">{stat.title}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-slate-900">{stat.value}</p>
+                  <p className="text-sm text-emerald-600 mt-1 font-medium">{stat.change}</p>
                 </div>
-                <div className={`p-3 rounded-lg ${stat.bgColor} ml-3`}>
-                  <stat.icon className={`w-6 h-6 md:w-8 md:h-8 ${stat.color}`} />
+                <div className={`p-3 rounded-xl ml-3 shadow-sm ${stat.bgColor}`}>
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
               </div>
             </CardContent>

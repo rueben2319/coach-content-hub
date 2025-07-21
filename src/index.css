@@ -1,9 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 @import './styles/mobile.css';
 @import './styles/phase4-enhancements.css';
 @import './styles/desktop-enhancements.css';
+@import './styles/production-fixes.css';
 
 @layer base {
   :root {
@@ -84,53 +86,60 @@
   }
   
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-feature-settings: 'cv11', 'cv02', 'cv03', 'cv04';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-size: 16px;
-    line-height: 1.6;
+    line-height: 1.7;
+    letter-spacing: -0.02em;
   }
 
-  /* Enhanced typography for desktop */
+  /* Enhanced typography system */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-semibold text-foreground;
     letter-spacing: -0.025em;
+    line-height: 1.2;
   }
 
   h1 {
-    @apply text-3xl md:text-4xl lg:text-5xl leading-tight;
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl;
     font-weight: 700;
+    letter-spacing: -0.03em;
   }
 
   h2 {
-    @apply text-2xl md:text-3xl lg:text-4xl leading-tight;
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl;
     font-weight: 600;
+    letter-spacing: -0.025em;
   }
 
   h3 {
-    @apply text-xl md:text-2xl lg:text-3xl leading-snug;
+    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl;
     font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   h4 {
-    @apply text-lg md:text-xl lg:text-2xl leading-snug;
+    @apply text-base sm:text-lg md:text-xl lg:text-2xl;
     font-weight: 600;
+    letter-spacing: -0.015em;
   }
 
   h5 {
-    @apply text-base md:text-lg lg:text-xl leading-normal;
+    @apply text-sm sm:text-base md:text-lg lg:text-xl;
     font-weight: 500;
   }
 
   h6 {
-    @apply text-sm md:text-base lg:text-lg leading-normal;
+    @apply text-xs sm:text-sm md:text-base lg:text-lg;
     font-weight: 500;
   }
 
   p {
-    @apply text-base leading-relaxed text-muted-foreground;
-    margin-bottom: 1em;
+    @apply text-sm sm:text-base leading-relaxed text-muted-foreground;
+    margin-bottom: 0.75em;
   }
 
   /* Enhanced focus states for better accessibility */
@@ -183,61 +192,82 @@
 }
 
 @layer components {
-  /* Enhanced grid patterns for desktop */
+  /* Modern layout system */
   .dashboard-grid {
-    @apply grid gap-8 lg:gap-10;
+    @apply grid gap-4 sm:gap-6 lg:gap-8;
   }
 
   .cards-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 lg:gap-10;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
   }
 
   .two-column-grid {
-    @apply grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10;
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6;
   }
 
   .three-column-grid {
-    @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 lg:gap-10;
+    @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6;
   }
 
-  /* Enhanced card styles with better shadows */
+  /* Enhanced card system */
   .card-interactive {
-    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-2;
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1 cursor-pointer;
   }
 
-  .card-soft {
-    @apply shadow-lg;
+  .card-elevated {
+    @apply shadow-sm border border-border/50 bg-card;
   }
 
-  .card-medium {
-    @apply shadow-xl;
+  .card-glass {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20;
   }
 
-  /* Improved status indicators */
+  /* Modern button system */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 transition-all duration-200 font-medium;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/60 transition-all duration-200 font-medium;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-accent hover:text-accent-foreground active:bg-accent/80 transition-all duration-200;
+  }
+
+  /* Status indicators */
   .status-success {
-    @apply bg-success-50 text-success-700 border border-success-200 px-4 py-2 rounded-xl font-semibold;
+    @apply bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg text-sm font-medium;
   }
 
   .status-warning {
-    @apply bg-warning-50 text-warning-700 border border-warning-200 px-4 py-2 rounded-xl font-semibold;
+    @apply bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg text-sm font-medium;
   }
 
   .status-error {
-    @apply bg-error-50 text-error-700 border border-error-200 px-4 py-2 rounded-xl font-semibold;
+    @apply bg-red-50 text-red-700 border border-red-200 px-3 py-1.5 rounded-lg text-sm font-medium;
   }
 
-  /* Better touch targets for all devices */
-  .touch-target {
-    @apply min-h-[48px] min-w-[48px] flex items-center justify-center;
+  /* Enhanced containers */
+  .container-fluid {
+    @apply w-full max-w-none px-4 sm:px-6 lg:px-8;
   }
 
-  /* Enhanced content containers for desktop */
-  .content-container {
-    @apply max-w-7xl mx-auto px-8 lg:px-10 xl:px-12;
+  .container-constrained {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  .content-section {
-    @apply bg-white rounded-2xl shadow-xl border border-gray-200/60 p-8 lg:p-10 xl:p-12;
+  .section-padding {
+    @apply py-6 sm:py-8 lg:py-12;
+  }
+
+  /* Safe area handling */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top);
   }
 }
 
