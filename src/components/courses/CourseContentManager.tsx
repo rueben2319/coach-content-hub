@@ -68,22 +68,22 @@ const CourseContentManager: React.FC<CourseContentManagerProps> = ({ courseId, o
 
   return (
     <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div className="flex flex-col gap-4">
         <div className="min-w-0">
-          <h2 className="text-xl sm:text-2xl font-bold break-words">Advanced Course Content</h2>
-          <p className="text-sm sm:text-base text-gray-600">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold break-words">Advanced Course Content</h2>
+          <p className="text-sm sm:text-base text-gray-600 break-words">
             Create, organize, and manage your course content with advanced features
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full">
           <Button variant="outline" onClick={onBack} className="w-full sm:w-auto order-2 sm:order-1">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Course
+            <span className="truncate">Back to Course</span>
           </Button>
           {!showContentForm && (
             <Button onClick={() => setShowContentForm(true)} className="w-full sm:w-auto order-1 sm:order-2">
               <Plus className="h-4 w-4 mr-2" />
-              Add Content
+              <span className="truncate">Add Content</span>
             </Button>
           )}
         </div>
@@ -98,22 +98,22 @@ const CourseContentManager: React.FC<CourseContentManagerProps> = ({ courseId, o
         />
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="content" className="flex items-center gap-2">
-              <Layers className="h-4 w-4" />
-              Content
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+            <TabsTrigger value="content" className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3">
+              <Layers className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-xs sm:text-sm truncate">Content</span>
             </TabsTrigger>
-            <TabsTrigger value="chapters" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Chapters
+            <TabsTrigger value="chapters" className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3">
+              <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-xs sm:text-sm truncate">Chapters</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Analytics
+            <TabsTrigger value="analytics" className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3">
+              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-xs sm:text-sm truncate">Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="publishing" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Publishing
+            <TabsTrigger value="publishing" className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3">
+              <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-xs sm:text-sm truncate">Publishing</span>
             </TabsTrigger>
           </TabsList>
 
@@ -182,15 +182,15 @@ const CourseContentManager: React.FC<CourseContentManagerProps> = ({ courseId, o
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Button variant="outline" className="w-full">
-                      Publish All Content
+                  <div className="flex flex-col sm:grid sm:grid-cols-1 md:grid-cols-3 gap-3">
+                    <Button variant="outline" className="w-full text-sm">
+                      <span className="truncate">Publish All Content</span>
                     </Button>
-                    <Button variant="outline" className="w-full">
-                      Schedule All
+                    <Button variant="outline" className="w-full text-sm">
+                      <span className="truncate">Schedule All</span>
                     </Button>
-                    <Button variant="outline" className="w-full">
-                      Export Content
+                    <Button variant="outline" className="w-full text-sm">
+                      <span className="truncate">Export Content</span>
                     </Button>
                   </div>
                 </CardContent>

@@ -134,14 +134,14 @@ const CourseContentList: React.FC<Props> = ({
                 <GripVertical className="h-5 w-5 text-gray-400 cursor-move" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-sm sm:text-base break-words">{content.title}</h3>
-                  <div className="flex gap-1 sm:gap-2">
-                    <Badge variant="outline" className="text-xs">
+                <div className="flex flex-col gap-2 mb-2">
+                  <h3 className="font-semibold text-sm sm:text-base break-words leading-tight">{content.title}</h3>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                    <Badge variant="outline" className="text-xs shrink-0">
                       {content.content_type}
                     </Badge>
                     {content.is_preview && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs shrink-0">
                         Preview
                       </Badge>
                     )}
@@ -157,7 +157,7 @@ const CourseContentList: React.FC<Props> = ({
                   {content.duration && <span>{content.duration} min</span>}
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 flex-shrink-0">
+              <div className="flex flex-col gap-1 items-center flex-shrink-0 course-content-actions">
                 <div className="flex sm:hidden gap-1">
                   <Button
                     variant="outline"
