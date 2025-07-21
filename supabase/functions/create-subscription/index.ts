@@ -434,13 +434,24 @@ const handler = async (req: Request): Promise<Response> => {
         }
       });
 
-    // Extract payment URL from various possible response formats
-    const paymentUrl = payChanguData.data?.authorization_url || 
-                      payChanguData.data?.link || 
-                      payChanguData.authorization_url || 
-                      payChanguData.link ||
-                      payChanguData.url ||
-                      payChanguData.payment_url;
+    // Extract payment URL from PayChangu response format
+    let paymentUrl;
+    if (payChanguData.data) {
+      paymentUrl = payChanguData.data.authorization_url || 
+                  payChanguData.data.link || 
+                  payChanguData.data.checkout_url ||
+                  payChanguData.data.payment_url ||
+                  payChanguData.data.url;
+    }
+    
+    // Fallback to root level if not found in data
+    if (!paymentUrl) {
+      paymentUrl = payChanguData.authorization_url || 
+                  payChanguData.link ||
+                  payChanguData.checkout_url ||
+                  payChanguData.payment_url ||
+                  payChanguData.url;
+    }
 
     console.log('Extracted payment URL:', paymentUrl);
 
