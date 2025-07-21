@@ -155,6 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from('coach_subscriptions')
       .select('*')
       .eq('coach_id', user.id)
+      .in('status', ['active', 'trial'])
       .order('created_at', { ascending: false });
 
     if (existingSubError) {
