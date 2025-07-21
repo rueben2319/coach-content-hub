@@ -95,11 +95,11 @@ async function handlePlanChange(
   userId: string,
   action: string
 ) {
-  // Get tier pricing
+  // Get tier pricing (aligned with frontend subscription tiers)
   const tierPricing = {
-    basic: { monthly: 5000, yearly: 50000 },
-    pro: { monthly: 15000, yearly: 150000 },
-    enterprise: { monthly: 35000, yearly: 350000 },
+    basic: { monthly: 10000, yearly: 100000 },
+    premium: { monthly: 50000, yearly: 500000 },
+    enterprise: { monthly: 100000, yearly: 1000000 },
   };
 
   const newPrice = tierPricing[newTier as keyof typeof tierPricing][newBillingCycle as 'monthly' | 'yearly'];

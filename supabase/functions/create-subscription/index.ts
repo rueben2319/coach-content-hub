@@ -128,11 +128,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Creating subscription: tier=${tier}, cycle=${billingCycle}`);
 
-    // Define pricing
+    // Define pricing (aligned with frontend subscription tiers)
     const pricing = {
-      basic: { monthly: 2000, yearly: 20000 },
-      pro: { monthly: 5000, yearly: 50000 },
-      premium: { monthly: 10000, yearly: 100000 }
+      basic: { monthly: 10000, yearly: 100000 },
+      premium: { monthly: 50000, yearly: 500000 },
+      enterprise: { monthly: 100000, yearly: 1000000 }
     };
 
     const price = pricing[tier]?.[billingCycle];
