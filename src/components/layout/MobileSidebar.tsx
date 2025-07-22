@@ -62,7 +62,7 @@ const MobileSidebar = () => {
       case 'client':
         return [
           { icon: LayoutDashboard, label: 'Dashboard', path: '/client' },
-          { icon: BookOpen, label: 'Browse Content', path: '/client/content' },
+          { icon: BookOpen, label: 'Browse Content', path: '/client/browse' },
           { icon: Users, label: 'My Coaches', path: '/client/coaches' },
           { icon: FileText, label: 'My Progress', path: '/client/progress' },
           { icon: User, label: 'Profile', path: '/client/profile' },
