@@ -47,7 +47,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           {/* Main Content Area */}
           <main className="flex-1 overflow-hidden pt-[72px] pb-[80px]">
             <div className="h-full overflow-y-auto">
-              <div className="container-fluid py-4">
+              <div className="container-fluid py-2">
                 {children}
               </div>
             </div>
