@@ -59,7 +59,7 @@ const Sidebar = () => {
       case 'client':
         return [
           { icon: LayoutDashboard, label: 'Dashboard', path: '/client', section: 'main' },
-          { icon: BookOpen, label: 'Browse Content', path: '/client/content', section: 'learning' },
+          { icon: BookOpen, label: 'Browse Content', path: '/client/browse', section: 'learning' },
           { icon: Target, label: 'My Goals', path: '/client/goals', section: 'progress' },
           { icon: FileText, label: 'My Progress', path: '/client/progress', section: 'progress' },
           { icon: Users, label: 'My Coaches', path: '/client/coaches', section: 'support' },

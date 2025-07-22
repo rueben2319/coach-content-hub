@@ -199,8 +199,8 @@ const ClientDashboard = () => {
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <CardTitle className="text-xl font-semibold">My Courses</CardTitle>
-            <Button variant="outline" size="sm" className="w-full sm:w-auto border-primary-200 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 transition-all duration-200">
-              <Link to="/client/content">Browse More</Link>
+            <Button variant="outline" size="sm" className="w-full sm:w-auto border-primary-200 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 transition-all duration-200" asChild>
+              <Link to="/client/browse">Browse More</Link>
             </Button>
           </CardHeader>
           <CardContent>
@@ -255,7 +255,7 @@ const ClientDashboard = () => {
                   Start your learning journey by browsing our course catalog and finding something that interests you.
                 </p>
                 <Button asChild className="bg-primary hover:bg-primary-600 transition-colors">
-                  <Link to="/client/content">Browse Courses</Link>
+                  <Link to="/client/browse">Browse Courses</Link>
                 </Button>
               </div>
             )}
