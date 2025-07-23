@@ -9,6 +9,7 @@ import { CreditCard, Layers, AlertTriangle, Clock } from 'lucide-react';
 import { EnrollmentStatus } from '@/components/enrollment/EnrollmentStatus';
 import { EnrollmentDialog } from '@/components/enrollment/EnrollmentDialog';
 import { useCompleteEnrollment } from '@/hooks/useCourseEnrollment';
+import { useInitiateCoursePayment } from '@/hooks/usePaymentIntegration';
 import { useToast } from '@/hooks/use-toast';
 
 interface Enrollment {
@@ -82,6 +83,7 @@ const ClientSubscriptionPage: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const completeEnrollment = useCompleteEnrollment();
+  const initiateCoursePayment = useInitiateCoursePayment();
 
   // Additional state for multi-select payments
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -100,10 +102,17 @@ const ClientSubscriptionPage: React.FC = () => {
     if (!enrollment.course) return;
     
     try {
-      // For now, simulate completing the payment
-      // In a real implementation, you would redirect to payment processor
-      await completeEnrollment.mutateAsync(enrollment.id);
-      refetch();
+      // Initiate payment using coach's PayChangu credentials
+      await initiateCoursePayment.mutateAsync({
+        enrollment_id: enrollment.id,
+        course_id: enrollment.course.id,
+        coach_id: enrollment.course.coach_id,
+        amount: enrollment.amount,
+        currency: enrollment.course.currency,
+        payment_method: 'mobile_money', // Default method, could be configurable
+        email: user?.email,
+        return_url: `${window.location.origin}/client/subscription?payment_success=true`
+      });
     } catch (error) {
       console.error('Payment retry failed:', error);
     }
@@ -132,14 +141,23 @@ const ClientSubscriptionPage: React.FC = () => {
   const handleBulkPayment = async () => {
     setPaying(true);
     try {
-      // In a real setup, here we'd call the backend/edge function to initiate paychangu payment for all selected enrollments
-      // For now, just mark them as completed
+      // Process each enrollment payment using coach's PayChangu credentials
       for (const enr of selectedEnrollments) {
-        await completeEnrollment.mutateAsync(enr.id);
+        if (!enr.course) continue;
+        
+        await initiateCoursePayment.mutateAsync({
+          enrollment_id: enr.id,
+          course_id: enr.course.id,
+          coach_id: enr.course.coach_id,
+          amount: enr.amount,
+          currency: enr.course.currency,
+          payment_method: 'mobile_money', // Default method
+          email: user?.email,
+          return_url: `${window.location.origin}/client/subscription?payment_success=true`
+        });
       }
-      toast({ title: "Payment Complete", description: "All selected enrollments are now paid." });
+      toast({ title: "Payment Initiated", description: "Payment windows opened for selected courses." });
       setSelectedIds([]);
-      refetch();
     } catch (e: any) {
       toast({
         title: "Bulk payment failed",
@@ -214,11 +232,11 @@ const ClientSubscriptionPage: React.FC = () => {
                       </Badge>
                       <Button 
                         onClick={() => handleRetryPayment(enrollment)}
-                        disabled={completeEnrollment.isPending}
+                        disabled={initiateCoursePayment.isPending}
                         className="bg-blue-600 hover:bg-blue-700"
                         size="sm"
                       >
-                        {completeEnrollment.isPending ? 'Processing...' : 'Complete Payment'}
+                        {initiateCoursePayment.isPending ? 'Processing...' : 'Pay Now'}
                       </Button>
                     </div>
                   </div>
@@ -273,11 +291,11 @@ const ClientSubscriptionPage: React.FC = () => {
                       </Badge>
                       <Button 
                         onClick={() => handleRetryPayment(enrollment)}
-                        disabled={completeEnrollment.isPending}
+                        disabled={initiateCoursePayment.isPending}
                         variant="outline"
                         size="sm"
                       >
-                        {completeEnrollment.isPending ? 'Processing...' : 'Retry Payment'}
+                        {initiateCoursePayment.isPending ? 'Processing...' : 'Retry Payment'}
                       </Button>
                     </div>
                   </div>

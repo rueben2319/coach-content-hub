@@ -14,6 +14,18 @@ interface InitiatePaymentData {
   return_url?: string;
 }
 
+interface InitiateCoursePaymentData {
+  enrollment_id: string;
+  course_id: string;
+  coach_id: string;
+  amount: number;
+  currency: string;
+  payment_method: 'mobile_money' | 'card' | 'bank_transfer';
+  phone_number?: string;
+  email?: string;
+  return_url?: string;
+}
+
 interface RetryPaymentData {
   billing_id: string;
   payment_method?: 'mobile_money' | 'card' | 'bank_transfer';
@@ -55,6 +67,49 @@ export const useInitiatePayment = () => {
     },
     onError: (error: any) => {
       console.error('Payment initiation failed:', error);
+      toast({
+        title: 'Payment failed',
+        description: error.message || 'Failed to initiate payment',
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
+export const useInitiateCoursePayment = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: InitiateCoursePaymentData) => {
+      console.log('Initiating course payment:', data);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No active session found');
+
+      const { data: result, error } = await supabase.functions.invoke('initiate-course-payment', {
+        body: data,
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['client-enrollments'] });
+      
+      if (data.payment_url) {
+        window.open(data.payment_url, '_blank');
+        toast({
+          title: 'Payment initiated',
+          description: 'Please complete your payment in the new tab.',
+        });
+      }
+    },
+    onError: (error: any) => {
+      console.error('Course payment initiation failed:', error);
       toast({
         title: 'Payment failed',
         description: error.message || 'Failed to initiate payment',
