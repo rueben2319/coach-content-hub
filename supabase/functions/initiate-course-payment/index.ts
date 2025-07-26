@@ -106,26 +106,51 @@ const handler = async (req: Request): Promise<Response> => {
         if (bundleData) bundle = bundleData;
       }
       if (!course && !bundle) throw new Error('Course or bundle not found');
-      coach_id = course ? course.coach_id : bundle.coach_id;
+      coach_id = course ? course.coach_id : bundle!.coach_id;
       txRef = `oneoff_${target_id}_${Date.now()}`;
-      // Create billing record
-      const { data: billingData, error: billingError } = await supabaseClient
-        .from('client_purchases')
+      
+      // Find existing enrollment for this course/bundle and client
+      const { data: existingEnrollment, error: enrollmentError } = await supabaseClient
+        .from('enrollments')
+        .select('id')
+        .eq('client_id', user.id)
+        .eq(course ? 'course_id' : 'bundle_id', target_id)
+        .maybeSingle();
+      
+      if (enrollmentError) throw new Error('Failed to check enrollment');
+      
+      if (!existingEnrollment) {
+        throw new Error('No enrollment found for this course/bundle. Please enroll first.');
+      }
+      
+      // Update enrollment with payment reference
+      const { error: updateError } = await supabaseClient
+        .from('enrollments')
+        .update({
+          paychangu_reference: txRef,
+          payment_status: 'pending'
+        })
+        .eq('id', existingEnrollment.id);
+      
+      if (updateError) throw new Error('Failed to update enrollment');
+      
+      // Create transaction record
+      const { data: transactionData, error: transactionError } = await supabaseClient
+        .from('transactions')
         .insert({
-          client_id: user.id,
-          coach_id,
-          course_id: course ? target_id : null,
-          bundle_id: bundle ? target_id : null,
+          enrollment_id: existingEnrollment.id,
           amount,
           currency,
-          status: 'pending',
           paychangu_reference: txRef,
-          created_at: new Date().toISOString(),
+          status: 'pending',
+          payment_method,
         })
         .select()
         .single();
-      if (billingError) throw new Error('Failed to create billing record');
-      billing = billingData;
+      
+      if (transactionError) throw new Error('Failed to create transaction record');
+      billing = transactionData;
+      
       // Fetch coach profile
       const { data: profile, error: profileError } = await supabaseClient
         .from('profiles')
@@ -135,8 +160,8 @@ const handler = async (req: Request): Promise<Response> => {
       if (profileError || !profile) throw new Error('Coach profile not found');
       if (!profile.paychangu_enabled || !profile.paychangu_secret_key) throw new Error('Coach PayChangu integration not enabled');
       coachProfile = profile;
-      title = `One-off Payment - ${(course ? course.title : bundle.title)}`;
-      description = (course ? course.description : bundle.description) || `One-off payment for course or bundle`;
+      title = `One-off Payment - ${(course ? course.title : bundle!.title)}`;
+      description = (course ? course.description : bundle!.description) || `One-off payment for course or bundle`;
     } else {
       throw new Error('Invalid payment type');
     }

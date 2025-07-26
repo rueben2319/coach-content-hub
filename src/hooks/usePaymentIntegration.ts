@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 
 interface InitiatePaymentData {
   subscription_id: string;
@@ -15,9 +16,8 @@ interface InitiatePaymentData {
 }
 
 interface InitiateCoursePaymentData {
-  enrollment_id: string;
-  course_id: string;
-  coach_id: string;
+  type: 'one_off' | 'subscription';
+  target_id: string;
   amount: number;
   currency: string;
   payment_method: 'mobile_money' | 'card' | 'bank_transfer';
@@ -108,11 +108,33 @@ export const useInitiateCoursePayment = () => {
         });
       }
     },
-    onError: (error: any) => {
-      console.error('Course payment initiation failed:', error);
+    onError: async (error: any) => {
+      console.log('Full error object:', error);
+      let errorMsg = error.message || 'Failed to initiate payment';
+      
+      // Try to extract backend error message if available
+      if (error instanceof FunctionsHttpError) {
+        try {
+          // Check if error has a response property or other error details
+          console.log('FunctionsHttpError details:', {
+            name: error.name,
+            message: error.message,
+            context: (error as any).context,
+            details: (error as any).details
+          });
+          
+          // Try to get error from context or details
+          if ((error as any).context?.message) errorMsg = (error as any).context.message;
+          if ((error as any).details) errorMsg = (error as any).details;
+        } catch (e) {
+          console.log('Failed to parse error details:', e);
+        }
+      }
+      
+      console.error('Course payment initiation failed:', errorMsg, error);
       toast({
         title: 'Payment failed',
-        description: error.message || 'Failed to initiate payment',
+        description: errorMsg,
         variant: 'destructive',
       });
     },

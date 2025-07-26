@@ -88,6 +88,7 @@ const ClientSubscriptionPage: React.FC = () => {
   // Additional state for multi-select payments
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [paying, setPaying] = useState(false);
+  const [processingEnrollmentId, setProcessingEnrollmentId] = useState<string | null>(null);
 
   const { data: enrollments, isLoading, error, refetch } = useQuery({
     queryKey: ['client-enrollments', user?.id],
@@ -101,12 +102,12 @@ const ClientSubscriptionPage: React.FC = () => {
   const handleRetryPayment = async (enrollment: Enrollment) => {
     if (!enrollment.course) return;
     
+    setProcessingEnrollmentId(enrollment.id);
     try {
       // Initiate payment using coach's PayChangu credentials
       await initiateCoursePayment.mutateAsync({
-        enrollment_id: enrollment.id,
-        course_id: enrollment.course.id,
-        coach_id: enrollment.course.coach_id,
+        type: 'one_off',
+        target_id: enrollment.course.id,
         amount: enrollment.amount,
         currency: enrollment.course.currency,
         payment_method: 'mobile_money', // Default method, could be configurable
@@ -115,6 +116,8 @@ const ClientSubscriptionPage: React.FC = () => {
       });
     } catch (error) {
       console.error('Payment retry failed:', error);
+    } finally {
+      setProcessingEnrollmentId(null);
     }
   };
 
@@ -146,9 +149,8 @@ const ClientSubscriptionPage: React.FC = () => {
         if (!enr.course) continue;
         
         await initiateCoursePayment.mutateAsync({
-          enrollment_id: enr.id,
-          course_id: enr.course.id,
-          coach_id: enr.course.coach_id,
+          type: 'one_off',
+          target_id: enr.course.id,
           amount: enr.amount,
           currency: enr.course.currency,
           payment_method: 'mobile_money', // Default method
@@ -232,11 +234,11 @@ const ClientSubscriptionPage: React.FC = () => {
                       </Badge>
                       <Button 
                         onClick={() => handleRetryPayment(enrollment)}
-                        disabled={initiateCoursePayment.isPending}
+                        disabled={initiateCoursePayment.isPending || processingEnrollmentId === enrollment.id}
                         className="bg-blue-600 hover:bg-blue-700"
                         size="sm"
                       >
-                        {initiateCoursePayment.isPending ? 'Processing...' : 'Pay Now'}
+                        {initiateCoursePayment.isPending || processingEnrollmentId === enrollment.id ? 'Processing...' : 'Pay Now'}
                       </Button>
                     </div>
                   </div>
@@ -291,11 +293,11 @@ const ClientSubscriptionPage: React.FC = () => {
                       </Badge>
                       <Button 
                         onClick={() => handleRetryPayment(enrollment)}
-                        disabled={initiateCoursePayment.isPending}
+                        disabled={initiateCoursePayment.isPending || processingEnrollmentId === enrollment.id}
                         variant="outline"
                         size="sm"
                       >
-                        {initiateCoursePayment.isPending ? 'Processing...' : 'Retry Payment'}
+                        {initiateCoursePayment.isPending || processingEnrollmentId === enrollment.id ? 'Processing...' : 'Retry Payment'}
                       </Button>
                     </div>
                   </div>
