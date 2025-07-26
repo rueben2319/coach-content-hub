@@ -116,8 +116,13 @@ const Sidebar = () => {
     return titles[section] || section;
   };
 
+  // Use normal div for desktop, fixed for mobile
+  const sidebarClass = isMobile
+    ? 'fixed left-0 top-0 h-full w-72 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200/60 flex flex-col z-30 shadow-xl overflow-hidden'
+    : 'h-full w-72 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200/60 flex flex-col shadow-xl overflow-hidden';
+
   return (
-    <div className="fixed left-0 top-0 h-full w-72 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200/60 flex flex-col z-30 shadow-xl overflow-hidden">
+    <div className={sidebarClass} style={!isMobile ? { position: 'relative' } : {}}>
       {/* Logo */}
       <div className="p-6 border-b border-slate-200/60 flex-shrink-0 bg-white/80 backdrop-blur-sm">
         <div className="flex items-center space-x-3">
@@ -132,7 +137,6 @@ const Sidebar = () => {
           </div>
         </div>
       </div>
-
       {/* Navigation - scrollable area */}
       <nav className="flex-1 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
         {Object.entries(groupedItems).map(([section, items]) => (

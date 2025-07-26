@@ -60,17 +60,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     );
   }
 
+  // Desktop layout using CSS grid
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-slate-50 flex w-full">
-        {/* Desktop Sidebar */}
-        <aside className="w-72 flex-shrink-0 bg-white border-r border-slate-200">
+      <div
+        className="min-h-screen bg-slate-50 w-full"
+        style={{
+          display: 'grid',
+          gridTemplateAreas: '"aside main"',
+          gridTemplateRows: '1fr',
+          gridTemplateColumns: 'auto 1fr',
+          height: '100vh',
+        }}
+      >
+        {/* Sidebar as <nav> */}
+        <nav style={{ gridArea: 'aside', height: '100vh', overflowY: 'auto' }}>
           <Sidebar />
-        </aside>
-
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto">
+        </nav>
+        {/* Main Content as <main> */}
+        <main style={{ gridArea: 'main', overflowY: 'scroll', height: '100vh' }}>
+          <div className="h-full">
             <div className="container-constrained section-padding">
               {children}
             </div>
