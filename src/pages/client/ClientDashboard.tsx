@@ -200,11 +200,11 @@ const ClientDashboard = () => {
                     <div />
                   </div>
                 </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
-      ) : (
+            ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((enrollment: any) => {
             const course = enrollment.course;
@@ -266,17 +266,17 @@ const ClientDashboard = () => {
                     Course
                     <span className="mx-1">|</span>
                     <span>{course.pace || 'Self-paced'}</span>
-                  </div>
+              </div>
                   <div className="flex items-center gap-2 justify-start">
                     <h2 className="text-lg font-bold text-gray-900 leading-tight">{course.title}</h2>
-                  </div>
+                          </div>
                   <div className="text-sm text-gray-700 font-medium mb-1">{course.title}</div>
                   <div className="text-gray-600 text-sm mb-2 line-clamp-2">{course.description}</div>
-                </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
       )}
     </div>
   );
