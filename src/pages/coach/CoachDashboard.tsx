@@ -1,326 +1,331 @@
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { BookOpen, Grid, List, MoreVertical, Play, Eye, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, BookOpen, DollarSign, Users, TrendingUp, CreditCard, AlertTriangle, Package } from 'lucide-react';
-import { StatCard } from '@/components/dashboard/StatCard';
-import { StatusBadge, getStatusBadge } from '@/components/dashboard/StatusBadge';
-import CoursesList from '@/components/courses/CoursesList';
-import CourseForm from '@/components/courses/CourseForm';
-import CourseEditor from '@/components/courses/CourseEditor';
-import CoursePreview from '@/components/courses/CoursePreview';
-import CourseContentManager from '@/components/courses/CourseContentManager';
-import CourseBundleManager from '@/components/courses/CourseBundleManager';
-import SubscriptionPage from './SubscriptionPage';
-import TrialStatusCard from '@/components/subscription/TrialStatusCard';
-import { useCoachSubscription, useSubscriptionUsage } from '@/hooks/useSubscription';
-import { useStartTrial } from '@/hooks/useSubscriptionManagement';
-import { getTierById } from '@/config/subscriptionTiers';
-import CourseCreationWizard from '@/components/courses/CourseCreationWizard';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-type ViewType = 'dashboard' | 'create' | 'edit' | 'preview' | 'content' | 'subscription' | 'bundles';
+const LEVEL_COLORS: Record<string, string> = {
+  BEGINNER: 'bg-green-500',
+  INTERMEDIATE: 'bg-green-600',
+  ADVANCED: 'bg-green-700',
+};
+
+const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=400&q=80';
 
 const CoachDashboard = () => {
-  const { profile } = useAuth();
-  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
-  const [selectedCourseId, setSelectedCourseId] = useState<string>('');
-  const [showWizard, setShowWizard] = useState(false);
+  const { user, profile } = useAuth();
+  const [search, setSearch] = useState('');
+  const [academy, setAcademy] = useState('All');
+  const [view, setView] = useState<'list' | 'grid'>('list');
 
-  const { data: subscription } = useCoachSubscription();
-  const { data: usage } = useSubscriptionUsage();
-  const startTrial = useStartTrial();
-
-  const currentTier = subscription ? getTierById(subscription.tier) : null;
-  const hasActiveSubscription = subscription?.status === 'active' || subscription?.status === 'trial';
-
-  const handleCreateCourse = () => {
-    // Check if user has an active subscription
-    if (!hasActiveSubscription) {
-      setCurrentView('subscription');
-      return;
-    }
-
-    // Check if user can create more courses
-    if (currentTier && currentTier.features.maxCourses !== -1 && usage) {
-      if (usage.coursesCreated >= currentTier.features.maxCourses) {
-        setCurrentView('subscription');
-        return;
+  // Fetch coach's courses
+  const { data: courses = [], isLoading, error } = useQuery({
+    queryKey: ['coach-courses', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      try {
+        // Use only the basic fields that we know exist
+        const { data, error } = await supabase
+          .from('courses')
+          .select(`
+            id,
+            title,
+            description,
+            estimated_duration,
+            difficulty_level,
+            is_published,
+            created_at
+          `)
+          .eq('coach_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error('Supabase error details:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+          throw error;
+        }
+        
+        return data || [];
+      } catch (err) {
+        console.error('Exception in course fetching:', err);
+        throw err;
       }
-    }
-    setShowWizard(true);
-  };
+    },
+    enabled: !!user?.id,
+  });
 
-  const handleEditCourse = (courseId: string) => {
-    setSelectedCourseId(courseId);
-    setCurrentView('edit');
-  };
+  // Filtered courses
+  const filtered = courses.filter((course: any) => {
+    const matchesSearch = search === '' || course.title.toLowerCase().includes(search.toLowerCase());
+    return matchesSearch;
+  });
 
-  const handlePreviewCourse = (courseId: string) => {
-    setSelectedCourseId(courseId);
-    setCurrentView('preview');
-  };
-
-  const handleManageContent = (courseId: string) => {
-    setSelectedCourseId(courseId);
-    setCurrentView('content');
-  };
-
-  const handleBackToDashboard = () => {
-    setCurrentView('dashboard');
-    setSelectedCourseId('');
-  };
-
-  const handleStartTrial = () => {
-    startTrial.mutate();
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: { label: 'Active', variant: 'default' as const },
-      trial: { label: 'Trial', variant: 'secondary' as const },
-      expired: { label: 'Expired', variant: 'destructive' as const },
-      inactive: { label: 'Inactive', variant: 'destructive' as const },
-    };
-    
-    return statusConfig[status as keyof typeof statusConfig] || statusConfig.inactive;
-  };
-
-  const isAtLimit = (used: number, limit: number) => {
-    return limit !== -1 && used >= limit;
-  };
-
-  if (currentView === 'subscription') {
-    return <SubscriptionPage />;
-  }
-
-  if (currentView === 'bundles') {
-    return <CourseBundleManager />;
-  }
-
-  if (showWizard) {
+  if (isLoading) {
     return (
-      <CourseCreationWizard
-        onSuccess={() => { setShowWizard(false); handleBackToDashboard(); }}
-        onCancel={() => setShowWizard(false)}
-      />
+      <div className="max-w-5xl mx-auto px-2 sm:px-6 py-8 text-left">
+        <div className="flex items-center gap-3 mb-6 justify-start">
+          <BookOpen className="w-10 h-10 text-primary" />
+          <h1 className="text-3xl font-bold text-gray-900">My Work</h1>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
     );
   }
 
-  if (currentView === 'create') {
+  if (error) {
     return (
-      <CourseForm
-        onSuccess={handleBackToDashboard}
-        onCancel={handleBackToDashboard}
-      />
-    );
-  }
-
-  if (currentView === 'edit' && selectedCourseId) {
-    return (
-      <CourseEditor
-        courseId={selectedCourseId}
-        onSuccess={handleBackToDashboard}
-        onCancel={handleBackToDashboard}
-        onPreview={() => setCurrentView('preview')}
-      />
-    );
-  }
-
-  if (currentView === 'preview' && selectedCourseId) {
-    return (
-      <CoursePreview
-        courseId={selectedCourseId}
-        onBack={handleBackToDashboard}
-      />
-    );
-  }
-
-  if (currentView === 'content' && selectedCourseId) {
-    return (
-      <CourseContentManager
-        courseId={selectedCourseId}
-        onBack={handleBackToDashboard}
-      />
+      <div className="max-w-5xl mx-auto px-2 sm:px-6 py-8 text-left">
+        <div className="flex items-center gap-3 mb-6 justify-start">
+          <BookOpen className="w-10 h-10 text-primary" />
+          <h1 className="text-3xl font-bold text-gray-900">My Work</h1>
+        </div>
+        <div className="text-center py-12">
+          <p className="text-red-600 mb-4">Error loading courses: {error.message}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header Section */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-soft">
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg flex-shrink-0">
-              {profile?.first_name?.[0] || 'C'}
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
-                Welcome back, {profile?.first_name}!
-              </h1>
-              <p className="text-slate-600 text-base mt-1">
-                Manage your courses and track your success
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
-            <div className="flex gap-3">
-              <Button 
-                onClick={() => window.location.href = '/coach/content'} 
-                variant="outline" 
-                size="sm"
-                className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-700 font-medium"
-              >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Content Hub
-              </Button>
-              <Button 
-                onClick={() => window.location.href = '/coach/subscription'} 
-                variant="outline" 
-                size="sm"
-                className="flex-1 sm:flex-none bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-700 font-medium"
-              >
-                <CreditCard className="h-4 w-4 mr-2" />
-                Subscription
-              </Button>
-            </div>
-            <Button 
-              onClick={handleCreateCourse} 
-              size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-medium px-6" 
-              disabled={!hasActiveSubscription}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Course
-            </Button>
-          </div>
+    <div className="max-w-5xl mx-auto px-2 sm:px-6 py-8 text-left">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6 justify-start">
+        <BookOpen className="w-10 h-10 text-primary" />
+        <h1 className="text-3xl font-bold text-gray-900">My Work</h1>
+      </div>
+
+      {/* Coach Info */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold">
+          {profile?.first_name?.[0] || 'C'}
+        </div>
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold text-slate-900 leading-tight">
+            Welcome back, {profile?.first_name}!
+          </h2>
+          <p className="text-slate-600 text-base mt-1">
+            Manage your courses and track your success
+          </p>
         </div>
       </div>
 
-      {/* Trial or Subscription Status */}
-      {!subscription ? (
-        <TrialStatusCard 
-          subscription={subscription} 
-          onUpgrade={() => setCurrentView('subscription')} 
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+        <Input
+          type="text"
+          placeholder="Search your courses"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full sm:w-72"
         />
-      ) : !hasActiveSubscription ? (
-        <Card className="mb-4 border-orange-200 bg-orange-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <div>
-                <div className="font-semibold text-orange-800">
-                  {subscription.status === 'expired' ? 'Trial Expired' : 'No Active Subscription'}
-                </div>
-                <p className="text-sm text-orange-700">
-                  {subscription.status === 'expired' 
-                    ? 'Your trial has ended. Subscribe to continue creating courses and managing students.'
-                    : 'Subscribe to a plan to start creating courses and managing students.'
-                  }
-                </p>
-              </div>
-              <Button onClick={() => setCurrentView('subscription')} className="ml-auto">
-                {subscription.status === 'expired' ? 'Subscribe Now' : 'View Plans'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : subscription.is_trial ? (
-        <TrialStatusCard 
-          subscription={subscription} 
-          onUpgrade={() => setCurrentView('subscription')} 
-        />
-      ) : (
-        <Card className="mb-6 bg-gradient-to-br from-slate-50 via-white to-blue-50/50 border-slate-200/75">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-              <div className="flex items-start sm:items-center gap-4">
-                <div className="p-3 rounded-xl bg-blue-50">
-                  <CreditCard className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h3 className="text-lg font-semibold text-slate-900">
-                      {currentTier?.name || subscription.tier} Plan
-                    </h3>
-                    <StatusBadge status={subscription.status} {...getStatusBadge(subscription.status)}>
-                      {getStatusBadge(subscription.status).label}
-                    </StatusBadge>
-                  </div>
-                  <p className="text-sm text-slate-600">
-                    {subscription.currency} {subscription.price}/{subscription.billing_cycle}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Usage warnings */}
-              {currentTier && usage && (
-                <div className="flex flex-wrap items-center gap-3">
-                  {isAtLimit(usage.coursesCreated, currentTier.features.maxCourses) && (
-                    <StatusBadge status="limit" variant="destructive" icon>
-                      Course limit reached
-                    </StatusBadge>
-                  )}
-                  {isAtLimit(usage.studentsEnrolled, currentTier.features.maxStudents) && (
-                    <StatusBadge status="limit" variant="destructive" icon>
-                      Student limit reached
-                    </StatusBadge>
-                  )}
-                  {!isAtLimit(usage.coursesCreated, currentTier.features.maxCourses) && 
-                   !isAtLimit(usage.studentsEnrolled, currentTier.features.maxStudents) && (
-                    <StatusBadge status="ok" variant="outline">
-                      All usage within limits
-                    </StatusBadge>
-                  )}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          icon={BookOpen}
-          title="Total Courses"
-          value={usage?.coursesCreated || 0}
-          maxValue={currentTier && hasActiveSubscription ? currentTier.features.maxCourses : undefined}
-          trend={0}
-          color="blue"
-        />
-        <StatCard
-          icon={Users}
-          title="Total Students"
-          value={usage?.studentsEnrolled || 0}
-          maxValue={currentTier && hasActiveSubscription ? currentTier.features.maxStudents : undefined}
-          trend={0}
-          color="purple"
-        />
-        <StatCard
-          icon={DollarSign}
-          title="Total Revenue"
-          value="MWK 0"
-          trend={0}
-          color="emerald"
-        />
-        <StatCard
-          icon={TrendingUp}
-          title="Growth Rate"
-          value="0%"
-          trend={0}
-          color="rose"
-        />
+        <div className="flex gap-2 flex-1">
+          <select
+            className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            value={academy}
+            onChange={e => setAcademy(e.target.value)}
+          >
+            <option value="All">Academy</option>
+            <option value="All">All</option>
+            {/* Add more academies as needed */}
+          </select>
+        </div>
+        {/* View Toggle */}
+        <div className="flex gap-1 ml-auto">
+          <Button
+            variant={view === 'grid' ? 'default' : 'ghost'}
+            size="icon"
+            className={view === 'grid' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
+            onClick={() => setView('grid')}
+          >
+            <Grid className="w-5 h-5" />
+          </Button>
+          <Button
+            variant={view === 'list' ? 'default' : 'ghost'}
+            size="icon"
+            className={view === 'list' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
+            onClick={() => setView('list')}
+          >
+            <List className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
 
-      {/* Courses Section */}
-      <CoursesList
-        onCreateNew={handleCreateCourse}
-        onEditCourse={(course) => handleEditCourse(course.id)}
-        onPreviewCourse={(course) => handlePreviewCourse(course.id)}
-        onManageContent={(course) => handleManageContent(course.id)}
-      />
+      {/* Course List */}
+      {filtered.length === 0 && (
+        <div className="text-left text-gray-500 py-12">
+          <p>No courses found.</p>
+        </div>
+      )}
+      {view === 'list' ? (
+        <div className="flex flex-col gap-6">
+          {filtered.map((course: any) => {
+            const level = (course.difficulty_level || 'BEGINNER').toUpperCase();
+            return (
+              <div key={course.id} className="bg-gray-50 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row overflow-hidden group">
+                {/* Image and Level Badge */}
+                <div className="relative w-full md:w-64 h-48 md:h-auto flex-shrink-0">
+                  <img
+                    src={PLACEHOLDER_IMG}
+                    alt={course.title}
+                    className="object-cover w-full h-full"
+                  />
+                  <span className={`absolute top-3 left-3 px-3 py-1 rounded text-xs font-semibold text-white ${LEVEL_COLORS[level] || 'bg-green-500'}`}>
+                    {level}
+                  </span>
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <Play className="w-10 h-10 text-white/80 drop-shadow-lg" />
+                  </span>
+                  {/* Dropdown Menu - Top Right Corner */}
+                  <div className="absolute top-3 right-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-900 rounded-full shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem 
+                          onClick={() => window.open(`/coach/preview/${course.id}`, '_blank')}
+                          className="flex items-center gap-3 cursor-pointer hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150"
+                        >
+                          <Eye className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium">Preview</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => alert('Edit Course')}
+                          className="flex items-center gap-3 cursor-pointer hover:bg-green-50 hover:text-green-700 transition-colors duration-150"
+                        >
+                          <Play className="w-4 h-4 text-green-600" />
+                          <span className="font-medium">Edit</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => alert(course.is_published ? 'Unpublish Course' : 'Publish Course')}
+                          className="flex items-center gap-3 cursor-pointer hover:bg-yellow-50 hover:text-yellow-700 transition-colors duration-150"
+                        >
+                          <X className="w-4 h-4 text-yellow-600" />
+                          <span className="font-medium">{course.is_published ? 'Unpublish' : 'Publish'}</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+                {/* Course Info */}
+                <div className="flex-1 flex flex-col p-6 gap-2 text-left">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-1 justify-start">
+                    <BookOpen className="w-4 h-4 mr-1 text-primary" />
+                    Course
+                    <span className="mx-1">|</span>
+                    <span>{course.is_published ? 'Published' : 'Draft'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 justify-start">
+                    <h2 className="text-xl font-bold text-gray-900 leading-tight">{course.title}</h2>
+                  </div>
+                  <div className="text-sm text-gray-700 font-medium mb-1">{course.title}</div>
+                  <div className="text-gray-600 text-sm mb-2 line-clamp-2">{course.description}</div>
+                  <div className="flex-1" />
+                  <div className="flex items-center justify-between mt-2">
+                    <div />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((course: any) => {
+            const level = (course.difficulty_level || 'BEGINNER').toUpperCase();
+            return (
+              <div key={course.id} className="bg-gray-50 rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden group">
+                <div className="relative w-full h-48 flex-shrink-0">
+                  <img
+                    src={PLACEHOLDER_IMG}
+                    alt={course.title}
+                    className="object-cover w-full h-full"
+                  />
+                  <span className={`absolute top-3 left-3 px-3 py-1 rounded text-xs font-semibold text-white ${LEVEL_COLORS[level] || 'bg-green-500'}`}>
+                    {level}
+                  </span>
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <Play className="w-10 h-10 text-white/80 drop-shadow-lg" />
+                  </span>
+                  <div className="absolute top-3 right-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-900 rounded-full shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem 
+                          onClick={() => window.open(`/coach/preview/${course.id}`, '_blank')}
+                          className="flex items-center gap-3 cursor-pointer hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150"
+                        >
+                          <Eye className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium">Preview</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => alert('Edit Course')}
+                          className="flex items-center gap-3 cursor-pointer hover:bg-green-50 hover:text-green-700 transition-colors duration-150"
+                        >
+                          <Play className="w-4 h-4 text-green-600" />
+                          <span className="font-medium">Edit</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => alert(course.is_published ? 'Unpublish Course' : 'Publish Course')}
+                          className="flex items-center gap-3 cursor-pointer hover:bg-yellow-50 hover:text-yellow-700 transition-colors duration-150"
+                        >
+                          <X className="w-4 h-4 text-yellow-600" />
+                          <span className="font-medium">{course.is_published ? 'Unpublish' : 'Publish'}</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+                <div className="flex-1 flex flex-col p-4 gap-2 text-left">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-1 justify-start">
+                    <BookOpen className="w-4 h-4 mr-1 text-primary" />
+                    Course
+                    <span className="mx-1">|</span>
+                    <span>{course.is_published ? 'Published' : 'Draft'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 justify-start">
+                    <h2 className="text-lg font-bold text-gray-900 leading-tight">{course.title}</h2>
+                  </div>
+                  <div className="text-sm text-gray-700 font-medium mb-1">{course.title}</div>
+                  <div className="text-gray-600 text-sm mb-2 line-clamp-2">{course.description}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

@@ -53,7 +53,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
 
   return (
     <header className={cn(
-      'bg-white border-b border-gray-200 px-6 py-3',
+      'fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-6 py-3',
       className
     )}>
       <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -90,13 +90,22 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
 
         {/* Right Section - Navigation Items */}
         <div className="flex items-center space-x-6">
-          {/* My Learning Link */}
-          <Link
-            to="/client"
-            className="text-primary font-medium hover:text-primary-600 border-b-2 border-primary pb-1 transition-colors"
-          >
-            My Learning
-          </Link>
+          {/* My Learning/My Work Link */}
+          {profile?.role === 'coach' ? (
+            <Link
+              to="/coach"
+              className="text-primary font-medium hover:text-primary-600 border-b-2 border-primary pb-1 transition-colors"
+            >
+              My Work
+            </Link>
+          ) : (
+            <Link
+              to="/client"
+              className="text-primary font-medium hover:text-primary-600 border-b-2 border-primary pb-1 transition-colors"
+            >
+              My Learning
+            </Link>
+          )}
 
           {/* Language Selector */}
           <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-gray-600 hover:text-primary hover:bg-primary-50 transition-colors">
@@ -174,10 +183,17 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                     <div className="flex items-center text-xs font-bold text-gray-500 uppercase mb-2 mt-2">
                       <LayoutDashboard className="w-4 h-4 mr-2 text-gray-400" /> Dashboard
                     </div>
-                    <Link to="/client" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                      <span className="flex items-center"><span className="ml-6">My Learning</span></span>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
-                    </Link>
+                    {profile?.role === 'coach' ? (
+                      <Link to="/coach" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                        <span className="flex items-center"><span className="ml-6">My Work</span></span>
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    ) : (
+                      <Link to="/client" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                        <span className="flex items-center"><span className="ml-6">My Learning</span></span>
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    )}
                   </div>
                   <Separator className="my-3" />
                   {/* News Section */}
@@ -196,10 +212,29 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                     <div className="flex items-center text-xs font-bold text-gray-500 uppercase mb-2 mt-2">
                       <UserCog className="w-4 h-4 mr-2 text-gray-400" /> Profile
                     </div>
-                    <Link to="/client/profile" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                      <span className="flex items-center"><span className="ml-6">Update Profile</span></span>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
-                    </Link>
+                    {profile?.role === 'coach' ? (
+                      <Link to="/coach/profile" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                        <span className="flex items-center"><span className="ml-6">Update Profile</span></span>
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    ) : (
+                      <Link to="/client/profile" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                        <span className="flex items-center"><span className="ml-6">Update Profile</span></span>
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    )}
+                    {profile?.role === 'coach' && (
+                      <>
+                        <Link to="/coach/content" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                          <span className="flex items-center"><span className="ml-6">Manage Content</span></span>
+                          <ArrowRight className="w-4 h-4 text-gray-400" />
+                        </Link>
+                        <Link to="/coach/content?view=wizard" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                          <span className="flex items-center"><span className="ml-6">Create Content</span></span>
+                          <ArrowRight className="w-4 h-4 text-gray-400" />
+                        </Link>
+                      </>
+                    )}
                     <a href="#" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
                       <span className="flex items-center"><BadgeCheck className="w-4 h-4 mr-2 text-gray-400" /><span>Badges & Certificates</span></span>
                       <ArrowRight className="w-4 h-4 text-gray-400" />

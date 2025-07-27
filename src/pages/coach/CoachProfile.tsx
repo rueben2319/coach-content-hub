@@ -6,13 +6,34 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import ProfileForm from '@/components/profile/ProfileForm';
-import { MapPin, Calendar, Users, BookOpen, Star } from 'lucide-react';
-import { PaymentSettingsCard } from '@/components/profile/PaymentSettingsCard';
-import { DesktopContainer, DesktopGrid, DesktopCard, DesktopSection } from '@/components/layout/DesktopLayoutUtils';
+import { MapPin, Calendar, Users, BookOpen, Star, Camera, Search, Grid, List, Percent, RotateCcw, FileText } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 
 const CoachProfile = () => {
   const { profile } = useAuth();
   const [isEditing, setIsEditing] = React.useState(false);
+
+  // State for search, filters, and view toggles for all tabs
+  const [badgesSearch, setBadgesSearch] = React.useState('');
+  const [badgesProvider, setBadgesProvider] = React.useState('All');
+  const [badgesType, setBadgesType] = React.useState('All');
+  const [badgesView, setBadgesView] = React.useState<'grid' | 'list'>('grid');
+
+  const [discountSearch, setDiscountSearch] = React.useState('');
+  const [discountProvider, setDiscountProvider] = React.useState('All');
+  const [discountType, setDiscountType] = React.useState('All');
+  const [discountView, setDiscountView] = React.useState<'grid' | 'list'>('grid');
+
+  const [historySearch, setHistorySearch] = React.useState('');
+  const [historyProvider, setHistoryProvider] = React.useState('All');
+  const [historyType, setHistoryType] = React.useState('All');
+  const [historyView, setHistoryView] = React.useState<'grid' | 'list'>('grid');
+
+  const [transcriptSearch, setTranscriptSearch] = React.useState('');
+  const [transcriptProvider, setTranscriptProvider] = React.useState('All');
+  const [transcriptType, setTranscriptType] = React.useState('All');
+  const [transcriptView, setTranscriptView] = React.useState<'grid' | 'list'>('grid');
 
   if (!profile) return null;
 
@@ -23,173 +44,519 @@ const CoachProfile = () => {
     setIsEditing(false);
   };
 
-  if (isEditing) {
     return (
-      <DesktopContainer>
-        <div className="desktop-flex-between mb-8">
-          <Button 
-            variant="outline" 
-            onClick={() => setIsEditing(false)}
-            className="desktop-button-secondary"
-          >
-            ← Back to Profile
-          </Button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Banner */}
+      <div className="bg-gradient-to-r from-teal-800 to-teal-900 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-blue-400 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 right-20 w-24 h-24 bg-blue-300 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-10 left-1/3 w-40 h-40 bg-blue-500 rounded-full blur-3xl"></div>
         </div>
-        <ProfileForm onSuccess={handleEditSuccess} />
-      </DesktopContainer>
-    );
-  }
-
-  return (
-    <DesktopContainer>
-      <DesktopSection
-        title="Coach Profile"
-        subtitle="Manage your coaching profile and settings"
-      >
-        {/* Profile Header */}
-        <DesktopCard className="overflow-hidden">
-          <CardContent className="p-0">
-            <div className="flex flex-col xl:flex-row items-start xl:items-center gap-10">
-              <Avatar className="w-40 h-40 border-4 border-white shadow-2xl">
+        <div className="relative max-w-5xl mx-auto px-6 py-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+            {/* Profile Picture */}
+            <div className="relative">
+              <Avatar className="w-24 h-24 border-4 border-white/20">
                 <AvatarImage src={profile.avatar_url || ''} alt={fullName} />
-                <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-blue-500 to-green-500 text-white">
+                <AvatarFallback className="text-2xl bg-white/10 text-white">
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              
-              <div className="flex-1 space-y-6">
-                <div className="desktop-flex-between">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-4 mb-3">
-                      <h2 className="desktop-heading-primary">{fullName || 'Coach Profile'}</h2>
-                      <Badge variant="secondary" className="px-4 py-2 text-base font-semibold">Coach</Badge>
-                      {profile.is_public && (
-                        <Badge variant="outline" className="px-4 py-2 text-base font-semibold border-green-200 text-green-700 bg-green-50">
-                          Public Profile
-                        </Badge>
-                      )}
+              {/* Camera Icon */}
+              <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1.5 border-2 border-white">
+                <Camera className="w-3 h-3 text-white" />
+              </div>
                     </div>
-                    
-                    {profile.bio && (
-                      <p className="desktop-text-large max-w-4xl">{profile.bio}</p>
-                    )}
+            {/* Welcome Message & Coach Info */}
+            <div className="flex-1 text-white text-left">
+              <p className="text-sm text-white/80 mb-1">Welcome,</p>
+              <h1 className="text-3xl font-bold mb-2">{fullName || 'Coach'}</h1>
+              <p className="text-white/90">Coach • Networking Academy</p>
                   </div>
-                  
-                  <Button 
-                    onClick={() => setIsEditing(true)}
-                    className="desktop-button-primary"
-                  >
-                    Edit Profile
-                  </Button>
+            {/* Statistics */}
+            <div className="flex gap-6">
+              <div className="text-center text-white">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <BookOpen className="w-6 h-6 text-blue-300" />
+                  <span className="text-2xl font-bold">0</span>
                 </div>
-                
-                <div className="flex flex-wrap gap-8 text-gray-600">
-                  {profile.location && (
-                    <div className="flex items-center gap-3">
-                      <MapPin className="w-6 h-6 text-gray-400" />
-                      <span className="desktop-text-body font-semibold">{profile.location}</span>
+                <p className="text-sm text-white/80">Courses Created</p>
                     </div>
-                  )}
-                  
-                  {profile.experience_years && (
-                    <div className="flex items-center gap-3">
-                      <Calendar className="w-6 h-6 text-gray-400" />
-                      <span className="desktop-text-body font-semibold">{profile.experience_years} years experience</span>
+              <div className="text-center text-white">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Users className="w-6 h-6 text-green-300" />
+                  <span className="text-2xl font-bold">0</span>
                     </div>
-                  )}
-                  
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-6 h-6 text-gray-400" />
-                    <span className="desktop-text-body font-semibold">Joined {new Date(profile.created_at).toLocaleDateString()}</span>
+                <p className="text-sm text-white/80">Students</p>
                   </div>
+              <div className="text-center text-white">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Star className="w-6 h-6 text-yellow-400" />
+                  <span className="text-2xl font-bold">0</span>
                 </div>
+                <p className="text-sm text-white/80">Average Rating</p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+      {/* Tabs and Content */}
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="mb-6 bg-white shadow-sm border overflow-x-auto">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="badges" className="flex items-center gap-2">
+              <Star className="w-4 h-4" />
+              Badges & Certificates
+            </TabsTrigger>
+            <TabsTrigger value="discounts" className="flex items-center gap-2">
+              <Percent className="w-4 h-4" />
+              Discounts
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2">
+              <RotateCcw className="w-4 h-4" />
+              Learning History
+            </TabsTrigger>
+            <TabsTrigger value="transcript" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Transcript
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile">
+            {isEditing ? (
+              <div className="mb-6">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditing(false)}
+                  className="mb-4"
+                >
+                  ← Back to Profile
+                </Button>
+                <ProfileForm onSuccess={handleEditSuccess} />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Profile Header */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                      <Avatar className="w-24 h-24">
+                        <AvatarImage src={profile.avatar_url || ''} alt={fullName} />
+                        <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex flex-col md:flex-row md:items-center gap-2">
+                          <h1 className="text-2xl font-bold">{fullName || 'Coach Profile'}</h1>
+                          <Badge variant="secondary" className="w-fit">Coach</Badge>
+                          {profile.is_public && (
+                            <Badge variant="outline" className="w-fit">Public Profile</Badge>
+                          )}
+                        </div>
+                        {profile.bio && (
+                          <p className="text-gray-600 max-w-2xl">{profile.bio}</p>
+                        )}
+                        <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                          {profile.location && (
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-4 h-4" />
+                              {profile.location}
+                            </div>
+                          )}
+                          {profile.experience_years && (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              {profile.experience_years} years experience
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            Joined {new Date(profile.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                      <Button onClick={() => setIsEditing(true)}>
+                        Edit Profile
+                      </Button>
+            </div>
           </CardContent>
-        </DesktopCard>
+                </Card>
 
         {/* Specialties */}
         {profile.specialties && profile.specialties.length > 0 && (
-          <DesktopCard>
-            <CardHeader className="pb-6">
-              <CardTitle className="desktop-heading-secondary">Specialties</CardTitle>
-              <CardDescription className="desktop-text-body">Areas of expertise and focus</CardDescription>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Specialties</CardTitle>
+                      <CardDescription>Areas of expertise and focus</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-3">
+                      <div className="flex flex-wrap gap-2">
                 {profile.specialties.map((specialty, index) => (
-                  <Badge key={index} variant="outline" className="px-6 py-3 text-base font-semibold">
+                          <Badge key={index} variant="outline">
                     {specialty}
                   </Badge>
                 ))}
               </div>
             </CardContent>
-          </DesktopCard>
+                  </Card>
         )}
 
         {/* Stats Cards */}
-        <DesktopGrid cols={3} gap="xl">
-          <div className="desktop-stat-card">
-            <div className="flex items-center gap-6">
-              <div className="p-6 bg-blue-100 rounded-2xl">
-                <BookOpen className="w-10 h-10 text-blue-600" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <BookOpen className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="desktop-stat-value">0</p>
-                <p className="desktop-stat-label">Courses Created</p>
+                          <p className="text-2xl font-bold">0</p>
+                          <p className="text-sm text-gray-600">Courses Created</p>
               </div>
             </div>
-          </div>
+                    </CardContent>
+                  </Card>
 
-          <div className="desktop-stat-card">
-            <div className="flex items-center gap-6">
-              <div className="p-6 bg-green-100 rounded-2xl">
-                <Users className="w-10 h-10 text-green-600" />
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-100 rounded-lg">
+                          <Users className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <p className="desktop-stat-value">0</p>
-                <p className="desktop-stat-label">Students</p>
+                          <p className="text-2xl font-bold">0</p>
+                          <p className="text-sm text-gray-600">Students</p>
               </div>
             </div>
-          </div>
+                    </CardContent>
+                  </Card>
 
-          <div className="desktop-stat-card">
-            <div className="flex items-center gap-6">
-              <div className="p-6 bg-yellow-100 rounded-2xl">
-                <Star className="w-10 h-10 text-yellow-600" />
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-yellow-100 rounded-lg">
+                          <Star className="w-6 h-6 text-yellow-600" />
               </div>
               <div>
-                <p className="desktop-stat-value">0</p>
-                <p className="desktop-stat-label">Average Rating</p>
+                          <p className="text-2xl font-bold">0</p>
+                          <p className="text-sm text-gray-600">Average Rating</p>
               </div>
             </div>
+                    </CardContent>
+                  </Card>
           </div>
-        </DesktopGrid>
 
         {/* Profile Completion */}
         {!profile.profile_completed && (
-          <DesktopCard className="border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50">
-            <CardHeader className="pb-6">
-              <CardTitle className="desktop-heading-secondary text-yellow-800">Complete Your Profile</CardTitle>
-              <CardDescription className="desktop-text-body text-yellow-700">
+                  <Card className="border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50">
+                    <CardHeader>
+                      <CardTitle className="text-yellow-800">Complete Your Profile</CardTitle>
+                      <CardDescription className="text-yellow-700">
                 Complete your profile to start attracting students and creating courses.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
-                onClick={() => setIsEditing(true)} 
-                className="bg-yellow-600 hover:bg-yellow-700 desktop-button-primary"
-              >
+                      <Button onClick={() => setIsEditing(true)} className="bg-yellow-600 hover:bg-yellow-700">
                 Complete Profile
               </Button>
             </CardContent>
-          </DesktopCard>
-        )}
+                  </Card>
+                )}
+              </div>
+            )}
+          </TabsContent>
 
-        {/* Payment Settings Card */}
-        <PaymentSettingsCard />
-      </DesktopSection>
-    </DesktopContainer>
+          {/* Badges & Certificates Tab */}
+          <TabsContent value="badges">
+            <div className="space-y-6">
+              {/* Search and Filters */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search Badges & Certificates"
+                    value={badgesSearch}
+                    onChange={e => setBadgesSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <select
+                    className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={badgesProvider}
+                    onChange={e => setBadgesProvider(e.target.value)}
+                  >
+                    <option value="All">Provider</option>
+                    <option value="All">All</option>
+                    <option value="Cisco">Cisco</option>
+                    <option value="Microsoft">Microsoft</option>
+                  </select>
+                  <select
+                    className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={badgesType}
+                    onChange={e => setBadgesType(e.target.value)}
+                  >
+                    <option value="All">Type</option>
+                    <option value="All">All</option>
+                    <option value="Badge">Badge</option>
+                    <option value="Certificate">Certificate</option>
+                  </select>
+                </div>
+                {/* View Toggle */}
+                <div className="flex gap-1">
+                  <Button
+                    variant={badgesView === 'grid' ? 'default' : 'ghost'}
+                    size="icon"
+                    className={badgesView === 'grid' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
+                    onClick={() => setBadgesView('grid')}
+                  >
+                    <Grid className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant={badgesView === 'list' ? 'default' : 'ghost'}
+                    size="icon"
+                    className={badgesView === 'list' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
+                    onClick={() => setBadgesView('list')}
+                  >
+                    <List className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+              {/* Content */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-green-500 flex items-center justify-center">
+                      <Star className="w-8 h-8 text-green-500" />
+                    </div>
+                    <p className="text-lg font-medium text-gray-700">No Badges or Certificates Available!</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Discounts Tab */}
+          <TabsContent value="discounts">
+            <div className="space-y-6">
+              {/* Search and Filters */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search Discounts"
+                    value={discountSearch}
+                    onChange={e => setDiscountSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <select
+                    className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={discountProvider}
+                    onChange={e => setDiscountProvider(e.target.value)}
+                  >
+                    <option value="All">Provider</option>
+                    <option value="All">All</option>
+                    <option value="Cisco">Cisco</option>
+                    <option value="Microsoft">Microsoft</option>
+                  </select>
+                  <select
+                    className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={discountType}
+                    onChange={e => setDiscountType(e.target.value)}
+                  >
+                    <option value="All">Type</option>
+                    <option value="All">All</option>
+                    <option value="Student">Student</option>
+                    <option value="Academic">Academic</option>
+                  </select>
+                </div>
+                {/* View Toggle */}
+                <div className="flex gap-1">
+                  <Button
+                    variant={discountView === 'grid' ? 'default' : 'ghost'}
+                    size="icon"
+                    className={discountView === 'grid' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
+                    onClick={() => setDiscountView('grid')}
+                  >
+                    <Grid className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant={discountView === 'list' ? 'default' : 'ghost'}
+                    size="icon"
+                    className={discountView === 'list' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
+                    onClick={() => setDiscountView('list')}
+                  >
+                    <List className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+              {/* Content */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-green-500 flex items-center justify-center">
+                      <Percent className="w-8 h-8 text-green-500" />
+                    </div>
+                    <p className="text-lg font-medium text-gray-700">No Discounts Available!</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Learning History Tab */}
+          <TabsContent value="history">
+            <div className="space-y-6">
+              {/* Search and Filters */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search Learning History"
+                    value={historySearch}
+                    onChange={e => setHistorySearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <select
+                    className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={historyProvider}
+                    onChange={e => setHistoryProvider(e.target.value)}
+                  >
+                    <option value="All">Provider</option>
+                    <option value="All">All</option>
+                    <option value="Cisco">Cisco</option>
+                    <option value="Microsoft">Microsoft</option>
+                  </select>
+                  <select
+                    className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={historyType}
+                    onChange={e => setHistoryType(e.target.value)}
+                  >
+                    <option value="All">Type</option>
+                    <option value="All">All</option>
+                    <option value="Completed">Completed</option>
+                    <option value="In Progress">In Progress</option>
+                  </select>
+                </div>
+                {/* View Toggle */}
+                <div className="flex gap-1">
+                  <Button
+                    variant={historyView === 'grid' ? 'default' : 'ghost'}
+                    size="icon"
+                    className={historyView === 'grid' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
+                    onClick={() => setHistoryView('grid')}
+                  >
+                    <Grid className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant={historyView === 'list' ? 'default' : 'ghost'}
+                    size="icon"
+                    className={historyView === 'list' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
+                    onClick={() => setHistoryView('list')}
+                  >
+                    <List className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+              {/* Content */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-green-500 flex items-center justify-center">
+                      <RotateCcw className="w-8 h-8 text-green-500" />
+                    </div>
+                    <p className="text-lg font-medium text-gray-700">No Learning History Available!</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Transcript Tab */}
+          <TabsContent value="transcript">
+            <div className="space-y-6">
+              {/* Search and Filters */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search Transcript"
+                    value={transcriptSearch}
+                    onChange={e => setTranscriptSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <select
+                    className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={transcriptProvider}
+                    onChange={e => setTranscriptProvider(e.target.value)}
+                  >
+                    <option value="All">Provider</option>
+                    <option value="All">All</option>
+                    <option value="Cisco">Cisco</option>
+                    <option value="Microsoft">Microsoft</option>
+                  </select>
+                  <select
+                    className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={transcriptType}
+                    onChange={e => setTranscriptType(e.target.value)}
+                  >
+                    <option value="All">Type</option>
+                    <option value="All">All</option>
+                    <option value="Certificates">Certificates</option>
+                    <option value="Courses">Courses</option>
+                  </select>
+                </div>
+                {/* View Toggle */}
+                <div className="flex gap-1">
+                  <Button
+                    variant={transcriptView === 'grid' ? 'default' : 'ghost'}
+                    size="icon"
+                    className={transcriptView === 'grid' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
+                    onClick={() => setTranscriptView('grid')}
+                  >
+                    <Grid className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant={transcriptView === 'list' ? 'default' : 'ghost'}
+                    size="icon"
+                    className={transcriptView === 'list' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
+                    onClick={() => setTranscriptView('list')}
+                  >
+                    <List className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+              {/* Content */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-green-500 flex items-center justify-center">
+                      <FileText className="w-8 h-8 text-green-500" />
+                    </div>
+                    <p className="text-lg font-medium text-gray-700">No Transcript Data Available!</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
   );
 };
 

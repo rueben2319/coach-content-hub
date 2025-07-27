@@ -42,7 +42,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Navbar */}
       <Navbar />
       {/* Main Content as <main> */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-20">
         <div className="h-full">
           <div className="container-constrained section-padding">
             {children}

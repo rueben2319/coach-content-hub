@@ -7,6 +7,7 @@ import CoachDashboard from '@/pages/coach/CoachDashboard';
 import CoachProfile from '@/pages/coach/CoachProfile';
 import ContentManagement from '@/pages/coach/ContentManagement';
 import SubscriptionManagement from '@/pages/coach/SubscriptionManagement';
+import Preview from '@/pages/coach/Preview';
 
 export const CoachRoutes = () => (
   <>
@@ -35,6 +36,13 @@ export const CoachRoutes = () => (
       <RoleProtectedRoute allowedRoles={['coach']}>
         <DashboardLayout>
           <SubscriptionManagement />
+        </DashboardLayout>
+      </RoleProtectedRoute>
+    } />
+    <Route path="/coach/preview/:courseId" element={
+      <RoleProtectedRoute allowedRoles={['coach']}>
+        <DashboardLayout>
+          <Preview />
         </DashboardLayout>
       </RoleProtectedRoute>
     } />

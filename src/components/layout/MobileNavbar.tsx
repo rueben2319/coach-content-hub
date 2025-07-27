@@ -119,10 +119,17 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({ className }) => {
                     <div className="flex items-center text-xs font-bold text-gray-500 uppercase mb-2 mt-2">
                       <LayoutDashboard className="w-4 h-4 mr-2 text-gray-400" /> Dashboard
                     </div>
-                    <Link to="/client" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                      <span className="flex items-center"><span className="ml-6">My Learning</span></span>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
-                    </Link>
+                    {profile?.role === 'coach' ? (
+                      <Link to="/coach" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                        <span className="flex items-center"><span className="ml-6">My Work</span></span>
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    ) : (
+                      <Link to="/client" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                        <span className="flex items-center"><span className="ml-6">My Learning</span></span>
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    )}
                   </div>
                   <Separator className="my-3" />
                   {/* News Section */}
@@ -141,10 +148,29 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({ className }) => {
                     <div className="flex items-center text-xs font-bold text-gray-500 uppercase mb-2 mt-2">
                       <UserCog className="w-4 h-4 mr-2 text-gray-400" /> Profile
                     </div>
-                    <Link to="/client/profile" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                      <span className="flex items-center"><span className="ml-6">Update Profile</span></span>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
-                    </Link>
+                    {profile?.role === 'coach' ? (
+                      <Link to="/coach/profile" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                        <span className="flex items-center"><span className="ml-6">Update Profile</span></span>
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    ) : (
+                      <Link to="/client/profile" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                        <span className="flex items-center"><span className="ml-6">Update Profile</span></span>
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    )}
+                    {profile?.role === 'coach' && (
+                      <>
+                        <Link to="/coach/content" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                          <span className="flex items-center"><span className="ml-6">Manage Content</span></span>
+                          <ArrowRight className="w-4 h-4 text-gray-400" />
+                        </Link>
+                        <Link to="/coach/content?view=wizard" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
+                          <span className="flex items-center"><span className="ml-6">Create Content</span></span>
+                          <ArrowRight className="w-4 h-4 text-gray-400" />
+                        </Link>
+                      </>
+                    )}
                     <a href="#" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
                       <span className="flex items-center"><BadgeCheck className="w-4 h-4 mr-2 text-gray-400" /><span>Badges & Certificates</span></span>
                       <ArrowRight className="w-4 h-4 text-gray-400" />

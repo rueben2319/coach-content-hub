@@ -180,7 +180,7 @@ const ClientDashboard = () => {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </div>
+                </div>
                 </div>
                 {/* Course Info */}
                 <div className="flex-1 flex flex-col p-6 gap-2 text-left">
@@ -189,17 +189,17 @@ const ClientDashboard = () => {
                     Course
                     <span className="mx-1">|</span>
                     <span>{course.pace || 'Self-paced'}</span>
-                  </div>
+              </div>
                   <div className="flex items-center gap-2 justify-start">
                     <h2 className="text-xl font-bold text-gray-900 leading-tight">{course.title}</h2>
-                  </div>
+      </div>
                   <div className="text-sm text-gray-700 font-medium mb-1">{course.title}</div>
                   <div className="text-gray-600 text-sm mb-2 line-clamp-2">{course.description}</div>
                   <div className="flex-1" />
                   <div className="flex items-center justify-between mt-2">
                     <div />
-                  </div>
-                </div>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
