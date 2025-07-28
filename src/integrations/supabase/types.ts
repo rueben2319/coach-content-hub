@@ -1414,81 +1414,29 @@ export type Database = {
       }
       user_progress: {
         Row: {
-          bookmarks: Json | null
-          completed: boolean | null
           completed_at: string | null
-          content_id: string
-          created_at: string
-          difficulty_rating: number | null
-          enrollment_id: string
-          id: string
-          last_accessed: string | null
-          learning_path_id: string | null
-          notes: string | null
-          progress_percentage: number | null
-          quality_preference: string | null
-          resume_position: number | null
-          satisfaction_rating: number | null
-          session_id: string | null
-          speed_preference: number | null
-          time_spent: number | null
-          updated_at: string
+          is_completed: boolean | null
+          section_id: string
+          user_id: string
         }
         Insert: {
-          bookmarks?: Json | null
-          completed?: boolean | null
           completed_at?: string | null
-          content_id: string
-          created_at?: string
-          difficulty_rating?: number | null
-          enrollment_id: string
-          id?: string
-          last_accessed?: string | null
-          learning_path_id?: string | null
-          notes?: string | null
-          progress_percentage?: number | null
-          quality_preference?: string | null
-          resume_position?: number | null
-          satisfaction_rating?: number | null
-          session_id?: string | null
-          speed_preference?: number | null
-          time_spent?: number | null
-          updated_at?: string
+          is_completed?: boolean | null
+          section_id: string
+          user_id: string
         }
         Update: {
-          bookmarks?: Json | null
-          completed?: boolean | null
           completed_at?: string | null
-          content_id?: string
-          created_at?: string
-          difficulty_rating?: number | null
-          enrollment_id?: string
-          id?: string
-          last_accessed?: string | null
-          learning_path_id?: string | null
-          notes?: string | null
-          progress_percentage?: number | null
-          quality_preference?: string | null
-          resume_position?: number | null
-          satisfaction_rating?: number | null
-          session_id?: string | null
-          speed_preference?: number | null
-          time_spent?: number | null
-          updated_at?: string
+          is_completed?: boolean | null
+          section_id?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "course_progress_content_id_fkey"
-            columns: ["content_id"]
+            foreignKeyName: "user_progress_section_id_fkey"
+            columns: ["section_id"]
             isOneToOne: false
-            referencedRelation: "modules"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "course_progress_enrollment_id_fkey"
-            columns: ["enrollment_id"]
-            isOneToOne: false
-            referencedRelation: "enrollments"
+            referencedRelation: "sections"
             referencedColumns: ["id"]
           },
         ]
