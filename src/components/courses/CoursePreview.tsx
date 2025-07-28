@@ -66,7 +66,14 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ courseId, onBack }) => {
         .order('sort_order');
 
       if (error) throw error;
-      return data as CourseContent[];
+      return (data || []).map(item => ({
+        ...item,
+        content_type: 'text' as const, // Default for modules
+        is_preview: false,
+        duration: null,
+        content_url: null,
+        content_text: null,
+      })) as CourseContent[];
     },
   });
 

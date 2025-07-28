@@ -76,16 +76,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (!user) return;
     
     try {
+      // Note: Progress tracking is simplified now - we only track completion
       const { data } = await supabase
         .from('user_progress')
-        .select('resume_position, speed_preference')
-        .eq('content_id', contentId)
-        .eq('enrollment_id', user.id) // This should be the actual enrollment_id
+        .select('is_completed')
+        .eq('section_id', contentId)
+        .eq('user_id', user.id)
         .maybeSingle();
       
-      if (data) {
-        setResumePosition(data.resume_position || 0);
-        setPlaybackRate(data.speed_preference || 1);
+      if (data?.is_completed) {
+        // If already completed, resume from beginning for replay
+        setResumePosition(0);
       }
     } catch (error) {
       console.error('Error loading progress:', error);
@@ -96,15 +97,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (!user) return;
     
     try {
+      const isCompleted = position >= duration * 0.9; // Mark completed at 90%
       await supabase
         .from('user_progress')
         .upsert({
-          content_id: contentId,
-          enrollment_id: user.id, // This should be the actual enrollment_id
-          resume_position: Math.floor(position),
-          speed_preference: playbackRate,
-          progress_percentage: Math.floor((position / duration) * 100),
-          last_accessed: new Date().toISOString(),
+          section_id: contentId,
+          user_id: user.id,
+          is_completed: isCompleted,
+          completed_at: isCompleted ? new Date().toISOString() : null,
         });
     } catch (error) {
       console.error('Error saving progress:', error);

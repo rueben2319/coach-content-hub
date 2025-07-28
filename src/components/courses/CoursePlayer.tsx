@@ -10,17 +10,7 @@ import ContentViewer from './ContentViewer';
 import NotesPanel from '../notes/NotesPanel';
 import LessonNavigator from './LessonNavigator';
 import { useToast } from '@/hooks/use-toast';
-
-interface CourseContent {
-  id: string;
-  title: string;
-  content_type: 'video' | 'audio' | 'text' | 'pdf' | 'image' | 'interactive';
-  content_url?: string;
-  content_text?: string;
-  duration?: number;
-  sort_order: number;
-  is_preview: boolean;
-}
+import { CourseContent } from './courseContentApi';
 
 interface CoursePlayerProps {
   courseId: string;

@@ -129,23 +129,21 @@ const CourseView: React.FC = () => {
     if (progressData) {
       const completed = new Set(
         progressData
-          .filter(p => p.completed)
-          .map(p => p.content_id)
+          .filter(p => p.is_completed)
+          .map(p => p.section_id)
       );
       setCompletedContent(completed);
     }
   }, [progressData]);
 
   const handleProgressUpdate = (contentId: string, progress: number, completed: boolean) => {
-    if (!enrollmentId) return;
+    if (!user?.id) return;
 
     updateProgressMutation.mutate({
-      content_id: contentId,
-      enrollment_id: enrollmentId,
-      progress_percentage: Math.round(progress),
-      completed,
+      section_id: contentId,
+      user_id: user.id,
+      is_completed: completed,
       completed_at: completed ? new Date().toISOString() : undefined,
-      time_spent: 0,
     });
 
     if (completed && !completedContent.has(contentId)) {

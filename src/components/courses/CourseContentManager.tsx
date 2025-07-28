@@ -27,7 +27,7 @@ const CourseContentManager: React.FC<CourseContentManagerProps> = ({ courseId, o
 
   const { data: courseContent, isLoading, refetch } = useQuery({
     queryKey: ['course-content', courseId, selectedChapter],
-    queryFn: () => fetchCourseContent(courseId, selectedChapter || undefined),
+    queryFn: () => fetchCourseContent(courseId),
   });
 
   // Fetch course details for publishing controls
