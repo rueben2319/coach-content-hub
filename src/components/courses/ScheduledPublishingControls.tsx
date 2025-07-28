@@ -40,7 +40,7 @@ const ScheduledPublishingControls: React.FC<ScheduledPublishingControlsProps> = 
 
     setIsLoading(true);
     try {
-      const table = courseId ? 'courses' : 'course_content';
+      const table = courseId ? 'courses' : 'modules';
       const id = courseId || contentId;
       
       const updateData: any = {
@@ -79,7 +79,7 @@ const ScheduledPublishingControls: React.FC<ScheduledPublishingControlsProps> = 
   const handleCancelSchedule = async () => {
     setIsLoading(true);
     try {
-      const table = courseId ? 'courses' : 'course_content';
+      const table = courseId ? 'courses' : 'modules';
       const id = courseId || contentId;
       
       const updateData: any = {

@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface CourseChapter {
   id: string;
-  course_id: string;
+  module_id: string; // Updated from course_id to module_id
   title: string;
   description?: string;
   sort_order: number;
@@ -14,20 +14,20 @@ export interface CourseChapter {
   updated_at: string;
 }
 
-export const useCourseChapters = (courseId: string) => {
+export const useCourseChapters = (moduleId: string) => {
   return useQuery({
-    queryKey: ['course-chapters', courseId],
+    queryKey: ['course-chapters', moduleId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('course_chapters')
+        .from('lessons')
         .select('*')
-        .eq('course_id', courseId)
+        .eq('module_id', moduleId)
         .order('sort_order', { ascending: true });
       
       if (error) throw error;
       return data as CourseChapter[];
     },
-    enabled: !!courseId,
+    enabled: !!moduleId,
   });
 };
 
@@ -38,7 +38,7 @@ export const useCreateChapter = () => {
   return useMutation({
     mutationFn: async (chapterData: Omit<CourseChapter, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
-        .from('course_chapters')
+        .from('lessons')
         .insert([chapterData])
         .select()
         .single();
@@ -67,7 +67,7 @@ export const useUpdateChapter = () => {
   return useMutation({
     mutationFn: async ({ id, ...updateData }: Partial<CourseChapter> & { id: string }) => {
       const { data, error } = await supabase
-        .from('course_chapters')
+        .from('lessons')
         .update(updateData)
         .eq('id', id)
         .select()

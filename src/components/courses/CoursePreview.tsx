@@ -60,7 +60,7 @@ const CoursePreview: React.FC<CoursePreviewProps> = ({ courseId, onBack }) => {
     queryKey: ['course-content', courseId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('course_content')
+        .from('modules')
         .select('*')
         .eq('course_id', courseId)
         .order('sort_order');

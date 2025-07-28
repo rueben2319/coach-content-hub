@@ -43,7 +43,7 @@ const ChapterManager: React.FC<ChapterManagerProps> = ({ courseId, onContentSele
       const nextSortOrder = chapters ? Math.max(...chapters.map(c => c.sort_order), -1) + 1 : 0;
       
       createChapter.mutate({
-        course_id: courseId,
+        module_id: courseId,
         title: formData.title,
         description: formData.description,
         is_published: formData.is_published,

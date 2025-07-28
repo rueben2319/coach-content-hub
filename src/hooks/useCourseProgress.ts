@@ -32,7 +32,7 @@ export const useCourseProgress = (enrollmentId: string) => {
     queryKey: ['course-progress', enrollmentId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('course_progress')
+        .from('user_progress')
         .select('*')
         .eq('enrollment_id', enrollmentId)
         .order('created_at', { ascending: true });
@@ -50,7 +50,7 @@ export const useUpdateProgress = () => {
   return useMutation({
     mutationFn: async (progressData: Partial<CourseProgress> & { content_id: string; enrollment_id: string }) => {
       const { data, error } = await supabase
-        .from('course_progress')
+        .from('user_progress')
         .upsert({
           ...progressData,
           last_accessed: new Date().toISOString(),
@@ -76,7 +76,7 @@ export const useContentProgress = (contentId: string, enrollmentId: string) => {
     queryKey: ['content-progress', contentId, enrollmentId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('course_progress')
+        .from('user_progress')
         .select('*')
         .eq('content_id', contentId)
         .eq('enrollment_id', enrollmentId)

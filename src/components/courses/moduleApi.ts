@@ -1,51 +1,29 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
-export interface CourseContent {
-  id: string;
-  title: string;
-  description: string | null;
-  content_type: 'video' | 'audio' | 'text' | 'pdf' | 'image' | 'interactive';
-  content_url: string | null;
-  content_text: string | null;
-  duration: number | null;
-  sort_order: number;
-  is_preview: boolean;
-  chapter_id?: string | null;
-  scheduled_publish_at?: string | null;
-  auto_publish?: boolean;
-  version_id?: string | null;
-  prerequisites?: string[];
-}
-
-export const fetchCourseContent = async (courseId: string, chapterId?: string) => {
+export const fetchModules = async (courseId: string, lessonId?: string) => {
   let query = supabase
     .from('modules')
     .select('*')
     .eq('course_id', courseId)
     .order('sort_order');
 
-  if (chapterId) {
-    query = query.eq('chapter_id', chapterId);
+  if (lessonId) {
+    query = query.eq('lesson_id', lessonId);
   }
 
   const { data, error } = await query;
   if (error) throw error;
-  return data as CourseContent[];
+  return data || [];
 };
 
-export const addOrUpdateCourseContent = async (
-  formData: Omit<Partial<CourseContent>, 'id' | 'sort_order'> & { 
-    course_id: string; 
-    title: string; 
-    content_type: CourseContent['content_type'];
-  },
-  content?: CourseContent
+export const addOrUpdateModule = async (
+  formData: any,
+  module?: any
 ) => {
   let newSortOrder = 0;
 
-  if (!content) {
-    // New content: calculate new sort_order = max+1
+  if (!module) {
+    // New module: calculate new sort_order = max+1
     let query = supabase
       .from('modules')
       .select('sort_order')
@@ -53,9 +31,9 @@ export const addOrUpdateCourseContent = async (
       .order('sort_order', { ascending: false })
       .limit(1);
 
-    // If chapter_id is specified, filter by chapter
-    if (formData.chapter_id) {
-      query = query.eq('chapter_id', formData.chapter_id);
+    // If lesson_id is specified, filter by lesson
+    if (formData.lesson_id) {
+      query = query.eq('lesson_id', formData.lesson_id);
     }
 
     const { data: maxOrderData, error: maxOrderError } = await query;
@@ -75,14 +53,14 @@ export const addOrUpdateCourseContent = async (
     duration,
     is_preview,
     course_id,
-    chapter_id,
+    lesson_id,
     scheduled_publish_at,
     auto_publish,
     prerequisites,
   } = formData;
 
-  // Enhanced content data object
-  const contentData = {
+  // Enhanced module data object
+  const moduleData = {
     title,
     description: description ?? null,
     content_type,
@@ -91,55 +69,55 @@ export const addOrUpdateCourseContent = async (
     duration: typeof duration === "number" ? duration : null,
     is_preview: !!is_preview,
     course_id,
-    chapter_id: chapter_id ?? null,
+    lesson_id: lesson_id ?? null,
     scheduled_publish_at: scheduled_publish_at ?? null,
     auto_publish: auto_publish ?? false,
     prerequisites: prerequisites ?? [],
-    sort_order: content ? content.sort_order : newSortOrder,
+    sort_order: module ? module.sort_order : newSortOrder,
   };
 
-  if (content) {
+  if (module) {
     const { error } = await supabase
       .from('modules')
-      .update(contentData)
-      .eq('id', content.id);
+      .update(moduleData)
+      .eq('id', module.id);
     if (error) throw error;
   } else {
     const { error } = await supabase
       .from('modules')
-      .insert([contentData]);
+      .insert([moduleData]);
     if (error) throw error;
   }
 };
 
-export const deleteCourseContent = async (contentId: string) => {
+export const deleteModule = async (moduleId: string) => {
   const { error } = await supabase
     .from('modules')
     .delete()
-    .eq('id', contentId);
+    .eq('id', moduleId);
   if (error) throw error;
 };
 
-export const reorderCourseContent = async (contentId: string, newOrder: number) => {
+export const reorderModule = async (moduleId: string, newOrder: number) => {
   const { error } = await supabase
     .from('modules')
     .update({ sort_order: newOrder })
-    .eq('id', contentId);
+    .eq('id', moduleId);
   if (error) throw error;
 };
 
-export const duplicateContent = async (contentId: string, targetCourseId?: string, targetChapterId?: string) => {
-  // First, get the original content
-  const { data: originalContent, error: fetchError } = await supabase
+export const duplicateModule = async (moduleId: string, targetCourseId?: string, targetLessonId?: string) => {
+  // First, get the original module
+  const { data: originalModule, error: fetchError } = await supabase
     .from('modules')
     .select('*')
-    .eq('id', contentId)
+    .eq('id', moduleId)
     .single();
 
   if (fetchError) throw fetchError;
 
   // Calculate new sort order
-  const courseId = targetCourseId || originalContent.course_id;
+  const courseId = targetCourseId || originalModule.course_id;
   let query = supabase
     .from('modules')
     .select('sort_order')
@@ -147,8 +125,8 @@ export const duplicateContent = async (contentId: string, targetCourseId?: strin
     .order('sort_order', { ascending: false })
     .limit(1);
 
-  if (targetChapterId) {
-    query = query.eq('chapter_id', targetChapterId);
+  if (targetLessonId) {
+    query = query.eq('lesson_id', targetLessonId);
   }
 
   const { data: maxOrderData, error: maxOrderError } = await query;
@@ -160,11 +138,11 @@ export const duplicateContent = async (contentId: string, targetCourseId?: strin
 
   // Create duplicate with new data
   const duplicateData = {
-    ...originalContent,
+    ...originalModule,
     id: undefined, // Let the database generate a new ID
-    title: `${originalContent.title} (Copy)`,
+    title: `${originalModule.title} (Copy)`,
     course_id: courseId,
-    chapter_id: targetChapterId || originalContent.chapter_id,
+    lesson_id: targetLessonId || null,
     sort_order: newSortOrder,
     is_published: false, // Start as draft
     created_at: undefined,
@@ -181,11 +159,11 @@ export const duplicateContent = async (contentId: string, targetCourseId?: strin
   return data;
 };
 
-export const bulkUpdateContentStatus = async (contentIds: string[], updates: Partial<CourseContent>) => {
+export const bulkUpdateModuleStatus = async (moduleIds: string[], updates: any) => {
   const { error } = await supabase
     .from('modules')
     .update(updates)
-    .in('id', contentIds);
+    .in('id', moduleIds);
 
   if (error) throw error;
 };

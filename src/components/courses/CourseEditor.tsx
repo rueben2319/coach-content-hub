@@ -63,7 +63,7 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
     queryKey: ['course-content', courseId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('course_content')
+        .from('modules')
         .select('id')
         .eq('course_id', courseId);
       if (error) throw error;

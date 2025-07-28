@@ -79,7 +79,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     
     try {
       const { data } = await supabase
-        .from('course_progress')
+        .from('user_progress')
         .select('resume_position, speed_preference')
         .eq('content_id', contentId)
         .eq('enrollment_id', user.id)
@@ -99,7 +99,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     
     try {
       await supabase
-        .from('course_progress')
+        .from('user_progress')
         .upsert({
           content_id: contentId,
           enrollment_id: user.id,
