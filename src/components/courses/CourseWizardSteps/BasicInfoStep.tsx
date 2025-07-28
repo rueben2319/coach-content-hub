@@ -1,12 +1,39 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CourseWizardData } from "../CourseCreationWizard";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 const BasicInfoStep: React.FC<{ data: CourseWizardData, setData: React.Dispatch<React.SetStateAction<CourseWizardData>> }> = ({ data, setData }) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data: categoriesData, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching categories:', error);
+        return;
+      }
+      
+      setCategories(categoriesData || []);
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
     <div className="space-y-4">
       <div>
@@ -23,11 +50,32 @@ const BasicInfoStep: React.FC<{ data: CourseWizardData, setData: React.Dispatch<
       </div>
       <div>
         <Label>Category</Label>
-        <Input value={data.category} onChange={e => setData(d => ({ ...d, category: e.target.value }))} required />
+        <Select value={data.category} onValueChange={value => setData(d => ({ ...d, category: value }))}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <Label>Difficulty Level</Label>
-        <Input value={data.difficulty_level} onChange={e => setData(d => ({ ...d, difficulty_level: e.target.value }))} required />
+        <Select value={data.difficulty_level} onValueChange={value => setData(d => ({ ...d, difficulty_level: value }))}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select difficulty level" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="beginner">Beginner</SelectItem>
+            <SelectItem value="intermediate">Intermediate</SelectItem>
+            <SelectItem value="advanced">Advanced</SelectItem>
+            <SelectItem value="all_levels">All Levels</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <Label>Estimated Duration (minutes)</Label>

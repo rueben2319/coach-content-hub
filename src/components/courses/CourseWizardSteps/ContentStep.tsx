@@ -21,7 +21,7 @@ const ContentStep: React.FC<{
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
 
-  // Defensive: support empty or legacy structure
+  // Defensive: support empty or legacy structure  
   const contentOutline: OutlineItem[] = Array.isArray(data.content)
     ? data.content as OutlineItem[]
     : [];

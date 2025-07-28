@@ -4,43 +4,29 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface CourseProgress {
-  id: string;
-  content_id: string;
-  enrollment_id: string;
-  progress_percentage?: number;
-  completed?: boolean;
+  user_id: string;
+  section_id: string;
+  is_completed: boolean;
   completed_at?: string;
-  last_accessed?: string;
-  time_spent?: number;
-  resume_position?: number;
-  bookmarks?: any[];
-  speed_preference?: number;
-  quality_preference?: string;
-  notes?: string;
-  session_id?: string;
-  learning_path_id?: string;
-  satisfaction_rating?: number;
-  difficulty_rating?: number;
-  created_at: string;
-  updated_at: string;
 }
 
-export const useCourseProgress = (enrollmentId: string) => {
+export const useCourseProgress = (courseId: string) => {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['course-progress', enrollmentId],
+    queryKey: ['course-progress', courseId, user?.id],
     queryFn: async () => {
+      if (!user?.id) return [];
+      
       const { data, error } = await supabase
         .from('user_progress')
         .select('*')
-        .eq('enrollment_id', enrollmentId)
-        .order('created_at', { ascending: true });
+        .eq('user_id', user.id);
       
       if (error) throw error;
       return data as CourseProgress[];
     },
-    enabled: !!user?.id && !!enrollmentId,
+    enabled: !!user?.id && !!courseId,
   });
 };
 
@@ -48,13 +34,14 @@ export const useUpdateProgress = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (progressData: Partial<CourseProgress> & { content_id: string; enrollment_id: string }) => {
+    mutationFn: async (progressData: Partial<CourseProgress> & { user_id: string; section_id: string }) => {
       const { data, error } = await supabase
         .from('user_progress')
         .upsert({
-          ...progressData,
-          last_accessed: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          user_id: progressData.user_id,
+          section_id: progressData.section_id,
+          is_completed: progressData.is_completed ?? false,
+          completed_at: progressData.is_completed ? new Date().toISOString() : null,
         })
         .select()
         .single();
@@ -63,7 +50,7 @@ export const useUpdateProgress = () => {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['course-progress', data.enrollment_id] });
+      queryClient.invalidateQueries({ queryKey: ['course-progress'] });
     },
     onError: (error: any) => {
       console.error('Error updating progress:', error);
@@ -71,20 +58,24 @@ export const useUpdateProgress = () => {
   });
 };
 
-export const useContentProgress = (contentId: string, enrollmentId: string) => {
+export const useSectionProgress = (sectionId: string) => {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['content-progress', contentId, enrollmentId],
+    queryKey: ['section-progress', sectionId, user?.id],
     queryFn: async () => {
+      if (!user?.id) return null;
+      
       const { data, error } = await supabase
         .from('user_progress')
         .select('*')
-        .eq('content_id', contentId)
-        .eq('enrollment_id', enrollmentId)
+        .eq('section_id', sectionId)
+        .eq('user_id', user.id)
         .maybeSingle();
       
       if (error) throw error;
       return data as CourseProgress | null;
     },
-    enabled: !!contentId && !!enrollmentId,
+    enabled: !!sectionId && !!user?.id,
   });
 };

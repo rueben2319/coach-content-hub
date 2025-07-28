@@ -28,7 +28,7 @@ const PublishStep: React.FC<{ data: CourseWizardData; isSubmitting: boolean; set
         title: data.title,
         description: data.description,
         short_description: data.short_description,
-        category: data.category,
+        category_id: data.category, // Now this should be a category ID
         difficulty_level: data.difficulty_level,
         estimated_duration: data.estimated_duration,
         pricing_model: data.pricing_model,
