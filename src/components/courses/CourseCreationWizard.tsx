@@ -25,13 +25,13 @@ export interface CourseWizardData {
   short_description: string;
   category: string;
   difficulty_level: string;
-  estimated_duration: number;
   pricing_model: 'one_time' | 'subscription';
   price: number;
   subscription_price?: number;
   currency: string;
   tags: string[];
   thumbnail_url?: string;
+  banner_image_url?: string;
   content: any[];
   delivery_type: 'self_paced' | 'instructor_led';
   start_date?: string;
@@ -46,7 +46,6 @@ const initialData: CourseWizardData = {
   short_description: '',
   category: '',
   difficulty_level: 'beginner',
-  estimated_duration: 60,
   pricing_model: 'one_time',
   price: 0,
   subscription_price: 0,
@@ -54,6 +53,7 @@ const initialData: CourseWizardData = {
   tags: [],
   content: [],
   delivery_type: 'self_paced',
+  banner_image_url: '',
 };
 
 const CourseCreationWizard: React.FC<{ onSuccess?: () => void; onCancel?: () => void }> = ({ onSuccess, onCancel }) => {

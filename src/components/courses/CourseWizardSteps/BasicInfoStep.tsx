@@ -78,8 +78,8 @@ const BasicInfoStep: React.FC<{ data: CourseWizardData, setData: React.Dispatch<
         </Select>
       </div>
       <div>
-        <Label>Estimated Duration (minutes)</Label>
-        <Input type="number" value={data.estimated_duration} onChange={e => setData(d => ({ ...d, estimated_duration: parseInt(e.target.value) || 0 }))} min={1} />
+        <Label>Banner Image URL</Label>
+        <Input value={data.banner_image_url || ''} onChange={e => setData(d => ({ ...d, banner_image_url: e.target.value }))} placeholder="Paste image URL or upload below" />
       </div>
       <div>
         <Label>Delivery Type</Label>
