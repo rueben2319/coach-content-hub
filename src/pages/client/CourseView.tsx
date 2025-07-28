@@ -385,7 +385,7 @@ const CourseView: React.FC = () => {
                   <div className="divide-y divide-gray-100">
                     {content.map((item, index) => {
                       const isCompleted = completedContent.has(item.id);
-                      const canAccess = isEnrolled || item.is_preview;
+                      const canAccess = isEnrolled; // Modules don't have preview status
 
                       return (
                         <div
@@ -401,15 +401,15 @@ const CourseView: React.FC = () => {
                               </div>
                               
                               <div className="min-w-0 flex-1">
-                                <div className="flex items-center space-x-3 mb-2">
-                                  {getContentIcon(item.content_type)}
-                                  <h4 className="font-medium text-gray-900 truncate">
-                                    {item.title}
-                                  </h4>
-                                  {!canAccess && (
-                                    <Lock className="h-4 w-4 text-gray-400" />
-                                  )}
-                                </div>
+                                 <div className="flex items-center space-x-3 mb-2">
+                                   {getContentIcon('text')} {/* Default icon for modules */}
+                                   <h4 className="font-medium text-gray-900 truncate">
+                                     {item.title}
+                                   </h4>
+                                   {!canAccess && (
+                                     <Lock className="h-4 w-4 text-gray-400" />
+                                   )}
+                                 </div>
                                 
                                 {item.description && (
                                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">
@@ -417,55 +417,44 @@ const CourseView: React.FC = () => {
                                   </p>
                                 )}
                                 
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <Badge variant="outline" className="text-xs">
-                                    {item.content_type}
-                                  </Badge>
-                                  {item.duration && (
-                                    <div className="flex items-center text-xs text-gray-500">
-                                      <Clock className="h-3 w-3 mr-1" />
-                                      {item.duration} min
-                                    </div>
-                                  )}
-                                  {item.is_preview && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      Preview
-                                    </Badge>
-                                  )}
-                                  {isCompleted && (
-                                    <Badge className="text-xs bg-green-500">
-                                      ✓ Completed
-                                    </Badge>
-                                  )}
-                                  {!canAccess && (
-                                    <Badge variant="outline" className="text-xs text-orange-600">
-                                      Locked
-                                    </Badge>
-                                  )}
-                                </div>
+                                 <div className="flex flex-wrap items-center gap-2">
+                                   <Badge variant="outline" className="text-xs">
+                                     Module
+                                   </Badge>
+                                   {isCompleted && (
+                                     <Badge className="text-xs bg-green-500">
+                                       ✓ Completed
+                                     </Badge>
+                                   )}
+                                   {!canAccess && (
+                                     <Badge variant="outline" className="text-xs text-orange-600">
+                                       Locked
+                                     </Badge>
+                                   )}
+                                 </div>
                               </div>
                             </div>
                             
                             <div className="flex-shrink-0">
-                              <Button
-                                size="sm"
-                                onClick={() => handleStartContent(item.id, item.is_preview)}
-                                variant={canAccess ? (isCompleted ? "outline" : "default") : "outline"}
-                                className="min-w-[80px]"
-                                disabled={!canAccess}
-                              >
-                                {!canAccess ? (
-                                  <>
-                                    <Lock className="h-3 w-3 mr-1" />
-                                    Locked
-                                  </>
-                                ) : (
-                                  <>
-                                    <Play className="h-3 w-3 mr-1" />
-                                    {item.is_preview ? 'Preview' : (isCompleted ? 'Review' : 'Start')}
-                                  </>
-                                )}
-                              </Button>
+                               <Button
+                                 size="sm"
+                                 onClick={() => handleStartContent(item.id, false)}
+                                 variant={canAccess ? (isCompleted ? "outline" : "default") : "outline"}
+                                 className="min-w-[80px]"
+                                 disabled={!canAccess}
+                               >
+                                 {!canAccess ? (
+                                   <>
+                                     <Lock className="h-3 w-3 mr-1" />
+                                     Locked
+                                   </>
+                                 ) : (
+                                   <>
+                                     <Play className="h-3 w-3 mr-1" />
+                                     {isCompleted ? 'Review' : 'Start'}
+                                   </>
+                                 )}
+                               </Button>
                             </div>
                           </div>
                         </div>

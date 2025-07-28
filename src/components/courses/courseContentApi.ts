@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export interface CourseContent {
+// Updated interface to match the new database schema
+export interface Module {
   id: string;
   course_id: string;
   title: string;
@@ -10,7 +11,38 @@ export interface CourseContent {
   unlock_after_days: number | null;
   created_at: string;
   updated_at: string;
-  // Legacy fields for backward compatibility - will be removed when components are updated
+}
+
+export interface Lesson {
+  id: string;
+  module_id: string;
+  title: string;
+  description: string | null;
+  sort_order: number;
+  is_published: boolean;
+  unlock_after_days: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Section {
+  id: string;
+  lesson_id: string;
+  title: string;
+  content_type: 'video' | 'audio' | 'text' | 'pdf' | 'image' | 'interactive';
+  content_url: string | null;
+  content_text: string | null;
+  duration: number | null;
+  sort_order: number;
+  is_preview: boolean;
+  is_free: boolean;
+  content: any;
+  created_at: string;
+  updated_at: string;
+}
+
+// Legacy interface for backward compatibility - gradually being phased out
+export interface CourseContent extends Module {
   content_type?: 'video' | 'audio' | 'text' | 'pdf' | 'image' | 'interactive';
   content_url?: string | null;
   content_text?: string | null;
@@ -22,7 +54,7 @@ export interface CourseContent {
   prerequisites?: string[];
 }
 
-export const fetchCourseContent = async (courseId: string) => {
+export const fetchCourseModules = async (courseId: string) => {
   const { data, error } = await supabase
     .from('modules')
     .select('*')
@@ -30,7 +62,12 @@ export const fetchCourseContent = async (courseId: string) => {
     .order('sort_order');
 
   if (error) throw error;
-  return data as CourseContent[];
+  return data as Module[];
+};
+
+// Legacy function - keeping for backward compatibility
+export const fetchCourseContent = async (courseId: string) => {
+  return await fetchCourseModules(courseId);
 };
 
 export const addOrUpdateCourseContent = async (

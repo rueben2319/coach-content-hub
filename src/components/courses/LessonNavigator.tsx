@@ -6,17 +6,17 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Lock, Play, FileText, Volume2, Image, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface CourseContent {
+interface LessonContent {
   id: string;
   title: string;
-  content_type: 'video' | 'audio' | 'text' | 'pdf' | 'image' | 'interactive';
+  content_type?: 'video' | 'audio' | 'text' | 'pdf' | 'image' | 'interactive';
   duration?: number;
   sort_order: number;
-  is_preview: boolean;
+  is_preview?: boolean;
 }
 
 interface LessonNavigatorProps {
-  content: CourseContent[];
+  content: LessonContent[];
   currentIndex: number;
   completedContent: Set<string>;
   onNavigate: (index: number) => void;
@@ -100,12 +100,12 @@ const LessonNavigator: React.FC<LessonNavigatorProps> = ({
                     ) : isLocked ? (
                       <Lock className="h-5 w-5 text-gray-400" />
                     ) : (
-                      <div className="flex items-center space-x-1">
-                        <span className="text-sm font-medium text-gray-500">
-                          {index + 1}
-                        </span>
-                        {getContentIcon(item.content_type)}
-                      </div>
+                       <div className="flex items-center space-x-1">
+                         <span className="text-sm font-medium text-gray-500">
+                           {index + 1}
+                         </span>
+                         {getContentIcon(item.content_type || 'text')}
+                       </div>
                     )}
                   </div>
                   
@@ -119,23 +119,23 @@ const LessonNavigator: React.FC<LessonNavigatorProps> = ({
                       )}>
                         {item.title}
                       </h4>
-                      {item.is_preview && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          Preview
-                        </span>
-                      )}
+                       {item.is_preview && (
+                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                           Preview
+                         </span>
+                       )}
                     </div>
                     
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-xs text-gray-500 capitalize">
-                        {item.content_type}
-                      </span>
-                      {item.duration && (
-                        <span className="text-xs text-gray-500">
-                          {formatDuration(item.duration)}
-                        </span>
-                      )}
-                    </div>
+                     <div className="flex items-center justify-between mt-1">
+                       <span className="text-xs text-gray-500 capitalize">
+                         {item.content_type || 'lesson'}
+                       </span>
+                       {item.duration && (
+                         <span className="text-xs text-gray-500">
+                           {formatDuration(item.duration)}
+                         </span>
+                       )}
+                     </div>
                   </div>
                 </div>
               </Button>

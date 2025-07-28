@@ -10,11 +10,11 @@ import ContentViewer from './ContentViewer';
 import NotesPanel from '../notes/NotesPanel';
 import LessonNavigator from './LessonNavigator';
 import { useToast } from '@/hooks/use-toast';
-import { CourseContent } from './courseContentApi';
+import { Module } from './courseContentApi';
 
 interface CoursePlayerProps {
   courseId: string;
-  content: CourseContent[];
+  content: Module[];
   initialContentId?: string;
   onProgressUpdate: (contentId: string, progress: number, completed: boolean) => void;
 }
@@ -57,14 +57,7 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({
 
   const canAccessContent = (index: number) => {
     if (index === 0) return true;
-    if (content[index].is_preview) return true;
-    
-    // Check if previous content is completed
-    for (let i = 0; i < index; i++) {
-      if (!completedContent.has(content[i].id) && !content[i].is_preview) {
-        return false;
-      }
-    }
+    // For now, allow access to all content during transition
     return true;
   };
 
@@ -83,31 +76,18 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({
   const renderContentPlayer = () => {
     if (!currentContent) return null;
 
-    switch (currentContent.content_type) {
-      case 'video':
-        return (
-          <VideoPlayer
-            src={currentContent.content_url || ''}
-            onProgressUpdate={handleProgressUpdate}
-            contentId={currentContent.id}
-          />
-        );
-      case 'audio':
-        return (
-          <AudioPlayer
-            src={currentContent.content_url || ''}
-            onProgressUpdate={handleProgressUpdate}
-            contentId={currentContent.id}
-          />
-        );
-      default:
-        return (
-          <ContentViewer
-            content={currentContent}
-            onProgressUpdate={handleProgressUpdate}
-          />
-        );
-    }
+    // Show a simple module overview for now
+    return (
+      <div className="bg-gray-50 rounded-lg p-6">
+        <h3 className="text-lg font-semibold mb-2">{currentContent.title}</h3>
+        {currentContent.description && (
+          <p className="text-gray-700 mb-4">{currentContent.description}</p>
+        )}
+        <div className="text-sm text-gray-500">
+          This is a course module. Individual lessons will be added to this module.
+        </div>
+      </div>
+    );
   };
 
   if (!currentContent) {
@@ -149,12 +129,10 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({
                   <FileText className="h-4 w-4 mr-2" />
                   Notes
                 </Button>
-                {currentContent.content_url && (
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                )}
+                 <Button variant="outline" size="sm" disabled>
+                   <Download className="h-4 w-4 mr-2" />
+                   Download
+                 </Button>
               </div>
             </div>
 
@@ -192,11 +170,11 @@ const CoursePlayer: React.FC<CoursePlayerProps> = ({
 
         {/* Notes Panel */}
         {showNotes && (
-          <NotesPanel
-            courseId={courseId}
-            contentId={currentContent.id}
-            contentType={currentContent.content_type}
-          />
+           <NotesPanel
+             courseId={courseId}
+             contentId={currentContent.id}
+             contentType="text"
+           />
         )}
       </div>
     </div>
