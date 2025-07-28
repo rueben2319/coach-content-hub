@@ -911,6 +911,7 @@ export type Database = {
           module_id: string
           sort_order: number
           title: string
+          unlock_after_days: number | null
           updated_at: string
         }
         Insert: {
@@ -921,6 +922,7 @@ export type Database = {
           module_id: string
           sort_order?: number
           title: string
+          unlock_after_days?: number | null
           updated_at?: string
         }
         Update: {
@@ -931,6 +933,7 @@ export type Database = {
           module_id?: string
           sort_order?: number
           title?: string
+          unlock_after_days?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -945,64 +948,37 @@ export type Database = {
       }
       modules: {
         Row: {
-          auto_publish: boolean | null
-          chapter_id: string | null
-          content_text: string | null
-          content_type: Database["public"]["Enums"]["content_type"]
-          content_url: string | null
           course_id: string
           created_at: string
           description: string | null
-          duration: number | null
-          file_size: number | null
           id: string
-          is_preview: boolean | null
-          prerequisites: Json | null
-          scheduled_publish_at: string | null
+          is_published: boolean | null
           sort_order: number
           title: string
+          unlock_after_days: number | null
           updated_at: string
-          version_id: string | null
         }
         Insert: {
-          auto_publish?: boolean | null
-          chapter_id?: string | null
-          content_text?: string | null
-          content_type: Database["public"]["Enums"]["content_type"]
-          content_url?: string | null
           course_id: string
           created_at?: string
           description?: string | null
-          duration?: number | null
-          file_size?: number | null
           id?: string
-          is_preview?: boolean | null
-          prerequisites?: Json | null
-          scheduled_publish_at?: string | null
+          is_published?: boolean | null
           sort_order?: number
           title: string
+          unlock_after_days?: number | null
           updated_at?: string
-          version_id?: string | null
         }
         Update: {
-          auto_publish?: boolean | null
-          chapter_id?: string | null
-          content_text?: string | null
-          content_type?: Database["public"]["Enums"]["content_type"]
-          content_url?: string | null
           course_id?: string
           created_at?: string
           description?: string | null
-          duration?: number | null
-          file_size?: number | null
           id?: string
-          is_preview?: boolean | null
-          prerequisites?: Json | null
-          scheduled_publish_at?: string | null
+          is_published?: boolean | null
           sort_order?: number
           title?: string
+          unlock_after_days?: number | null
           updated_at?: string
-          version_id?: string | null
         }
         Relationships: [
           {
@@ -1124,12 +1100,14 @@ export type Database = {
       }
       sections: {
         Row: {
+          content: Json | null
           content_text: string | null
           content_type: Database["public"]["Enums"]["content_type"]
           content_url: string | null
           created_at: string
           duration: number | null
           id: string
+          is_free: boolean | null
           is_preview: boolean | null
           lesson_id: string
           sort_order: number
@@ -1137,12 +1115,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          content?: Json | null
           content_text?: string | null
           content_type: Database["public"]["Enums"]["content_type"]
           content_url?: string | null
           created_at?: string
           duration?: number | null
           id?: string
+          is_free?: boolean | null
           is_preview?: boolean | null
           lesson_id: string
           sort_order?: number
@@ -1150,12 +1130,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          content?: Json | null
           content_text?: string | null
           content_type?: Database["public"]["Enums"]["content_type"]
           content_url?: string | null
           created_at?: string
           duration?: number | null
           id?: string
+          is_free?: boolean | null
           is_preview?: boolean | null
           lesson_id?: string
           sort_order?: number
