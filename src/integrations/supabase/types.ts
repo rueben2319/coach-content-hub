@@ -781,16 +781,21 @@ export type Database = {
           coach_id: string
           created_at: string
           currency: string
+          delivery_type: Database["public"]["Enums"]["delivery_type"]
           description: string | null
           difficulty_level: string | null
+          end_date: string | null
+          enrollment_deadline: string | null
           estimated_duration: number | null
           id: string
           is_published: boolean | null
+          max_participants: number | null
           price: number
           pricing_model: Database["public"]["Enums"]["pricing_model"]
           publish_status: string | null
           scheduled_publish_at: string | null
           short_description: string | null
+          start_date: string | null
           subscription_price: number | null
           tags: string[] | null
           thumbnail_url: string | null
@@ -803,16 +808,21 @@ export type Database = {
           coach_id: string
           created_at?: string
           currency?: string
+          delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           difficulty_level?: string | null
+          end_date?: string | null
+          enrollment_deadline?: string | null
           estimated_duration?: number | null
           id?: string
           is_published?: boolean | null
+          max_participants?: number | null
           price: number
           pricing_model?: Database["public"]["Enums"]["pricing_model"]
           publish_status?: string | null
           scheduled_publish_at?: string | null
           short_description?: string | null
+          start_date?: string | null
           subscription_price?: number | null
           tags?: string[] | null
           thumbnail_url?: string | null
@@ -825,16 +835,21 @@ export type Database = {
           coach_id?: string
           created_at?: string
           currency?: string
+          delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           difficulty_level?: string | null
+          end_date?: string | null
+          enrollment_deadline?: string | null
           estimated_duration?: number | null
           id?: string
           is_published?: boolean | null
+          max_participants?: number | null
           price?: number
           pricing_model?: Database["public"]["Enums"]["pricing_model"]
           publish_status?: string | null
           scheduled_publish_at?: string | null
           short_description?: string | null
+          start_date?: string | null
           subscription_price?: number | null
           tags?: string[] | null
           thumbnail_url?: string | null
@@ -1433,6 +1448,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "coach" | "client"
       content_type: "video" | "audio" | "text" | "pdf" | "image" | "interactive"
+      delivery_type: "self_paced" | "instructor_led"
       payment_status: "pending" | "completed" | "failed" | "refunded"
       pricing_model: "one_time" | "subscription"
       subscription_status: "active" | "inactive" | "trial" | "expired"
@@ -1565,6 +1581,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "coach", "client"],
       content_type: ["video", "audio", "text", "pdf", "image", "interactive"],
+      delivery_type: ["self_paced", "instructor_led"],
       payment_status: ["pending", "completed", "failed", "refunded"],
       pricing_model: ["one_time", "subscription"],
       subscription_status: ["active", "inactive", "trial", "expired"],

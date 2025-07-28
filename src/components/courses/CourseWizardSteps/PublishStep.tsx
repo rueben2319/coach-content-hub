@@ -39,6 +39,11 @@ const PublishStep: React.FC<{ data: CourseWizardData; isSubmitting: boolean; set
         thumbnail_url: data.thumbnail_url,
         coach_id: profile.user_id,
         is_published: true,
+        delivery_type: data.delivery_type,
+        start_date: data.start_date ? new Date(data.start_date).toISOString() : null,
+        end_date: data.end_date ? new Date(data.end_date).toISOString() : null,
+        max_participants: data.max_participants || null,
+        enrollment_deadline: data.enrollment_deadline ? new Date(data.enrollment_deadline).toISOString() : null,
       };
 
       const { error } = await supabase

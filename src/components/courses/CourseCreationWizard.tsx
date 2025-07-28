@@ -33,6 +33,11 @@ export interface CourseWizardData {
   tags: string[];
   thumbnail_url?: string;
   content: any[];
+  delivery_type: 'self_paced' | 'instructor_led';
+  start_date?: string;
+  end_date?: string;
+  max_participants?: number;
+  enrollment_deadline?: string;
 }
 
 const initialData: CourseWizardData = {
@@ -48,6 +53,7 @@ const initialData: CourseWizardData = {
   currency: 'MWK',
   tags: [],
   content: [],
+  delivery_type: 'self_paced',
 };
 
 const CourseCreationWizard: React.FC<{ onSuccess?: () => void; onCancel?: () => void }> = ({ onSuccess, onCancel }) => {

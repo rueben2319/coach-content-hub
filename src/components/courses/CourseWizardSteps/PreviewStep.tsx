@@ -13,6 +13,14 @@ const PreviewStep: React.FC<{ data: CourseWizardData }> = ({ data }) => (
         <li>Category: {data.category}</li>
         <li>Difficulty: {data.difficulty_level}</li>
         <li>Duration: {data.estimated_duration} mins</li>
+        <li>Delivery: {data.delivery_type === 'self_paced' ? 'Self-Paced' : 'Instructor-Led'}</li>
+        {data.delivery_type === 'instructor_led' && (
+          <>
+            {data.start_date && <li>Start: {new Date(data.start_date).toLocaleDateString()}</li>}
+            {data.end_date && <li>End: {new Date(data.end_date).toLocaleDateString()}</li>}
+            {data.max_participants && <li>Max Participants: {data.max_participants}</li>}
+          </>
+        )}
         <li>Pricing: {data.pricing_model === "one_time" ? `MWK ${data.price}` : `MWK ${data.price} + Sub: MWK ${data.subscription_price}`}</li>
         <li>Tags: {data.tags.join(', ')}</li>
       </ul>
