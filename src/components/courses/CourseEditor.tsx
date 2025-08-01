@@ -13,6 +13,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, X, Save, Eye, Globe, FileText, AlertTriangle } from 'lucide-react';
 
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface Course {
   id: string;
   title: string;
@@ -20,13 +26,12 @@ interface Course {
   short_description: string;
   pricing_model: 'one_time' | 'subscription';
   price: number;
-  subscription_price: number | null;
-  currency: string;
+  // Removed subscription_price and currency as they don't exist in database
   is_published: boolean;
-  category: string;
+  category_id: string; // Changed from category to category_id
   tags: string[] | null;
-  estimated_duration: number;
   difficulty_level: string;
+  image?: string; // Added image field for banner
 }
 
 interface CourseEditorProps {
@@ -43,6 +48,26 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
   const [isLoading, setIsLoading] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  // Fetch categories
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching categories:', error);
+        return [];
+      }
+      
+      setCategories(data || []);
+      return data || [];
+    },
+  });
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ['course', courseId],
@@ -148,14 +173,46 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
   };
 
   const addTag = () => {
-    if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
-      handleInputChange('tags', [...(formData.tags || []), tagInput.trim()]);
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag && !formData.tags?.includes(trimmedTag)) {
+      // Prevent duplicate tags (case-insensitive)
+      const existingTags = formData.tags || [];
+      const tagExists = existingTags.some(tag => tag.toLowerCase() === trimmedTag.toLowerCase());
+      
+      if (!tagExists) {
+        handleInputChange('tags', [...existingTags, trimmedTag]);
       setTagInput('');
+        toast({ 
+          title: "Tag added", 
+          description: `"${trimmedTag}" has been added to your course.`,
+          duration: 2000
+        });
+      } else {
+        toast({ 
+          title: "Tag already exists", 
+          description: `"${trimmedTag}" is already in your course tags.`,
+          variant: "destructive",
+          duration: 3000
+        });
+      }
+    } else if (trimmedTag && formData.tags?.includes(trimmedTag)) {
+      toast({ 
+        title: "Tag already exists", 
+        description: `"${trimmedTag}" is already in your course tags.`,
+        variant: "destructive",
+        duration: 3000
+      });
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    handleInputChange('tags', formData.tags?.filter(tag => tag !== tagToRemove) || []);
+    const updatedTags = formData.tags?.filter(tag => tag !== tagToRemove) || [];
+    handleInputChange('tags', updatedTags);
+    toast({ 
+      title: "Tag removed", 
+      description: `"${tagToRemove}" has been removed from your course.`,
+      duration: 2000
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,7 +223,6 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
     try {
       const updateData = {
         ...formData,
-        subscription_price: formData.pricing_model === 'subscription' ? formData.subscription_price : null,
       };
       updateCourseMutation.mutate(updateData);
     } catch (error: any) {
@@ -176,15 +232,61 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
     }
   };
 
-  const handlePublishToggle = (published: boolean) => {
-    if (published && (!formData.title || !formData.short_description || !courseContent?.length)) {
-      setShowPublishDialog(true);
+  const canPublish = formData.title && formData.short_description && formData.description && courseContent?.length;
+
+  const handlePublishToggle = async (published: boolean) => {
+    if (published && !canPublish) {
+      toast({
+        title: "Cannot publish course",
+        description: "Please complete all required fields and add content before publishing.",
+        variant: "destructive",
+        duration: 4000
+      });
       return;
     }
-    publishCourseMutation.mutate(published);
-  };
 
-  const canPublish = formData.title && formData.short_description && formData.description && courseContent?.length;
+    try {
+      setIsLoading(true);
+      
+      const { error } = await supabase
+        .from('courses')
+        .update({ is_published: published })
+        .eq('id', courseId);
+
+      if (error) throw error;
+
+      // Update local state
+      setFormData(prev => ({ ...prev, is_published: published }));
+      
+      // Update course data
+      queryClient.setQueryData(['course', courseId], (old: any) => ({
+        ...old,
+        is_published: published
+      }));
+
+      toast({
+        title: published ? "Course published!" : "Course unpublished",
+        description: published 
+          ? "Your course is now live and visible to students." 
+          : "Your course is now in draft mode and not visible to students.",
+        duration: 3000
+      });
+
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: ['courses', user?.id] });
+      
+    } catch (error: any) {
+      console.error('Error updating publication status:', error);
+      toast({
+        title: "Error updating publication status",
+        description: error.message || "Failed to update course publication status.",
+        variant: "destructive",
+        duration: 4000
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (courseLoading) {
     return <div className="flex justify-center items-center min-h-[400px]">
@@ -223,26 +325,47 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
                   <div className="flex items-center gap-2 mb-2">
                     <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
                     <h3 className="font-semibold text-sm sm:text-base">Publication Status</h3>
+                    <Badge 
+                      variant={course.is_published ? "default" : "secondary"} 
+                      className="text-xs sm:text-sm"
+                    >
+                      {course.is_published ? "Published" : "Draft"}
+                    </Badge>
                   </div>
                   <p className="text-xs sm:text-sm text-gray-600 break-words">
                     {course.is_published 
                       ? "Course is live and visible to students" 
-                      : "Course is in draft mode"
+                      : "Course is in draft mode and not visible to students"
                     }
                   </p>
-                  {!canPublish && (
+                  {!canPublish && !course.is_published && (
                     <div className="flex items-center gap-2 mt-2 text-orange-600">
                       <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Complete all fields and add content to publish</span>
+                      <span className="text-xs sm:text-sm">
+                        Complete all required fields and add content to publish
+                      </span>
+                    </div>
+                  )}
+                  {course.is_published && (
+                    <div className="flex items-center gap-2 mt-2 text-green-600">
+                      <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-xs sm:text-sm">
+                        Course is currently live and accepting enrollments
+                      </span>
                     </div>
                   )}
                 </div>
                 <div className="flex-shrink-0">
+                  <div className="flex items-center gap-2">
                   <Switch
                     checked={course.is_published}
                     onCheckedChange={handlePublishToggle}
                     disabled={!canPublish && !course.is_published}
                   />
+                    <span className="text-xs text-muted-foreground">
+                      {course.is_published ? "Live" : "Draft"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -290,46 +413,51 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="category" className="text-sm sm:text-base">Category</Label>
-                  <Input
-                    id="category"
-                    value={formData.category || ''}
-                    onChange={(e) => handleInputChange('category', e.target.value)}
-                    placeholder="e.g., Fitness, Business, Art"
-                    className="text-sm sm:text-base"
-                    required
-                  />
+                  <Select
+                    value={formData.category_id || ''}
+                    onValueChange={(value) => handleInputChange('category_id', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="difficulty_level" className="text-sm sm:text-base">Difficulty Level</Label>
                   <Select 
-                    value={formData.difficulty_level || 'beginner'} 
+                    value={formData.difficulty_level || ''}
                     onValueChange={(value) => handleInputChange('difficulty_level', value)}
                   >
-                    <SelectTrigger className="text-sm sm:text-base">
-                      <SelectValue />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select difficulty level" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="beginner">Beginner</SelectItem>
                       <SelectItem value="intermediate">Intermediate</SelectItem>
                       <SelectItem value="advanced">Advanced</SelectItem>
+                      <SelectItem value="all_levels">All Levels</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="estimated_duration" className="text-sm sm:text-base">Estimated Duration (minutes)</Label>
+                  <Label htmlFor="image" className="text-sm sm:text-base">Banner Image URL</Label>
                 <Input
-                  id="estimated_duration"
-                  type="number"
-                  value={formData.estimated_duration || 0}
-                  onChange={(e) => handleInputChange('estimated_duration', parseInt(e.target.value))}
-                  placeholder="Course duration in minutes"
+                    id="image"
+                    value={formData.image || ''}
+                    onChange={(e) => handleInputChange('image', e.target.value)}
+                    placeholder="Enter banner image URL"
                   className="text-sm sm:text-base"
-                  min="1"
-                  required
                 />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -351,7 +479,7 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="price" className="text-sm sm:text-base">
-                    {formData.pricing_model === 'one_time' ? 'Price (MWK)' : 'One-time Price (MWK)'}
+                    {formData.pricing_model === 'one_time' ? 'Price (MWK)' : 'Monthly Price (MWK)'}
                   </Label>
                   <Input
                     id="price"
@@ -365,22 +493,6 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
                     required
                   />
                 </div>
-
-                {formData.pricing_model === 'subscription' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="subscription_price" className="text-sm sm:text-base">Monthly Subscription Price (MWK)</Label>
-                    <Input
-                      id="subscription_price"
-                      type="number"
-                      step="1"
-                      value={formData.subscription_price || 0}
-                      onChange={(e) => handleInputChange('subscription_price', parseFloat(e.target.value))}
-                      placeholder="0"
-                      className="text-sm sm:text-base"
-                      min="0"
-                    />
-                  </div>
-                )}
               </div>
 
               <div className="space-y-2">
@@ -390,27 +502,43 @@ const CourseEditor: React.FC<CourseEditorProps> = ({ courseId, onSuccess, onCanc
                     id="tags"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
-                    placeholder="Add a tag"
+                    placeholder="Add a tag (press Enter or click Add)"
                     className="text-sm sm:text-base flex-1"
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    maxLength={30}
                   />
-                  <Button type="button" onClick={addTag} variant="outline" size="sm" className="w-full sm:w-auto">
-                    Add
+                  <Button 
+                    type="button" 
+                    onClick={addTag} 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full sm:w-auto"
+                    disabled={!tagInput.trim()}
+                  >
+                    Add Tag
                   </Button>
                 </div>
                 {formData.tags && formData.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-3">
                     {formData.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1 text-xs">
-                        {tag}
+                      <Badge 
+                        key={index} 
+                        variant="secondary" 
+                        className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-destructive/10 transition-colors"
+                      >
+                        <span className="max-w-[120px] truncate">{tag}</span>
                         <X
-                          className="h-3 w-3 cursor-pointer"
+                          className="h-3 w-3 cursor-pointer hover:text-destructive transition-colors"
                           onClick={() => removeTag(tag)}
+                          title={`Remove "${tag}"`}
                         />
                       </Badge>
                     ))}
                   </div>
                 )}
+                <p className="text-xs text-muted-foreground">
+                  {formData.tags?.length || 0}/10 tags • Max 30 characters per tag
+                </p>
               </div>
             </div>
 

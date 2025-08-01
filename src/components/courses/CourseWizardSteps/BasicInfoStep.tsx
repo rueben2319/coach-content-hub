@@ -50,7 +50,7 @@ const BasicInfoStep: React.FC<{ data: CourseWizardData, setData: React.Dispatch<
       </div>
       <div>
         <Label>Category</Label>
-        <Select value={data.category} onValueChange={value => setData(d => ({ ...d, category: value }))}>
+        <Select value={data.category_id} onValueChange={value => setData(d => ({ ...d, category_id: value }))}>
           <SelectTrigger>
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
@@ -79,7 +79,7 @@ const BasicInfoStep: React.FC<{ data: CourseWizardData, setData: React.Dispatch<
       </div>
       <div>
         <Label>Banner Image URL</Label>
-        <Input value={data.banner_image_url || ''} onChange={e => setData(d => ({ ...d, banner_image_url: e.target.value }))} placeholder="Paste image URL or upload below" />
+        <Input value={data.image || ''} onChange={e => setData(d => ({ ...d, image: e.target.value }))} placeholder="Paste image URL or upload below" />
       </div>
       <div>
         <Label>Delivery Type</Label>

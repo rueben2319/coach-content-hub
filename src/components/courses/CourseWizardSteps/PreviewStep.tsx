@@ -10,9 +10,9 @@ const PreviewStep: React.FC<{ data: CourseWizardData }> = ({ data }) => (
       <p className="text-gray-500">{data.short_description}</p>
       <p className="text-sm">{data.description}</p>
       <ul className="text-xs text-gray-400">
-        <li>Category: {data.category}</li>
+        <li>Category: {data.category_id}</li>
         <li>Difficulty: {data.difficulty_level}</li>
-        <li>Duration: {data.estimated_duration} mins</li>
+        <li>Duration: N/A</li>
         <li>Delivery: {data.delivery_type === 'self_paced' ? 'Self-Paced' : 'Instructor-Led'}</li>
         {data.delivery_type === 'instructor_led' && (
           <>
@@ -21,7 +21,7 @@ const PreviewStep: React.FC<{ data: CourseWizardData }> = ({ data }) => (
             {data.max_participants && <li>Max Participants: {data.max_participants}</li>}
           </>
         )}
-        <li>Pricing: {data.pricing_model === "one_time" ? `MWK ${data.price}` : `MWK ${data.price} + Sub: MWK ${data.subscription_price}`}</li>
+        <li>Pricing: {data.pricing_model === "one_time" ? `MWK ${data.price}` : `MWK ${data.price}/month`}</li>
         <li>Tags: {data.tags.join(', ')}</li>
       </ul>
     </CardContent>

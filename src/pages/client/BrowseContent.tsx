@@ -100,7 +100,7 @@ const BrowseContent = () => {
               <div className="flex items-center justify-between text-sm mb-4">
                 <div className="flex items-center text-gray-500">
                   <Clock className="w-4 h-4 mr-1" />
-                  <span>{course.estimated_duration || 0} hours</span>
+                  <span>N/A</span>
                 </div>
                 <div className="flex items-center">
                   <Star className="w-4 h-4 mr-1 text-yellow-500 fill-current" />

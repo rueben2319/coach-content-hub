@@ -183,7 +183,7 @@ const ClientProgress = () => {
                         <div className="flex justify-between text-xs text-muted-foreground pt-2 border-t border-border">
                           <div className="flex items-center">
                             <Clock className="w-3 h-3 mr-1.5" />
-                            <span className="font-medium">{formatDuration(enrollment.course.estimated_duration || 0)}</span>
+                            <span className="font-medium">N/A</span>
                           </div>
                           <div className="flex items-center">
                             <Calendar className="w-3 h-3 mr-1.5" />

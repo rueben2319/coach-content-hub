@@ -42,7 +42,6 @@ const CoachDashboard = () => {
             id,
             title,
             description,
-            estimated_duration,
             difficulty_level,
             is_published,
             created_at

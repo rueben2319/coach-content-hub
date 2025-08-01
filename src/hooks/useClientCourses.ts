@@ -7,11 +7,8 @@ export interface Course {
   title: string;
   description: string;
   price: number;
-  currency: string;
-  estimated_duration: number;
   difficulty_level: string;
-  category: string;
-  thumbnail_url: string;
+  category_id: string;
   is_published: boolean;
   coach: {
     first_name: string;
@@ -35,11 +32,8 @@ export const usePublishedCourses = () => {
             title,
             description,
             price,
-            currency,
-            estimated_duration,
             difficulty_level,
-            category,
-            thumbnail_url,
+            category_id,
             is_published,
             coach:profiles!coach_id (
               first_name,
@@ -82,11 +76,8 @@ export const useCourse = (courseId: string) => {
           title,
           description,
           price,
-          currency,
-          estimated_duration,
           difficulty_level,
-          category,
-          thumbnail_url,
+          category_id,
           is_published,
           coach:profiles!coach_id (
             first_name,

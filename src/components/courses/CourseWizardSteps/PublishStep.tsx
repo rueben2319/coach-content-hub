@@ -28,15 +28,11 @@ const PublishStep: React.FC<{ data: CourseWizardData; isSubmitting: boolean; set
         title: data.title,
         description: data.description,
         short_description: data.short_description,
-        category_id: data.category, // Now this should be a category ID
+        category_id: data.category_id,
         difficulty_level: data.difficulty_level,
         pricing_model: data.pricing_model,
         price: data.price,
-        subscription_price: data.pricing_model === "subscription" ? data.subscription_price : null,
-        currency: data.currency,
-        tags: data.tags,
-        thumbnail_url: data.thumbnail_url,
-        banner_image_url: data.banner_image_url,
+        image: data.image,
         coach_id: profile.user_id,
         is_published: true,
         delivery_type: data.delivery_type,
@@ -44,6 +40,7 @@ const PublishStep: React.FC<{ data: CourseWizardData; isSubmitting: boolean; set
         end_date: data.end_date ? new Date(data.end_date).toISOString() : null,
         max_participants: data.max_participants || null,
         enrollment_deadline: data.enrollment_deadline ? new Date(data.enrollment_deadline).toISOString() : null,
+        tags: data.tags,
       };
 
       const { error } = await supabase

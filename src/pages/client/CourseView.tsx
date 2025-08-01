@@ -56,9 +56,8 @@ const CourseView: React.FC = () => {
           id,
           title,
           description,
-          estimated_duration,
           price,
-          currency,
+          image,
           profiles!coach_id (
             first_name,
             last_name
@@ -78,9 +77,9 @@ const CourseView: React.FC = () => {
         title: data.title,
         description: data.description || '',
         instructor,
-        duration: data.estimated_duration || 0,
+        duration: 0, // estimated_duration column doesn't exist in database
         price: data.price,
-        currency: data.currency
+        currency: 'MWK' // currency column doesn't exist in database
       } as Course;
     },
     enabled: !!courseId,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, X } from 'lucide-react';
+import { X } from 'lucide-react';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 interface CourseFormData {
   title: string;
@@ -17,38 +23,55 @@ interface CourseFormData {
   short_description: string;
   pricing_model: 'one_time' | 'subscription';
   price: number;
-  subscription_price?: number;
-  currency: string;
-  category: string;
-  difficulty_level: string;
-  estimated_duration: number;
+  // Removed subscription_price and currency as they don't exist in database
+  category_id: string; // Changed from category to category_id
   tags: string[];
+  difficulty_level: string;
+  image?: string; // Added image field for banner
 }
 
 interface CourseFormProps {
-  onSuccess?: () => void;
+  initialData?: Partial<CourseFormData>;
+  onSubmit: (data: CourseFormData) => void;
   onCancel?: () => void;
+  isLoading?: boolean;
 }
 
-const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
+const CourseForm: React.FC<CourseFormProps> = ({ initialData, onSubmit, onCancel, isLoading = false }) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [tagInput, setTagInput] = useState('');
-
   const [formData, setFormData] = useState<CourseFormData>({
     title: '',
     description: '',
     short_description: '',
     pricing_model: 'one_time',
     price: 0,
-    subscription_price: 0,
-    currency: 'MWK',
-    category: '',
+    category_id: '',
     difficulty_level: 'beginner',
-    estimated_duration: 60,
     tags: [],
+    image: '',
   });
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching categories:', error);
+        return;
+      }
+      
+      setCategories(data || []);
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleInputChange = (field: keyof CourseFormData, value: any) => {
     setFormData(prev => ({
@@ -72,12 +95,12 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
     e.preventDefault();
     if (!user) return;
 
-    setIsLoading(true);
+    // setIsLoading(true); // This state was removed, so this line is removed.
     try {
       const courseData = {
         ...formData,
         coach_id: user.id,
-        subscription_price: formData.pricing_model === 'subscription' ? formData.subscription_price : null,
+        // Removed subscription_price and currency as they don't exist in database
       };
 
       const { error } = await supabase
@@ -91,7 +114,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
         description: "Your course has been created and saved as a draft.",
       });
 
-      onSuccess?.();
+      onSubmit(courseData); // Changed from onSuccess to onSubmit
     } catch (error: any) {
       console.error('Error creating course:', error);
       toast({
@@ -100,7 +123,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false); // This state was removed, so this line is removed.
     }
   };
 
@@ -149,19 +172,44 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="price">Price (MWK)</Label>
               <Input
-                id="category"
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                placeholder="e.g., Fitness, Business, Art"
+                id="price"
+                type="number"
+                step="1"
+                value={formData.price}
+                onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
+                placeholder="0"
+                min="0"
                 required
               />
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={formData.category_id}
+                onValueChange={(value) => handleInputChange('category_id', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="difficulty_level">Difficulty Level</Label>
-              <Select value={formData.difficulty_level} onValueChange={(value) => handleInputChange('difficulty_level', value)}>
+              <Select
+                value={formData.difficulty_level}
+                onValueChange={(value) => handleInputChange('difficulty_level', value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -169,22 +217,20 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
                   <SelectItem value="beginner">Beginner</SelectItem>
                   <SelectItem value="intermediate">Intermediate</SelectItem>
                   <SelectItem value="advanced">Advanced</SelectItem>
+                  <SelectItem value="all_levels">All Levels</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="estimated_duration">Estimated Duration (minutes)</Label>
+              <Label htmlFor="image">Banner Image URL</Label>
             <Input
-              id="estimated_duration"
-              type="number"
-              value={formData.estimated_duration}
-              onChange={(e) => handleInputChange('estimated_duration', parseInt(e.target.value))}
-              placeholder="Course duration in minutes"
-              min="1"
-              required
-            />
+                id="image"
+                value={formData.image || ''}
+                onChange={(e) => handleInputChange('image', e.target.value)}
+                placeholder="Enter banner image URL"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -216,21 +262,6 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
                 required
               />
             </div>
-
-            {formData.pricing_model === 'subscription' && (
-              <div className="space-y-2">
-                <Label htmlFor="subscription_price">Monthly Subscription Price (MWK)</Label>
-                <Input
-                  id="subscription_price"
-                  type="number"
-                  step="1"
-                  value={formData.subscription_price}
-                  onChange={(e) => handleInputChange('subscription_price', parseFloat(e.target.value))}
-                  placeholder="0"
-                  min="0"
-                />
-              </div>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -269,7 +300,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ onSuccess, onCancel }) => {
               </Button>
             )}
             <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {/* {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} */}
               Create Course
             </Button>
           </div>

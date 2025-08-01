@@ -4,57 +4,48 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Module, addOrUpdateCourseContent, addOrUpdateLesson } from "./courseContentApi";
+import { Module, addOrUpdateModule } from "./courseContentApi";
 
 interface Props {
   courseId: string;
-  moduleId?: string;
-  lesson?: Module | null;
+  module?: Module | null;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const EnhancedLessonForm: React.FC<Props> = ({ courseId, moduleId, lesson, onSuccess, onCancel }) => {
+const ModuleForm: React.FC<Props> = ({ courseId, module, onSuccess, onCancel }) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    title: lesson?.title || "",
-    description: lesson?.description || "",
-    unlock_after_days: lesson?.unlock_after_days || null,
-    is_published: lesson?.is_published || false,
+    title: module?.title || "",
+    description: module?.description || "",
+    unlock_after_days: module?.unlock_after_days || null,
+    is_published: module?.is_published || false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      if (moduleId) {
-        // Creating/updating a lesson within a module
-        await addOrUpdateLesson(
-          {
-            ...formData,
-            module_id: moduleId,
-          },
-          lesson ?? undefined,
-        );
-      } else {
-        // Legacy: creating/updating a module (for backward compatibility)
-        await addOrUpdateCourseContent(
-          {
-            ...formData,
-            course_id: courseId,
-          },
-          lesson ?? undefined,
-        );
-      }
+      await addOrUpdateModule(
+        {
+          ...formData,
+          course_id: courseId,
+        },
+        module ?? undefined,
+      );
       toast({
-        title: lesson ? "Lesson updated successfully!" : "Lesson created successfully!",
+        title: module ? "Module updated successfully!" : "Module created successfully!",
+        description: module 
+          ? "Your module has been updated." 
+          : "New module has been added to your course.",
       });
       onSuccess();
     } catch (error: any) {
       toast({
-        title: "Error saving lesson",
+        title: "Error saving module",
         description: error.message,
         variant: "destructive",
       });
@@ -68,21 +59,24 @@ const EnhancedLessonForm: React.FC<Props> = ({ courseId, moduleId, lesson, onSuc
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-lg sm:text-xl">
-            {lesson ? "Edit Lesson" : "Create New Lesson"}
+            {module ? "Edit Module" : "Create New Module"}
           </CardTitle>
           <CardDescription className="text-sm sm:text-base">
-            Create a new lesson module for your course
+            {module 
+              ? "Update your module details" 
+              : "Create a new module for your course. Modules are the main sections that organize your content."
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="title">Lesson Title</Label>
+              <Label htmlFor="title">Module Title</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter lesson title..."
+                placeholder="Enter module title..."
                 required
               />
             </div>
@@ -94,7 +88,7 @@ const EnhancedLessonForm: React.FC<Props> = ({ courseId, moduleId, lesson, onSuc
                 value={formData.description || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
-                placeholder="Brief description of this lesson..."
+                placeholder="Brief description of this module..."
               />
             </div>
 
@@ -113,23 +107,23 @@ const EnhancedLessonForm: React.FC<Props> = ({ courseId, moduleId, lesson, onSuc
                   placeholder="0 for immediate access"
                 />
               </div>
-              <div className="flex items-center space-x-2 mt-6">
-                <input
-                  type="checkbox"
+
+              <div className="flex items-center space-x-2">
+                <Switch
                   id="is_published"
                   checked={formData.is_published}
-                  onChange={(e) => setFormData(prev => ({ ...prev, is_published: e.target.checked }))}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_published: checked }))}
                 />
-                <Label htmlFor="is_published">Publish Immediately</Label>
+                <Label htmlFor="is_published">Published</Label>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 pt-4">
-              <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
-                Cancel
+            <div className="flex gap-2">
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Saving...' : (module ? 'Update Module' : 'Create Module')}
               </Button>
-              <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
-                {isLoading ? 'Saving...' : lesson ? 'Update Lesson' : 'Create Lesson'}
+              <Button type="button" variant="outline" onClick={onCancel}>
+                Cancel
               </Button>
             </div>
           </form>
@@ -139,4 +133,4 @@ const EnhancedLessonForm: React.FC<Props> = ({ courseId, moduleId, lesson, onSuc
   );
 };
 
-export default EnhancedLessonForm;
+export default ModuleForm; 

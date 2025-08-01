@@ -15,9 +15,8 @@ export interface ClientEnrollment {
     title: string;
     description: string;
     price: number;
-    currency: string;
-    estimated_duration: number;
     difficulty_level: string;
+    category_id: string;
     coach: {
       first_name: string;
       last_name: string;
@@ -47,9 +46,8 @@ export const useClientEnrollments = () => {
             title,
             description,
             price,
-            currency,
-            estimated_duration,
             difficulty_level,
+            category_id,
             coach:profiles!coach_id (
               first_name,
               last_name

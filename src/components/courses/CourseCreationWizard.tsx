@@ -23,15 +23,13 @@ export interface CourseWizardData {
   title: string;
   description: string;
   short_description: string;
-  category: string;
+  category_id: string; // Changed from category to category_id to match database
   difficulty_level: string;
   pricing_model: 'one_time' | 'subscription';
   price: number;
-  subscription_price?: number;
-  currency: string;
+  // Removed subscription_price, currency as they don't exist in database
   tags: string[];
-  thumbnail_url?: string;
-  banner_image_url?: string;
+  image?: string; // Changed from banner_image_url to image to match database
   content: any[];
   delivery_type: 'self_paced' | 'instructor_led';
   start_date?: string;
@@ -44,16 +42,15 @@ const initialData: CourseWizardData = {
   title: '',
   description: '',
   short_description: '',
-  category: '',
+  category_id: '', // Changed from category
   difficulty_level: 'beginner',
   pricing_model: 'one_time',
   price: 0,
-  subscription_price: 0,
-  currency: 'MWK',
+  // Removed subscription_price, currency
   tags: [],
   content: [],
   delivery_type: 'self_paced',
-  banner_image_url: '',
+  image: '', // Changed from banner_image_url
 };
 
 const CourseCreationWizard: React.FC<{ onSuccess?: () => void; onCancel?: () => void }> = ({ onSuccess, onCancel }) => {

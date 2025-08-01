@@ -39,8 +39,8 @@ const PricingStep: React.FC<{ data: CourseWizardData, setData: React.Dispatch<Re
         <Input
           type="number"
           step="1"
-          value={data.subscription_price}
-          onChange={e => setData(d => ({ ...d, subscription_price: parseFloat(e.target.value) || 0 }))}
+          value={data.price}
+          onChange={e => setData(d => ({ ...d, price: parseFloat(e.target.value) || 0 }))}
           min="0"
         />
       </div>

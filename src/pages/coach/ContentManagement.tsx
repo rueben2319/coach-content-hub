@@ -17,13 +17,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import CourseBundleManager from '@/components/courses/CourseBundleManager';
-import CourseForm from '@/components/courses/CourseForm';
 import CourseEditor from '@/components/courses/CourseEditor';
 import CoursePreview from '@/components/courses/CoursePreview';
 import CourseContentManager from '@/components/courses/CourseContentManager';
 import CourseCreationWizard from '@/components/courses/CourseCreationWizard';
+import LessonManager from '@/components/courses/LessonManager';
 
-type ViewType = 'overview' | 'courses' | 'bundles' | 'create-course' | 'edit-course' | 'preview-course' | 'manage-content' | 'wizard';
+type ViewType = 'overview' | 'courses' | 'bundles' | 'create-course' | 'edit-course' | 'preview-course' | 'manage-content' | 'wizard' | 'content' | 'lessons' | 'modules' | 'sections' | 'analytics';
 
 const LEVEL_COLORS: Record<string, string> = {
   BEGINNER: 'bg-green-500',
@@ -35,13 +35,48 @@ const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1513258496099-4816802
 
 const ContentManagement = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, profile } = useAuth();
+  
+  // URL state management
+  const view = searchParams.get('view') || 'overview';
+  const courseId = searchParams.get('courseId') || '';
+  const action = searchParams.get('action') || '';
+  
   const [currentView, setCurrentView] = useState<ViewType>('overview');
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
   const [search, setSearch] = useState('');
   const [academy, setAcademy] = useState('All');
-  const [view, setView] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+
+  // Sync URL with component state
+  useEffect(() => {
+    setCurrentView(view as ViewType);
+    setSelectedCourseId(courseId);
+  }, [view, courseId]);
+
+  // URL navigation functions
+  const updateURL = (newParams: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams);
+    
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === null) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
+    
+    setSearchParams(params);
+  };
+
+  const navigateToView = (newView: string, newCourseId?: string, newAction?: string) => {
+    updateURL({
+      view: newView,
+      courseId: newCourseId || null,
+      action: newAction || null
+    });
+  };
 
   // Fetch coach's courses
   const { data: courses = [], isLoading, error } = useQuery({
@@ -56,7 +91,6 @@ const ContentManagement = () => {
             id,
             title,
             description,
-            estimated_duration,
             difficulty_level,
             is_published,
             created_at
@@ -91,102 +125,116 @@ const ContentManagement = () => {
 
   // Handle URL parameters for direct navigation
   useEffect(() => {
-    const viewParam = searchParams.get('view');
-    if (viewParam === 'wizard') {
-      setCurrentView('wizard');
+    const urlView = searchParams.get('view');
+    const urlCourseId = searchParams.get('courseId');
+    
+    if (urlView && urlView !== currentView) {
+      setCurrentView(urlView as ViewType);
     }
-  }, [searchParams]);
+    
+    if (urlCourseId && urlCourseId !== selectedCourseId) {
+      setSelectedCourseId(urlCourseId);
+    }
+  }, [searchParams, currentView, selectedCourseId]);
 
-  const handleBackToDashboard = () => {
-    navigate('/coach');
+  const handleViewChange = (newView: ViewType) => {
+    setCurrentView(newView);
+    navigateToView(newView, selectedCourseId);
+  };
+
+  const handleCourseSelect = (courseId: string) => {
+    setSelectedCourseId(courseId);
+    navigateToView('content', courseId);
   };
 
   const handleBackToOverview = () => {
-    setCurrentView('overview');
-    setSelectedCourseId('');
+    navigateToView('overview');
   };
 
   const handleCreateCourse = () => {
-    setCurrentView('wizard');
+    navigateToView('create-course');
   };
 
   const handleEditCourse = (courseId: string) => {
-    setSelectedCourseId(courseId);
-    setCurrentView('edit-course');
+    navigateToView('edit-course', courseId);
   };
 
   const handlePreviewCourse = (courseId: string) => {
-    setSelectedCourseId(courseId);
-    setCurrentView('preview-course');
+    navigateToView('preview-course', courseId);
   };
 
   const handleManageContent = (courseId: string) => {
-    setSelectedCourseId(courseId);
-    setCurrentView('manage-content');
+    navigateToView('content', courseId);
   };
 
-  // Render different views based on current state
-  if (currentView === 'wizard') {
+  const handleBackToCourses = () => {
+    navigateToView('courses');
+  };
+
+  // Render different views based on currentView
+  if ((currentView === 'content' || currentView === 'lessons' || currentView === 'modules' || currentView === 'sections' || currentView === 'analytics') && selectedCourseId) {
+    console.log('Rendering LessonManager with courseId:', selectedCourseId, 'view:', currentView);
     return (
-      <CourseCreationWizard
-        onSuccess={handleBackToOverview}
-        onCancel={handleBackToOverview}
+      <LessonManager
+        courseId={selectedCourseId}
+        onBack={handleBackToCourses}
       />
     );
   }
 
   if (currentView === 'create-course') {
     return (
-      <CourseForm
-        onSuccess={handleBackToOverview}
-        onCancel={handleBackToOverview}
-      />
+      <div className="p-4 sm:p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="outline" onClick={handleBackToOverview}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Content Management
+          </Button>
+        </div>
+        <CourseCreationWizard onSuccess={handleBackToCourses} onCancel={handleBackToOverview} />
+      </div>
     );
   }
 
   if (currentView === 'edit-course' && selectedCourseId) {
     return (
-      <CourseEditor
-        courseId={selectedCourseId}
-        onSuccess={handleBackToOverview}
-        onCancel={handleBackToOverview}
-        onPreview={() => setCurrentView('preview-course')}
-      />
+      <div className="p-4 sm:p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="outline" onClick={handleBackToCourses}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Courses
+          </Button>
+        </div>
+        <CourseEditor courseId={selectedCourseId} onSuccess={handleBackToCourses} onCancel={handleBackToCourses} onPreview={() => handlePreviewCourse(selectedCourseId)} />
+      </div>
     );
   }
 
   if (currentView === 'preview-course' && selectedCourseId) {
     return (
-      <CoursePreview
-        courseId={selectedCourseId}
-        onBack={handleBackToOverview}
-      />
+      <div className="p-4 sm:p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="outline" onClick={handleBackToCourses}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Courses
+          </Button>
+        </div>
+        <CoursePreview courseId={selectedCourseId} onBack={handleBackToCourses} />
+      </div>
     );
   }
 
-  if (currentView === 'manage-content' && selectedCourseId) {
-    return (
-      <CourseContentManager
-        courseId={selectedCourseId}
-        onBack={handleBackToOverview}
-      />
-    );
-  }
-
+  // Main content management overview
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Content Management</h1>
-          <p className="text-slate-600 text-sm sm:text-base mt-1">
-            Manage your courses, content, and bundles all in one place
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">Content Management</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
+            Manage your courses, modules, lessons, and content
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleBackToDashboard} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
           <Button onClick={handleCreateCourse}>
             <Plus className="h-4 w-4 mr-2" />
             Create Course
@@ -194,256 +242,196 @@ const ContentManagement = () => {
         </div>
       </div>
 
-      {currentView === 'overview' && (
-        <Tabs defaultValue="courses" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="courses" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Courses
-            </TabsTrigger>
-            <TabsTrigger value="bundles" className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
-              Bundles
-            </TabsTrigger>
+      <Tabs value={currentView} onValueChange={(value) => handleViewChange(value as ViewType)} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="courses">Courses</TabsTrigger>
+          <TabsTrigger value="bundles">Bundles</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="courses" className="space-y-4">
-            {/* Search and Filters */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Total Courses
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold">{courses.length}</p>
+                <p className="text-sm text-gray-500">Published courses</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Course Bundles
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold">0</p>
+                <p className="text-sm text-gray-500">Active bundles</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="h-5 w-5" />
+                  Total Views
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold">0</p>
+                <p className="text-sm text-gray-500">Content views</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Courses</CardTitle>
+              <CardDescription>Your most recently created courses</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {courses.slice(0, 3).map((course: any) => (
+                <div key={course.id} className="flex items-center justify-between py-3 border-b last:border-b-0">
+                  <div>
+                    <h3 className="font-medium">{course.title}</h3>
+                    <p className="text-sm text-gray-500">{course.description}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleManageContent(course.id)}>
+                      Manage Content
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleEditCourse(course.id)}>
+                      Edit
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="courses" className="space-y-6">
+          <div className="flex flex-col sm:flex-row gap-4">
               <Input
-                type="text"
-                placeholder="Search your courses"
+              placeholder="Search courses..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full sm:w-72"
-              />
-              <div className="flex gap-2 flex-1">
-                <select
-                  className="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  value={academy}
-                  onChange={e => setAcademy(e.target.value)}
-                >
-                  <option value="All">Academy</option>
-                  <option value="All">All</option>
-                  {/* Add more academies as needed */}
-                </select>
-              </div>
-              {/* View Toggle */}
-              <div className="flex gap-1 ml-auto">
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1"
+            />
+            <div className="flex gap-2">
                 <Button
-                  variant={view === 'grid' ? 'default' : 'ghost'}
-                  size="icon"
-                  className={view === 'grid' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
-                  onClick={() => setView('grid')}
-                >
-                  <Grid className="w-5 h-5" />
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={view === 'list' ? 'default' : 'ghost'}
-                  size="icon"
-                  className={view === 'list' ? 'bg-green-500 hover:bg-green-600 text-white border border-green-500' : 'border border-gray-200'}
-                  onClick={() => setView('list')}
-                >
-                  <List className="w-5 h-5" />
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
-            {/* Course List */}
-            {isLoading && (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            )}
-
-            {error && (
-              <div className="text-center py-12">
-                <p className="text-red-600 mb-4">Error loading courses: {error.message}</p>
-                <Button onClick={() => window.location.reload()}>Retry</Button>
-              </div>
-            )}
-
-            {!isLoading && !error && filtered.length === 0 && (
-              <div className="text-left text-gray-500 py-12">
-                <p>No courses found.</p>
-              </div>
-            )}
-
-            {!isLoading && !error && view === 'list' && (
-              <div className="flex flex-col gap-6">
-                {filtered.map((course: any) => {
-                  const level = (course.difficulty_level || 'BEGINNER').toUpperCase();
-                  return (
-                    <div key={course.id} className="bg-gray-50 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row overflow-hidden group">
-                      {/* Image and Level Badge */}
-                      <div className="relative w-full md:w-64 h-48 md:h-auto flex-shrink-0">
-                        <img
-                          src={PLACEHOLDER_IMG}
-                          alt={course.title}
-                          className="object-cover w-full h-full"
-                        />
-                        <span className={`absolute top-3 left-3 px-3 py-1 rounded text-xs font-semibold text-white ${LEVEL_COLORS[level] || 'bg-green-500'}`}>
-                          {level}
-                        </span>
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <Play className="w-10 h-10 text-white/80 drop-shadow-lg" />
-                        </span>
-                        {/* Dropdown Menu - Top Right Corner */}
-                        <div className="absolute top-3 right-3">
+          {isLoading ? (
+            <div className="text-center py-8">Loading courses...</div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">Error loading courses: {error.message}</div>
+          ) : filtered.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-8">
+                <p className="text-gray-500 mb-4">No courses found</p>
+                <Button onClick={handleCreateCourse}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Course
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+              {filtered.map((course: any) => (
+                <Card key={course.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold mb-2">{course.title}</h3>
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{course.description}</p>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge variant={course.is_published ? "default" : "secondary"}>
+                            {course.is_published ? 'Published' : 'Draft'}
+                          </Badge>
+                          {course.difficulty_level && (
+                            <Badge variant="outline" className={LEVEL_COLORS[course.difficulty_level.toUpperCase()]}>
+                              {course.difficulty_level}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-900 rounded-full shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md"
-                              >
-                                <MoreVertical className="w-4 h-4" />
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem 
-                                onClick={() => handlePreviewCourse(course.id)}
-                                className="flex items-center gap-3 cursor-pointer hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150"
-                              >
-                                <Eye className="w-4 h-4 text-blue-600" />
-                                <span className="font-medium">Preview</span>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleManageContent(course.id)}>
+                            <BookOpen className="h-4 w-4 mr-2" />
+                            Manage Content
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleEditCourse(course.id)}
-                                className="flex items-center gap-3 cursor-pointer hover:bg-green-50 hover:text-green-700 transition-colors duration-150"
-                              >
-                                <Play className="w-4 h-4 text-green-600" />
-                                <span className="font-medium">Edit</span>
+                          <DropdownMenuItem onClick={() => handleEditCourse(course.id)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Course
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleManageContent(course.id)}
-                                className="flex items-center gap-3 cursor-pointer hover:bg-purple-50 hover:text-purple-700 transition-colors duration-150"
-                              >
-                                <Settings className="w-4 h-4 text-purple-600" />
-                                <span className="font-medium">Manage Content</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => alert(course.is_published ? 'Unpublish Course' : 'Publish Course')}
-                                className="flex items-center gap-3 cursor-pointer hover:bg-yellow-50 hover:text-yellow-700 transition-colors duration-150"
-                              >
-                                <X className="w-4 h-4 text-yellow-600" />
-                                <span className="font-medium">{course.is_published ? 'Unpublish' : 'Publish'}</span>
+                          <DropdownMenuItem onClick={() => handlePreviewCourse(course.id)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
-                      </div>
-                      {/* Course Info */}
-                      <div className="flex-1 flex flex-col p-6 gap-2 text-left">
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1 justify-start">
-                          <BookOpen className="w-4 h-4 mr-1 text-primary" />
-                          Course
-                          <span className="mx-1">|</span>
-                          <span>{course.is_published ? 'Published' : 'Draft'}</span>
-                        </div>
-                        <div className="flex items-center gap-2 justify-start">
-                          <h2 className="text-xl font-bold text-gray-900 leading-tight">{course.title}</h2>
-                        </div>
-                        <div className="text-sm text-gray-700 font-medium mb-1">{course.title}</div>
-                        <div className="text-gray-600 text-sm mb-2 line-clamp-2">{course.description}</div>
-                        <div className="flex-1" />
-                        <div className="flex items-center justify-between mt-2">
-                          <div />
-                        </div>
-                      </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleManageContent(course.id)}
+                      >
+                        Manage Content
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEditCourse(course.id)}
+                      >
+                        Edit
+                      </Button>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {!isLoading && !error && view === 'grid' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filtered.map((course: any) => {
-                  const level = (course.difficulty_level || 'BEGINNER').toUpperCase();
-                  return (
-                    <div key={course.id} className="bg-gray-50 rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden group">
-                      <div className="relative w-full h-48 flex-shrink-0">
-                        <img
-                          src={PLACEHOLDER_IMG}
-                          alt={course.title}
-                          className="object-cover w-full h-full"
-                        />
-                        <span className={`absolute top-3 left-3 px-3 py-1 rounded text-xs font-semibold text-white ${LEVEL_COLORS[level] || 'bg-green-500'}`}>
-                          {level}
-                        </span>
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <Play className="w-10 h-10 text-white/80 drop-shadow-lg" />
-                        </span>
-                        <div className="absolute top-3 right-3">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-900 rounded-full shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md"
-                              >
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem 
-                                onClick={() => handlePreviewCourse(course.id)}
-                                className="flex items-center gap-3 cursor-pointer hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150"
-                              >
-                                <Eye className="w-4 h-4 text-blue-600" />
-                                <span className="font-medium">Preview</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleEditCourse(course.id)}
-                                className="flex items-center gap-3 cursor-pointer hover:bg-green-50 hover:text-green-700 transition-colors duration-150"
-                              >
-                                <Play className="w-4 h-4 text-green-600" />
-                                <span className="font-medium">Edit</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleManageContent(course.id)}
-                                className="flex items-center gap-3 cursor-pointer hover:bg-purple-50 hover:text-purple-700 transition-colors duration-150"
-                              >
-                                <Settings className="w-4 h-4 text-purple-600" />
-                                <span className="font-medium">Manage Content</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => alert(course.is_published ? 'Unpublish Course' : 'Publish Course')}
-                                className="flex items-center gap-3 cursor-pointer hover:bg-yellow-50 hover:text-yellow-700 transition-colors duration-150"
-                              >
-                                <X className="w-4 h-4 text-yellow-600" />
-                                <span className="font-medium">{course.is_published ? 'Unpublish' : 'Publish'}</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                      <div className="flex-1 flex flex-col p-4 gap-2 text-left">
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1 justify-start">
-                          <BookOpen className="w-4 h-4 mr-1 text-primary" />
-                          Course
-                          <span className="mx-1">|</span>
-                          <span>{course.is_published ? 'Published' : 'Draft'}</span>
-                        </div>
-                        <div className="flex items-center gap-2 justify-start">
-                          <h2 className="text-lg font-bold text-gray-900 leading-tight">{course.title}</h2>
-                        </div>
-                        <div className="text-sm text-gray-700 font-medium mb-1">{course.title}</div>
-                        <div className="text-gray-600 text-sm mb-2 line-clamp-2">{course.description}</div>
-                      </div>
-                    </div>
-                  );
-                })}
+                  </CardContent>
+                </Card>
+              ))}
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="bundles">
-            <CourseBundleManager />
+        <TabsContent value="bundles" className="space-y-6">
+          <Card>
+            <CardContent className="text-center py-8">
+              <p className="text-gray-500 mb-4">Course bundles coming soon</p>
+              <p className="text-sm text-gray-400">Create bundles of multiple courses for better organization and pricing.</p>
+            </CardContent>
+          </Card>
           </TabsContent>
         </Tabs>
-      )}
     </div>
   );
 };
