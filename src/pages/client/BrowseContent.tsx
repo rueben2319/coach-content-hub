@@ -67,9 +67,9 @@ const BrowseContent = () => {
                 )}
               </div>
               <div className="absolute top-3 left-3">
-                {course.category_id && (
+                {course.category && (
                   <Badge variant="secondary" className="bg-white/90 text-gray-800 backdrop-blur-sm">
-                    Category
+                    {course.category}
                   </Badge>
                 )}
               </div>
