@@ -908,13 +908,11 @@ export type Database = {
           category_id: string | null
           coach_id: string
           created_at: string
-          currency: string | null
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           description: string | null
           difficulty_level: string | null
           end_date: string | null
           enrollment_deadline: string | null
-          estimated_duration: number | null
           id: string
           image: string | null
           is_published: boolean | null
@@ -934,13 +932,11 @@ export type Database = {
           category_id?: string | null
           coach_id: string
           created_at?: string
-          currency?: string | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           difficulty_level?: string | null
           end_date?: string | null
           enrollment_deadline?: string | null
-          estimated_duration?: number | null
           id?: string
           image?: string | null
           is_published?: boolean | null
@@ -960,13 +956,11 @@ export type Database = {
           category_id?: string | null
           coach_id?: string
           created_at?: string
-          currency?: string | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           difficulty_level?: string | null
           end_date?: string | null
           enrollment_deadline?: string | null
-          estimated_duration?: number | null
           id?: string
           image?: string | null
           is_published?: boolean | null
