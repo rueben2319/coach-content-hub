@@ -536,10 +536,10 @@ const ContentManagement = () => {
                             Preview
                               </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem 
+                              <DropdownMenuItem 
                             onClick={() => handleDeleteCourse(course)}
                             className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                          >
+                              >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete Course
                               </DropdownMenuItem>
