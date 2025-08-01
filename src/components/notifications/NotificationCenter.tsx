@@ -107,7 +107,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         filtered = notifications.filter(n => n.isRead);
         break;
       case 'dismissed':
-        filtered = notifications.filter(n => n.isDismissed);
+        filtered = notifications.filter(n => n.isDismissed || false);
         break;
       default:
         filtered = notifications;
@@ -151,9 +151,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     }
   }, [userPreferences, updateUserPreferences]);
 
-  const getNotificationIcon = (notification: any) => {
-    const IconComponent = getNotificationIcon(notification.entityType);
-    return <IconComponent className="w-4 h-4" />;
+  const getNotificationIcon = () => {
+    return <Bell className="w-4 h-4" />;
   };
 
   const renderNotificationItem = (notification: any) => (
@@ -169,7 +168,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         "flex items-center justify-center w-8 h-8 rounded-full",
         getNotificationColor(notification.level)
       )}>
-        {getNotificationIcon(notification)}
+        {getNotificationIcon()}
       </div>
       
       <div className="flex-1 min-w-0">
