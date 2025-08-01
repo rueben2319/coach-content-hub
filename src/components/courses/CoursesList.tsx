@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import CoursesGrid from './CoursesGrid';
 import SubscriptionUpgradePrompt from './SubscriptionUpgradePrompt';
 
@@ -18,11 +18,9 @@ interface Course {
   is_published: boolean;
   pricing_model: 'one_time' | 'subscription';
   price: number;
-  subscription_price: number | null;
-  currency: string;
-  category: string;
+  image?: string;
+  category_id?: string;
   tags: string[] | null;
-  estimated_duration: number;
   difficulty_level: string;
   created_at: string;
   updated_at: string;
@@ -43,6 +41,7 @@ const CoursesList: React.FC<CoursesListProps> = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: courses, isLoading, error } = useQuery({
     queryKey: ['courses', user?.id],
@@ -60,6 +59,41 @@ const CoursesList: React.FC<CoursesListProps> = ({
     },
     enabled: !!user,
   });
+
+  // Delete course mutation
+  const deleteCourseMutation = useMutation({
+    mutationFn: async (courseId: string) => {
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', courseId)
+        .eq('coach_id', user?.id); // Ensure user can only delete their own courses
+
+      if (error) throw error;
+      return courseId;
+    },
+    onSuccess: (courseId) => {
+      // Invalidate and refetch courses
+      queryClient.invalidateQueries({ queryKey: ['courses', user?.id] });
+      
+      toast({
+        title: "Course deleted",
+        description: "The course has been successfully deleted.",
+        variant: "default",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error deleting course",
+        description: error.message || "Failed to delete the course. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteCourse = (course: Course) => {
+    deleteCourseMutation.mutate(course.id);
+  };
 
   // Check if error is due to subscription access
   const isSubscriptionError = error && 
@@ -110,6 +144,7 @@ const CoursesList: React.FC<CoursesListProps> = ({
           onEditCourse={onEditCourse}
           onPreviewCourse={onPreviewCourse}
           onManageContent={onManageContent}
+          onDeleteCourse={handleDeleteCourse}
         />
       </CardContent>
     </Card>

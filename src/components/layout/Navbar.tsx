@@ -4,26 +4,47 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
-  ChevronDown,
+  Sparkles,
   Search,
-  Globe,
   Bell,
   User,
-  Sparkles,
+  Settings,
   LogOut,
-  ArrowRight,
-  LayoutDashboard,
-  Newspaper,
-  BadgeCheck,
-  Percent,
-  History,
+  ChevronDown,
+  Globe,
+  HelpCircle,
+  BookOpen,
+  BarChart3,
+  Users,
   FileText,
-  UserCog
+  CreditCard,
+  MessageSquare,
+  Calendar,
+  Target,
+  Trophy,
+  TrendingUp,
+  Activity,
+  PieChart,
+  Layers,
+  Grid,
+  List,
+  Filter,
+  Download,
+  Share2,
+  Edit,
+  Plus,
+  MoreHorizontal,
+  Check,
+  Clock,
+  AlertCircle,
+  Info,
+  Loader2,
+  X
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { cn } from '@/lib/utils';
 
 interface NavbarProps {
@@ -34,20 +55,18 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   const { profile, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [language, setLanguage] = useState('EN');
-  const [notifications, setNotifications] = useState(3); // Mock notification count
   const [profileOpen, setProfileOpen] = useState(false);
 
   const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
   const initials = fullName
-    ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase()
-    : (profile?.email?.[0]?.toUpperCase() || 'U');
+    ? fullName.split(' ').map(n => n[0]).join('').toUpperCase()
+    : profile?.email?.charAt(0).toUpperCase() || 'U';
 
   const handleLogout = async () => {
     try {
       await signOut();
-      setProfileOpen(false);
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error('Error signing out:', error);
     }
   };
 
@@ -121,18 +140,8 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
             </div>
           </Button>
 
-          {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative text-gray-600 hover:text-primary hover:bg-primary-50 transition-colors">
-            <Bell className="w-5 h-5" />
-            {notifications > 0 && (
-              <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-              >
-                {notifications}
-              </Badge>
-            )}
-          </Button>
+          {/* Enhanced Notification Center */}
+          <NotificationCenter variant="dropdown" />
 
           {/* Profile (clickable, opens offcanvas) */}
           <>
@@ -169,89 +178,100 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                   </div>
                   <Button 
                     variant="default" 
-                    className="rounded-full px-5 py-2 font-semibold text-white bg-green-500 hover:bg-green-600" 
-                    size="sm"
-                    onClick={handleLogout}
+                    size="sm" 
+                    className="absolute top-4 right-4 h-8 w-8 p-0 rounded-full"
+                    onClick={() => setProfileOpen(false)}
                   >
-                    <LogOut className="w-4 h-4 mr-1" /> Logout
+                    <span className="sr-only">Close</span>
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
-                {/* Sidebar Sections */}
-                <div className="px-6 py-4 overflow-y-auto h-full">
+
+                {/* Navigation Menu */}
+                <nav className="flex-1 px-6 py-4 space-y-2">
                   {/* Dashboard Section */}
-                  <div className="mb-2">
-                    <div className="flex items-center text-xs font-bold text-gray-500 uppercase mb-2 mt-2">
-                      <LayoutDashboard className="w-4 h-4 mr-2 text-gray-400" /> Dashboard
-                    </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                      Dashboard
+                    </h3>
                     {profile?.role === 'coach' ? (
-                      <Link to="/coach" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                        <span className="flex items-center"><span className="ml-6">My Work</span></span>
-                        <ArrowRight className="w-4 h-4 text-gray-400" />
-                      </Link>
-                    ) : (
-                      <Link to="/client" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                        <span className="flex items-center"><span className="ml-6">My Learning</span></span>
-                        <ArrowRight className="w-4 h-4 text-gray-400" />
-                      </Link>
-                    )}
-                  </div>
-                  <Separator className="my-3" />
-                  {/* News Section */}
-                  <div className="mb-2">
-                    <div className="flex items-center text-xs font-bold text-gray-500 uppercase mb-2 mt-2">
-                      <Newspaper className="w-4 h-4 mr-2 text-gray-400" /> News
-                    </div>
-                    <a href="#" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                      <span className="flex items-center"><span className="ml-6">For Learners</span></span>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
-                    </a>
-                  </div>
-                  <Separator className="my-3" />
-                  {/* Profile Section */}
-                  <div className="mb-2">
-                    <div className="flex items-center text-xs font-bold text-gray-500 uppercase mb-2 mt-2">
-                      <UserCog className="w-4 h-4 mr-2 text-gray-400" /> Profile
-                    </div>
-                    {profile?.role === 'coach' ? (
-                      <Link to="/coach/profile" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                        <span className="flex items-center"><span className="ml-6">Update Profile</span></span>
-                        <ArrowRight className="w-4 h-4 text-gray-400" />
-                      </Link>
-                    ) : (
-                      <Link to="/client/profile" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                        <span className="flex items-center"><span className="ml-6">Update Profile</span></span>
-                        <ArrowRight className="w-4 h-4 text-gray-400" />
-                      </Link>
-                    )}
-                    {profile?.role === 'coach' && (
                       <>
-                        <Link to="/coach/content" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                          <span className="flex items-center"><span className="ml-6">Manage Content</span></span>
-                          <ArrowRight className="w-4 h-4 text-gray-400" />
+                        <Link to="/coach/dashboard" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                          <BarChart3 className="w-4 h-4" />
+                          <span>Analytics</span>
                         </Link>
-                        <Link to="/coach/content?view=wizard" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                          <span className="flex items-center"><span className="ml-6">Create Content</span></span>
-                          <ArrowRight className="w-4 h-4 text-gray-400" />
+                        <Link to="/coach/content" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                          <FileText className="w-4 h-4" />
+                          <span>Content Management</span>
+                        </Link>
+                        <Link to="/coach/students" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                          <Users className="w-4 h-4" />
+                          <span>Students</span>
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <Link to="/client/dashboard" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                          <BarChart3 className="w-4 h-4" />
+                          <span>Progress</span>
+                        </Link>
+                        <Link to="/client/courses" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                          <BookOpen className="w-4 h-4" />
+                          <span>My Courses</span>
+                        </Link>
+                        <Link to="/client/goals" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                          <Target className="w-4 h-4" />
+                          <span>Goals</span>
                         </Link>
                       </>
                     )}
-                    <a href="#" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                      <span className="flex items-center"><BadgeCheck className="w-4 h-4 mr-2 text-gray-400" /><span>Badges & Certificates</span></span>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
-                    </a>
-                    <a href="#" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                      <span className="flex items-center"><Percent className="w-4 h-4 mr-2 text-gray-400" /><span>Discounts</span></span>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
-                    </a>
-                    <a href="#" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                      <span className="flex items-center"><History className="w-4 h-4 mr-2 text-gray-400" /><span>Learning History</span></span>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
-                    </a>
-                    <a href="#" className="flex items-center justify-between py-2 px-0 text-gray-900 hover:bg-primary-50 hover:text-primary rounded transition-colors">
-                      <span className="flex items-center"><FileText className="w-4 h-4 mr-2 text-gray-400" /><span>Transcript</span></span>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
-                    </a>
                   </div>
+
+                  {/* Account Section */}
+                  <div className="space-y-1 pt-4">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                      Account
+                    </h3>
+                    <Link to="/profile" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                      <User className="w-4 h-4" />
+                      <span>Profile</span>
+                    </Link>
+                    <Link to="/subscription" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                      <CreditCard className="w-4 h-4" />
+                      <span>Subscription</span>
+                    </Link>
+                    <Link to="/settings" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Settings className="w-4 h-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </div>
+
+                  {/* Support Section */}
+                  <div className="space-y-1 pt-4">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                      Support
+                    </h3>
+                    <Link to="/help" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                      <HelpCircle className="w-4 h-4" />
+                      <span>Help Center</span>
+                    </Link>
+                    <Link to="/contact" className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Contact Support</span>
+                    </Link>
+                  </div>
+                </nav>
+
+                {/* Footer */}
+                <div className="border-t border-gray-100 px-6 py-4">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="w-4 h-4 mr-3" />
+                    Sign Out
+                  </Button>
                 </div>
               </SheetContent>
             </Sheet>
