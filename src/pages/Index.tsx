@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { LandingNavbar } from '@/components/layout/LandingNavbar';
 
 const Index = () => {
   const { user, loading, profile } = useAuth();
@@ -66,6 +67,8 @@ const Index = () => {
   console.log('Index - No user found, showing landing page');
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <LandingNavbar />
+      <div className="pt-16">
       <div className="container-constrained section-padding">
         <div className="text-center max-w-4xl mx-auto space-y-8">
           <div className="space-y-6">
@@ -117,6 +120,7 @@ const Index = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
